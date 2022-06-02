@@ -7,7 +7,12 @@ culster.
 We're writing most modules in python because of support of
 pre-existing freely available libraries like numpy, scipy, astropy.
 
-## Status
+The followings are what we have so far, excluding helper utilities.
+
+|Name | Description |
+|-----| ------------|
+|fits reader| reads a fits file and converts it into array (numpy array specifically)|
+|fits to csv| convert a fit file into csv|
 
 ## Installation and usage instruction
 
