@@ -17,7 +17,7 @@ do all the work you want after reading the fits file.
 
 If you're not familiar with the pattern of passing function as an
 argument, called funarg sometimes, you might want to get familiar
-with that first. Also, our sample ( usage file )[./use-fits.py] might
+with that first. Also, our sample [usage file](./use-fits.py ) might
 be helpful to look at.
 
 The other function in this module, `fitsToCSV` might be barely

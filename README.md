@@ -7,11 +7,13 @@ culster.
 We're writing most modules in python because of support of
 pre-existing freely available libraries like numpy, scipy, astropy.
 
+## Status
+
 ## Installation and usage instruction
 
 TODO:
 
-Please note that documentation along with examples supposed to live on the <./usage>
+Please note that documentation along with examples supposed to live on the [usage](./usage)
 folder.
 
 ### About the code
