@@ -1,0 +1,2 @@
+class ArgsLengthMisMatch(Exception):
+    pass
