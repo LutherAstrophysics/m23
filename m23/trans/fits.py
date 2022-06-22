@@ -32,3 +32,15 @@ def fitsToCSV(fileName, csvLocation):
         data =  fileHandle.data
         np.savetxt(csvLocation, data, delimiter=",")
     readFits(fileName, toCSV)
+
+
+def createFitFile(fitsHeader, fitsData, fileName):
+    # hdu = fits.PrimaryHDU(data=fitsData, header=fitsHeader)
+    # hdu.writeto(fileName)
+    fits.writeto(fileName, fitsData, header=fitsHeader)
+
+
+def createFitFileWithSameHeader(fitsData, fileName, fileToCopyHeaderFrom):
+    with fits.open(fileToCopyHeaderFrom) as fd:
+        headerToCopy = fd[0].header
+        createFitFile(headerToCopy, fitsData, fileName)

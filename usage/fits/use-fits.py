@@ -22,5 +22,6 @@ def workWithFit(fd):
     middleItem = middleRow[len(middleRow) // 2]
 
     print("middleItem", middleItem)
+    print(fd.header)
 
 readFits("m23_7.0-001.fit", workWithFit)
