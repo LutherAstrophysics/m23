@@ -1,6 +1,6 @@
 # Notes
 
-**Our fits reader wrapper around** the fits reader given by the astropy
+**Our fits reader is a wrapper around** the fits reader given by the astropy
 library... so for full featured functionality, please refer to
 astropy documentation... 
 
