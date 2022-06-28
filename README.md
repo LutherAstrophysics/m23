@@ -23,4 +23,11 @@ folder.
 
 ### About the code
 
+Hacky and bad way to install all python module requirements in here is
+doing
+
+```pip install -r requirements.txt``` 
+
+from the folder where you have this `requirements.txt` file.
+
 TODO
