@@ -5,11 +5,11 @@ from m23.funcs.hof import noOfArgs
 ###
 ### readFit
 ###
-### Purpose: 
+### Purpose:
 ###     takes in a fileName, and a function workWithFit
-###     and call the procedure workWithFit passing the 
+###     and call the procedure workWithFit passing the
 ###
-###  
+###
 @noOfArgs(2)
 def readFits(*args):
     fileName, workWithFit = args
@@ -20,24 +20,25 @@ def readFits(*args):
 ###
 ### fitsToCSV
 ###
-### Purpose: 
+### Purpose:
 ###     takes in name of fitsFile and csvLocation
 ###     then stores the fitsFile data as CSV file
 ###     in CSV locatation
 ###
-###  
+###
 @noOfArgs(2)
 def fitsToCSV(fileName, csvLocation):
     def toCSV(fileHandle):
-        data =  fileHandle.data
+        data = fileHandle.data
         np.savetxt(csvLocation, data, delimiter=",")
+
     readFits(fileName, toCSV)
 
 
 def createFitFile(fitsHeader, fitsData, fileName):
     # hdu = fits.PrimaryHDU(data=fitsData, header=fitsHeader)
     # hdu.writeto(fileName)
-    fits.writeto(fileName, fitsData, header=fitsHeader)
+    fits.writeto(fileName, fitsData, header=fitsHeader, overwrite=True)
 
 
 def createFitFileWithSameHeader(fitsData, fileName, fileToCopyHeaderFrom):
