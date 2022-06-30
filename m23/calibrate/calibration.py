@@ -1,4 +1,3 @@
-from statistics import median
 import sys
 
 if "../../" not in sys.path:
@@ -187,11 +186,9 @@ def calibrateImages(listOfImageNames, masterDarkData, masterFlatData):
     medianInMasterDark = np.median(masterDarkData)
 
     ### Find hot pixel positions
-    hotPixelPositions = np.where(
+    hotPixelPositions = np.column_stack(np.where(
         masterDarkData > medianInMasterDark + 3 * stdInMasterDark
-    )
-    ### covert to easily indexable tuple
-    hotPixelPositions = zip(hotPixelPositions[0], hotPixelPositions[1])
+    ))
 
     ### We define the edges as the outermost 5 (or 10???) pixels????
     edgeSize = 5
