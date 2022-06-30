@@ -73,24 +73,38 @@ def applyCalibration(
 
     rawImage = getfitsdata(rawImageName)
 
-    ### THIS SHOULD BE DONE AFTER CALIBRATION STEP
-    ###   But we are doing it this way because the IDL code currently
-    ###   does it that way
-    ### THIS IS A MYSTERY!!!! MUST BE FIXED
-
-    ### Calculate the median and standard deviation of the raw image
-    medianInRaw = np.median(rawImage)
-    stdInRaw = np.std(rawImage)
-
-    ### NOTE We don't know why it's 2 sigma???
-    highValue = medianInRaw + 2 * stdInRaw
-
     ### Calibration Step:
     subtractedRaw = rawImage - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)
     ### dtype is set to float32 for our image viewing software Astromagic, since it does not support float64
     ### We think we are not losing any significant precision with this downcasting
     calibratedImage = np.multiply(flatRatio, subtractedRaw, dtype="float32")
+
+
+    ### Unlike current IDL Code we're doing this step to calibrated
+    ###   image instead of the raw
+    ### Calculate the median and standard deviation of the raw image
+
+    medianInRaw = np.median(rawImage)
+    stdInRaw = np.std(rawImage)
+
+    ### NOTE We don't know why it's 2 sigma???
+    highValue = medianInRaw + 2 * stdInRaw
+    lowValue = medianInRaw - 2 * stdInRaw
+
+
+    ### recalibrate the pixels in hot positions (which are defined by
+    ###   hot pixels in masterDark)
+    for pixelLocation in hotPixelsInMasterDark:
+        recalibrateAtHotLocation(pixelLocation, calibratedImage, highValue, lowValue)
+
+    # Only create file if fileName is provided
+    if fileName:
+        createFitFileWithSameHeader(calibratedImage, fileName, rawImageName)
+    return calibratedImage
+
+
+def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue):
 
     ### For all hot pixel positions that aren't at edges (in the master dark)
     ### Check if the pixel value in calibrated( or RAW ??? TOFIX) img is abnormally
@@ -102,18 +116,6 @@ def applyCalibration(
     ###  If the pixel value is not abnormally high, or if it's abnomrally high but none of
     ###    its surrounding pixels is abnormally high:
     ###    create a 3X3 box with our pixel at center, and take the average of 8 pixels around it
-
-    ### needs optimization
-    # for pixelLocation in hotPixelsInMasterDark:
-    #     recalibrateAtHotLocation(pixelLocation, calibratedImage, highValue)
-
-    # Only create file if fileName is provided
-    if fileName:
-        createFitFileWithSameHeader(calibratedImage, fileName, rawImageName)
-    return calibratedImage
-
-
-def recalibrateAtHotLocation(location, calibratedImageData, highValue):
 
     row, col = location
 
@@ -129,9 +131,16 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue):
         ]
 
     def needsGausian():
-        return calibratedImageData[location] > highValue and any(
+        ### isHigh
+        isHigh = calibratedImageData[location] > highValue and any(
             [value > highValue for value in surroundingValues()]
         )
+        ### isLow
+        isLow = calibratedImageData[location] < lowValue and any(
+            [value < lowValue for value in surroundingValues()]
+        )
+        return isHigh or isLow
+
 
     def doGaussain():
         surroundingMatrixGaussBox = calibratedImageData[
