@@ -130,7 +130,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue):
 
     def needsGausian():
         return calibratedImageData[location] > highValue and any(
-            [value > highValue for value in surroundingValues]
+            [value > highValue for value in surroundingValues()]
         )
 
     def doGaussain():
