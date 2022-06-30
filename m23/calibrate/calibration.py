@@ -227,4 +227,4 @@ def calibrateImages(listOfImageNames, masterDarkData, masterFlatData):
             hotPixelsInMasterDark=hotPixelPositions,
         )
 
-    # print("Hot pixels were", filteredHotPixelPositions)
+    print("Hot pixels were", filteredHotPixelPositions)

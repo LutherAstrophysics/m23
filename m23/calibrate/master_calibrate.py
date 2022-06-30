@@ -10,7 +10,7 @@ import numpy as np
 
 ### please note that code is a direct implementation of steps
 ### mentioned in Handbook of Astronomical Image `Processing by
-### Richard Berry and James Burnell section 6.3 Standard Calibration
+### Richard Berry and James Burnell version 2.0 section 6.3 Standard Calibration
 
 ###
 ### calibrate function specifications:
@@ -18,11 +18,13 @@ import numpy as np
 ### input:
 ###   list of darks - for a night
 ###   list of flats - for a night
+###   rawImages - raw images for a night
 ###
 ### process
 ###   raw image to calibrate (fit file) - for the same night
 ###   generate master dark
 ###   generate master flat
+###   The new camera does not take bias frames, so 
 ###   we are ignoring biases and using dark frames as flatdarks
 ###
 ### output
@@ -41,7 +43,7 @@ def calibrate(listOfDarks, listOfFlats, rawImages):
 ###  purpose: creates masterDark, saves to fileName + returns masterDarkData
 ###
 ### we generate the masterDark by "taking median of the dark frames"
-###   --Richar Berry, James Burnell
+###   --Richard Berry, James Burnell
 def makeMasterDark(listOfDarks, fileName, row=2048, column=2048):
 
     dataOfDarks = [
@@ -70,6 +72,7 @@ def makeMasterFlat(listOfFlatNames, masterDarkData, fileName, row=2048, columns=
     ### In other words: If we don't have flat dark, use dark frames
     ###
 
+    ### We subtract the masterdark from the combined flats to get the master flat (p.189)
     combinedFlats = getMedianOfMatrices(fitDataFromFitImages(listOfFlatNames))
     masterFlatData = combinedFlats - masterDarkData
     # listOfFlats[0] is the file whose header we're copying to
