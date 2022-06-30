@@ -193,14 +193,14 @@ def calibrateImages(listOfImageNames, masterDarkData, masterFlatData):
     ### Filter out the edges
     ### Filter top/left
     topLeftFiltered = filter(
-        lambda position: position[0] < edgeSize or position[1] < edgeSize,
+        lambda row_column: row_column[0] < edgeSize or row_column[1] < edgeSize,
         hotPixelPositions,
     )
     ### Filter bottom/right & convert to tuple
     filteredHotPixelPositions = tuple(
         filter(
-            lambda position: position[0] > totalRows - edgeSize
-            or position[1] > totalColumns - edgeSize,
+            lambda row_column: row_column[0] > totalRows - edgeSize
+            or row_column[1] > totalColumns - edgeSize,
             topLeftFiltered,
         )
     )
