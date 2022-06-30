@@ -36,7 +36,10 @@ def calibrate(listOfDarks, listOfFlats, rawImages):
 
     return listOfCalibratedImages
 
-
+###  makeMasterDark
+###
+###  purpose: creates masterDark, saves to fileName + returns masterDarkData
+###
 ### we generate the masterDark by "taking median of the dark frames"
 ###   --Richar Berry, James Burnell
 def makeMasterDark(listOfDarks, fileName, row=2048, column=2048):
@@ -52,16 +55,26 @@ def makeMasterDark(listOfDarks, fileName, row=2048, column=2048):
     return masterDarkData
 
 
-### we generate the masterFlat by ...
+###  makeMasterFlat
 ###
-def makeMasterFlat(listOfFlats, masterDark, fileName, row=2048, columns=2048):
+###  purpose: creates masterFlat, saves to fileName + returns masterFlatData
+###
+### we generate the masterFlat by 
+###   taking the median of flats and subtracting the masterDarkData
+###  
+def makeMasterFlat(listOfFlatNames, masterDarkData, fileName, row=2048, columns=2048):
 
-    dataOfDarks = fitDataFromFitImages(listOfFlats)
-    combinedFlats = getMedianOfMatrices(dataOfDarks)
-    masterFlatData = combinedFlats - masterDark
+    ### We're supposed to use flat dark for the master flat
+    ### but we did not take any for the new camera, so we're
+    ### using dark frames instead
+    ### In other words: If we don't have flat dark, use dark frames
+    ###
+
+    combinedFlats = getMedianOfMatrices(fitDataFromFitImages(listOfFlatNames))
+    masterFlatData = combinedFlats - masterDarkData
     # listOfFlats[0] is the file whose header we're copying to
     #  save in masterDark
-    createFitFileWithSameHeader(masterFlatData, fileName, listOfFlats[0])
+    createFitFileWithSameHeader(masterFlatData, fileName, listOfFlatNames[0])
 
     return masterFlatData
 
