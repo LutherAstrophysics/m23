@@ -12,31 +12,6 @@ import numpy as np
 ### mentioned in Handbook of Astronomical Image `Processing by
 ### Richard Berry and James Burnell version 2.0 section 6.3 Standard Calibration
 
-###
-### calibrate function specifications:
-###
-### input:
-###   list of darks - for a night
-###   list of flats - for a night
-###   rawImages - raw images for a night
-###
-### process
-###   raw image to calibrate (fit file) - for the same night
-###   generate master dark
-###   generate master flat
-###   The new camera does not take bias frames, so 
-###   we are ignoring biases and using dark frames as flatdarks
-###
-### output
-###   list of calibrated images
-
-
-def calibrate(listOfDarks, listOfFlats, rawImages):
-
-    masterDark = makeMasterDark(listOfDarks)
-    masterFlat = makeMasterFlat(listOfFlats)
-
-    return listOfCalibratedImages
 
 ###  makeMasterDark
 ###

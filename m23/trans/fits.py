@@ -41,7 +41,7 @@ def createFitFile(fitsHeader, fitsData, fileName):
     fits.writeto(fileName, fitsData, header=fitsHeader, overwrite=True)
 
 
-def createFitFileWithSameHeader(fitsData, fileName, fileToCopyHeaderFrom):
-    with fits.open(fileToCopyHeaderFrom) as fd:
+def createFitFileWithSameHeader(fitsData, fileName, fileNameToCopyHeaderFrom):
+    with fits.open(fileNameToCopyHeaderFrom) as fd:
         headerToCopy = fd[0].header
         createFitFile(headerToCopy, fitsData, fileName)
