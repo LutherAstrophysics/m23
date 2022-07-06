@@ -1,3 +1,4 @@
+from itertools import count
 import sys
 
 if "../../" not in sys.path:
@@ -13,7 +14,7 @@ from m23.matrix.utils import surroundWith
 from m23.trans.fits import createFitFileWithSameHeader
 from m23.names.calibration import nameAfterCalibration
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
-
+from m23.matrix.crop import crop
 
 
 ### This file is for code related to applying master calibrations (dark, flats)
@@ -70,18 +71,20 @@ def applyCalibration(
     masterFlatData,
     averageFlatData,
     hotPixelsInMasterDark,
-    fileName='',
-    save=False
+    fileName="",
+    save=False,
+    row=2048,
+    column=2048,
 ):
 
-    rawImage = getfitsdata(rawImageName)
+    rawImage = crop(getfitsdata(rawImageName), row, column)
 
     ### Calibration Step:
     subtractedRaw = rawImage - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)
     ### dtype is set to float32 for our image viewing software Astromagic, since it does not support float64
     ### We think we are not losing any significant precision with this downcasting
-    
+
     calibratedImage = np.multiply(flatRatio, subtractedRaw, dtype="float32")
 
     ### Unlike current IDL Code we're doing this step to calibrated
@@ -95,21 +98,18 @@ def applyCalibration(
     highValue = medianInRaw + 2 * stdInRaw
     lowValue = medianInRaw - 2 * stdInRaw
 
-
     ### recalibrate the pixels in hot positions (which are defined by
     ###   hot pixels in masterDark)
     for pixelLocation in hotPixelsInMasterDark:
         recalibrateAtHotLocation(pixelLocation, calibratedImage, highValue, lowValue)
 
-    
     ### This calibration formula converts low background values to very high values,
     ### sometimes up to millions, whereas the maximum signal of stars is less than
     ### one hudnred thousand
-    ### This will affect our alignment star-finding algorithm, 
+    ### This will affect our alignment star-finding algorithm,
     ### so we want to set these values to 0
 
     calibratedImage[calibratedImage > ASSUMED_MAX_BRIGHTNESS] = 0
-
 
     # Only create file if fileName is provided
     if fileName and save:
@@ -154,8 +154,8 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
         )
         return isHigh or isLow
 
-
     def doGaussian():
+        # print("doing gaussian")
         surroundingMatrixGaussBox = calibratedImageData[
             row - 5 : row + 6, col - 5 : col + 6
         ]
@@ -177,6 +177,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
     doGaussian() if needsGausian() else takeAverage()
 
+
 ### A word of caution:
 ###   When we need the fileName, we'll call it xxxFileName
 ###   and when we just need the fits data in that file, we will call
@@ -190,11 +191,18 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
 ### purpose:
 ###   takes a list of image names to calibrate
-###   returns a tuple of 
-###      (arrray of calibrated image data, 
+###   returns a tuple of
+###      (arrray of calibrated image data,
 ###       array of new image names)
 ###   also saves the image under new names (if told to: default False)
-def calibrateImages(listOfImageNames, masterDarkData, masterFlatData, saveImages=False):
+def calibrateImages(
+    listOfImageNames,
+    masterDarkData,
+    masterFlatData,
+    saveImages=False,
+    rows=2048,
+    columns=2048,
+): 
 
     ### We save the hot pixels, which are 3 standard deviation higher than the median
     ### We will save their positions (x,y)
@@ -202,9 +210,9 @@ def calibrateImages(listOfImageNames, masterDarkData, masterFlatData, saveImages
     medianInMasterDark = np.median(masterDarkData)
 
     ### Find hot pixel positions
-    hotPixelPositions = np.column_stack(np.where(
-        masterDarkData > medianInMasterDark + 3 * stdInMasterDark
-    ))
+    hotPixelPositions = np.column_stack(
+        np.where(masterDarkData > medianInMasterDark + 3 * stdInMasterDark)
+    )
 
     ### We define the edges as the outermost 5 (or 10???) pixels????
     edgeSize = 5
@@ -221,28 +229,36 @@ def calibrateImages(listOfImageNames, masterDarkData, masterFlatData, saveImages
     ### Filter bottom/right & convert to tuple
     filteredHotPixelPositions = tuple(
         filter(
-            lambda row_column: not(row_column[0] > totalRows - edgeSize
-            or row_column[1] > totalColumns - edgeSize),
+            lambda row_column: not (
+                row_column[0] > totalRows - edgeSize
+                or row_column[1] > totalColumns - edgeSize
+            ),
             topLeftFiltered,
         )
     )
 
     averageFlat = (getCenterAverage(masterFlatData),)
     print("NO OF HOT PIXEL", len(filteredHotPixelPositions))
-
     ### We need to find the flux values of (x,y) in the calibrated images
 
     calibratedImagesData = []
 
     for image in listOfImageNames:
-        calibratedImagesData.append(applyCalibration(
-            rawImageName=image,
-            masterDarkData=masterDarkData,
-            masterFlatData=masterFlatData,
-            averageFlatData=averageFlat,
-            fileName=nameAfterCalibration(image),
-            hotPixelsInMasterDark=filteredHotPixelPositions,
-            save=saveImages
-        ))
-    
-    return (calibratedImagesData, [nameAfterCalibration(oldName) for oldName in listOfImageNames])
+        calibratedImagesData.append(
+            applyCalibration(
+                rawImageName=image,
+                masterDarkData=masterDarkData,
+                masterFlatData=masterFlatData,
+                averageFlatData=averageFlat,
+                fileName=nameAfterCalibration(image),
+                hotPixelsInMasterDark=filteredHotPixelPositions,
+                save=saveImages,
+                rows=rows,
+                columns=columns
+            )
+        )
+
+    return (
+        calibratedImagesData,
+        [nameAfterCalibration(oldName) for oldName in listOfImageNames],
+    )
