@@ -1,4 +1,3 @@
-from statistics import median
 import sys
 
 if "../../" not in sys.path:
@@ -9,10 +8,10 @@ import numpy as np
 from astropy.io.fits import getdata as getfitsdata
 
 ### imports from m23
-from m23.matrix.crop import cropIntoRectangle
-from m23.matrix.utils import surroundWith
-from m23.trans.fits import createFitFileWithSameHeader
-from m23.names.calibration import nameAfterCalibration
+from m23.matrix import cropIntoRectangle
+from m23.matrix import surroundWith
+from m23.trans import createFitFileWithSameHeader
+from m23.names import nameAfterCalibration
 from m23.calibrate.master_calibrate import fitDataFromFitImages
 
 ### imagesToCombine

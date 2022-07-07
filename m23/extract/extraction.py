@@ -6,7 +6,9 @@ from matplotlib.pyplot import ylabel
 import numpy as np
 import astroalign as ast
 from astropy.io.fits import getdata as getfitsdata
-from m23.trans.fits import createFitFileWithSameHeader
+
+### m23 imports
+from m23.trans import createFitFileWithSameHeader
 
 ### There are three methods of photometry
 ### 1. Aperture photometry: This is the method we use
@@ -17,4 +19,3 @@ from m23.trans.fits import createFitFileWithSameHeader
 ###    as many pixels, but the new one have a lot more, 
 ###    so this is a method we want to try
 ### 3. Annular photometry
-

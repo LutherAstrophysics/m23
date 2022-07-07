@@ -4,9 +4,11 @@ if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
 from astropy.io.fits import getdata as getfitsdata
-from m23.trans.fits import createFitFileWithSameHeader
-from m23.matrix.crop import crop
 import numpy as np
+
+### m23 imports
+from m23.trans import createFitFileWithSameHeader
+from m23.matrix import crop
 
 ### please note that code is a direct implementation of steps
 ### mentioned in Handbook of Astronomical Image `Processing by

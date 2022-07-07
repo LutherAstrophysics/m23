@@ -1,4 +1,4 @@
-from m23.exceptions.basics import ArgsLengthMisMatch
+from m23.exceptions import ArgsLengthMisMatch
 
 ### noOfArgs
 ###
