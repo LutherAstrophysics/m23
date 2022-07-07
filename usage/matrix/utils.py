@@ -4,7 +4,7 @@ import sys
 if '../../' not in sys.path: sys.path.insert(0, '../../')
 
 ### Begin
-from m23.matrix.utils import surroundWith 
+from m23.matrix import surroundWith 
 
 import numpy as np
 

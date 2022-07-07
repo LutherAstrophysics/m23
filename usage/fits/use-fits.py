@@ -4,7 +4,7 @@ import sys
 if '../../' not in sys.path: sys.path.insert(0, '../../')
 
 ### Begin
-from m23.trans.fits import readFits 
+from m23.trans import readFits 
 
 
 
