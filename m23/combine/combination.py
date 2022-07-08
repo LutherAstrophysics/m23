@@ -29,11 +29,10 @@ from m23.calibrate.master_calibrate import fitDataFromFitImages
 ###  a tuple of two things
 ###    (combined image data, combined image name)
 
-def imageCombination(calibratedImageNames, fileName):
-    imagesData = fitDataFromFitImages(calibratedImageNames)
-
+def imageCombination(imagesData, fileName, fitFileNameToCopyHeaderFrom):
+    imagesData = np.array(imagesData)
     combinedImageData = np.sum(imagesData, axis=0)
 
-    createFitFileWithSameHeader(combinedImageData, fileName, calibratedImageNames[0])
+    createFitFileWithSameHeader(combinedImageData, fileName, fitFileNameToCopyHeaderFrom)
     return (combinedImageData, fileName)
 

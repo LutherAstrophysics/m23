@@ -21,10 +21,9 @@ import cv2 as cv
 ###   fillValue: 0
 ###
 ### returns:
-###    None
-###    It mutates original matrix
+###    Mutated original matrix
 
 
 
 def fillMatrix(matrix, polygons, fillValue)->None:
-    cv.fillPoly(matrix, np.array(polygons), fillValue)
+    return cv.fillPoly(matrix, np.array(polygons), fillValue)

@@ -12,6 +12,7 @@ from m23.matrix import cropIntoRectangle, surroundWith, crop
 from m23.trans import createFitFileWithSameHeader
 from m23.names import nameAfterCalibration
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
+from m23.utils import fitDataFromFitImages
 
 
 ### This file is for code related to applying master calibrations (dark, flats)
@@ -63,21 +64,14 @@ def getCenterAverage(matrix):
 
 
 def applyCalibration(
-    rawImageName,
+    imageData,
     masterDarkData,
     masterFlatData,
     averageFlatData,
     hotPixelsInMasterDark,
-    fileName="",
-    save=False,
-    row=2048,
-    column=2048,
 ):
-
-    rawImage = crop(getfitsdata(rawImageName), row, column)
-
     ### Calibration Step:
-    subtractedRaw = rawImage - masterDarkData
+    subtractedRaw = imageData - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)
     ### dtype is set to float32 for our image viewing software Astromagic, since it does not support float64
     ### We think we are not losing any significant precision with this downcasting
@@ -88,8 +82,8 @@ def applyCalibration(
     ###   image instead of the raw
     ### Calculate the median and standard deviation of the raw image
 
-    medianInRaw = np.median(rawImage)
-    stdInRaw = np.std(rawImage)
+    medianInRaw = np.median(imageData)
+    stdInRaw = np.std(imageData)
 
     ### NOTE We don't know why it's 2 sigma???
     highValue = medianInRaw + 2 * stdInRaw
@@ -109,8 +103,6 @@ def applyCalibration(
     calibratedImage[calibratedImage > ASSUMED_MAX_BRIGHTNESS] = 0
 
     # Only create file if fileName is provided
-    if fileName and save:
-        createFitFileWithSameHeader(calibratedImage, fileName, rawImageName)
     return calibratedImage
 
 
@@ -187,19 +179,15 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 ### HEADER COMMENTS: TODO
 
 ### purpose:
-###   takes a list of image names to calibrate
-###   returns a tuple of
-###      (arrray of calibrated image data,
-###       array of new image names)
-###   also saves the image under new names (if told to: default False)
+###   takes a list of image data to calibrate
+###   returns arrray of calibrated image data,
+
+
 def calibrateImages(
-    listOfImageNames,
     masterDarkData,
     masterFlatData,
-    saveImages=False,
-    rows=2048,
-    columns=2048,
-): 
+    listOfImagesData,
+):
 
     ### We save the hot pixels, which are 3 standard deviation higher than the median
     ### We will save their positions (x,y)
@@ -235,27 +223,16 @@ def calibrateImages(
     )
 
     averageFlat = (getCenterAverage(masterFlatData),)
-    print("NO OF HOT PIXEL", len(filteredHotPixelPositions))
+    # print("NO OF HOT PIXEL", len(filteredHotPixelPositions))
     ### We need to find the flux values of (x,y) in the calibrated images
 
-    calibratedImagesData = []
-
-    for image in listOfImageNames:
-        calibratedImagesData.append(
-            applyCalibration(
-                rawImageName=image,
-                masterDarkData=masterDarkData,
-                masterFlatData=masterFlatData,
-                averageFlatData=averageFlat,
-                fileName=nameAfterCalibration(image),
-                hotPixelsInMasterDark=filteredHotPixelPositions,
-                save=saveImages,
-                rows=rows,
-                columns=columns
-            )
+    return [
+        applyCalibration(
+            imageData,
+            masterDarkData=masterDarkData,
+            masterFlatData=masterFlatData,
+            averageFlatData=averageFlat,
+            hotPixelsInMasterDark=filteredHotPixelPositions,
         )
-
-    return (
-        calibratedImagesData,
-        [nameAfterCalibration(oldName) for oldName in listOfImageNames],
-    )
+        for imageData in listOfImagesData
+    ]

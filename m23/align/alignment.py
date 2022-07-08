@@ -19,9 +19,8 @@ from m23.trans import createFitFileWithSameHeader
 ###   returns
 ###   aligned Image data as fit file
 
-def imageAlignment(imageToAlign, refImage, fileName):
-    imageToAlignData = getfitsdata(imageToAlign)
-    refImageData = getfitsdata(refImage)
+def imageAlignment(imageToAlignData, refImageName):
+    refImageData = getfitsdata(refImageName)
 
     ### workaround for endian type mismatch error in astroalign
     ### f4 means we're converting data to float 32
@@ -31,8 +30,6 @@ def imageAlignment(imageToAlign, refImage, fileName):
     # alignedImageData, footprint = ast.register(imageToAlignData, refImageData, fill_value=50000)
     alignedImageData, footprint = ast.register(source_fixed, target_fixed, fill_value=0)
 
-
-    createFitFileWithSameHeader(alignedImageData, fileName, imageToAlign)
     return alignedImageData
 
 
