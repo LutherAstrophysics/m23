@@ -26,13 +26,12 @@ from m23.calibrate.master_calibrate import fitDataFromFitImages
 ###   totalImageNumber: total number of images to combine
 ### 
 ### returns
-###  a tuple of two things
-###    (combined image data, combined image name)
+###   the combined image data
 
 def imageCombination(imagesData, fileName, fitFileNameToCopyHeaderFrom):
     imagesData = np.array(imagesData)
     combinedImageData = np.sum(imagesData, axis=0)
 
     createFitFileWithSameHeader(combinedImageData, fileName, fitFileNameToCopyHeaderFrom)
-    return (combinedImageData, fileName)
+    return combinedImageData
 

@@ -14,6 +14,31 @@ from m23.utils import fitDataFromFitImages
 ### mentioned in Handbook of Astronomical Image `Processing by
 ### Richard Berry and James Burnell version 2.0 section 6.3 Standard Calibration
 
+###  makeMasterBias
+###
+###  purpose: creates masterBias, saves to fileName + returns masterBiasData
+###
+
+def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, listOfBiasData=None):
+
+    if listOfBiasNames:
+        listOfBiasData = fitDataFromFitImages(listOfBiasNames)
+    
+    if not listOfBiasNames and not listOfBiasData:
+        raise Exception("Neither Bias data nor names were provided")  
+
+    if not headerToCopyFromName and listOfBiasNames:
+        headerToCopyFromName = listOfBiasNames[0]
+    elif not headerToCopyFromName and not listOfBiasNames:
+        raise Exception("Filename to copy header from not provided")
+
+    masterBiasData = getMedianOfMatrices(listOfBiasData)
+    # headerToCopyFromName is the file whose header we're copying to
+    #  save in masterBias
+    createFitFileWithSameHeader(masterBiasData, saveAs, headerToCopyFromName)
+
+    return masterBiasData
+
 
 ###  makeMasterDark
 ###

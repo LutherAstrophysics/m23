@@ -1,23 +1,43 @@
 import sys
-if '../../' not in sys.path: sys.path.insert(0, '../../')
+from turtle import register_shape
+
+if "../../" not in sys.path:
+    sys.path.insert(0, "../../")
 
 from astropy.io.fits import getdata
 import numpy as np
+import astroalign as aa
+from skimage.transform import SimilarityTransform
+
 
 from m23.matrix.fill import fillMatrix
 from m23.trans.fits import createFitFileWithSameHeader
 
 
-orgFileName = "m23_7.0-0916.fit"
+a = r"C:\Data Processing\xxx\exp-old\combined-0-1.fit"
+b = r"C:\Data Processing\xxx\exp-old-idl\m23_7.0-001.fit"
+refImage = r"C:\Data Processing\RefImage\m23_3.5_071.fit"
 
-data = getdata(orgFileName)
+newName = r"C:\Data Processing\xxx\exp-old\aligned-0-1.fit"
 
-polygons = [
-    [(0,2048-1600), (0,0), (492,0), (210, 2048-1867)],
-    [(0, 1600), (0, 2048), (480, 2048), (210, 1867)],
-    [(1400, 2048), (2048, 2048), (2048, 1500), (1834, 1830)],
-    [(1508, 0), (1852, 241), (2048, 521), (2048, 0)]
-]
 
-fillMatrix(data, polygons, (100000))
-createFitFileWithSameHeader(data, "cropped.fit", orgFileName)
+toTransform = getdata(a)
+refData = getdata(refImage)
+
+transf, (source_list, target_list) = aa.find_transform(toTransform, refData)
+
+target_fixed = np.array(refData, dtype="<f4")
+source_fixed = np.array(toTransform, dtype="<f4")
+
+print(f"Sale was {transf.scale}")
+newTransMatrix = SimilarityTransform(
+    rotation=transf.rotation, translation=transf.translation, scale=transf.scale
+)
+registered_image, footprint = aa.apply_transform(newTransMatrix, source_fixed, target_fixed, fill_value=0)
+createFitFileWithSameHeader(registered_image, newName, a)
+
+idData = getdata(b)
+pyData = getdata(newName)
+def pos(x, y):
+    print(f"IDL: {idData[x][y]}")
+    print(f"Python: {pyData[x][y]}")

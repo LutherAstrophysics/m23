@@ -1,4 +1,5 @@
 import sys
+from matplotlib import image
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
@@ -67,10 +68,16 @@ def applyCalibration(
     imageData,
     masterDarkData,
     masterFlatData,
+    masterBiasData,
     averageFlatData,
     hotPixelsInMasterDark,
+
 ):
     ### Calibration Step:
+    if masterBiasData.size > 0:
+        imageData = imageData - masterBiasData
+        masterDarkData = masterDarkData - masterBiasData
+        
     subtractedRaw = imageData - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)
     ### dtype is set to float32 for our image viewing software Astromagic, since it does not support float64
@@ -187,6 +194,7 @@ def calibrateImages(
     masterDarkData,
     masterFlatData,
     listOfImagesData,
+    masterBiasData=np.array([])
 ):
 
     ### We save the hot pixels, which are 3 standard deviation higher than the median
@@ -231,6 +239,7 @@ def calibrateImages(
             imageData,
             masterDarkData=masterDarkData,
             masterFlatData=masterFlatData,
+            masterBiasData=masterBiasData,
             averageFlatData=averageFlat,
             hotPixelsInMasterDark=filteredHotPixelPositions,
         )
