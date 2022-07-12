@@ -1,5 +1,4 @@
 import sys
-from imageio import save
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
@@ -12,7 +11,7 @@ import re
 
 ### m23 imports
 from m23.trans import createFitFileWithSameHeader
-from m23.matrix import blockRegions, region
+from m23.matrix import blockRegions
 
 ### There are three methods of photometry
 ### 1. Aperture photometry: This is the method we use

@@ -3,16 +3,10 @@ import sys
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
-from matplotlib.pyplot import ylabel
 import numpy as np
-from astropy.io.fits import getdata as getfitsdata
 
 ### imports from m23
-from m23.matrix import cropIntoRectangle
-from m23.matrix import surroundWith
 from m23.trans import createFitFileWithSameHeader
-from m23.names import nameAfterCalibration
-from m23.calibrate.master_calibrate import fitDataFromFitImages
 
 ### imagesToCombine
 ###   purpose: combine the calibrated images in a night

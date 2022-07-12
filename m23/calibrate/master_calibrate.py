@@ -1,4 +1,3 @@
-from email import header
 import sys
 
 if "../../" not in sys.path:

@@ -2,12 +2,10 @@ import sys
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
-from matplotlib.pyplot import ylabel
 import numpy as np
 import astroalign as ast
 from astropy.io.fits import getdata as getfitsdata
 
-from m23.trans import createFitFileWithSameHeader
 
 ### imageAlignment
 ###   purpose: align a particular image to a reference image

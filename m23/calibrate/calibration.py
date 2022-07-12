@@ -1,20 +1,13 @@
 import sys
-from matplotlib import image
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
-from matplotlib.pyplot import ylabel
 import numpy as np
-from astropy.io.fits import getdata as getfitsdata
 
 ### imports from m23
-from m23.matrix import cropIntoRectangle, surroundWith, crop
-from m23.trans import createFitFileWithSameHeader
-from m23.names import nameAfterCalibration
+from m23.matrix import cropIntoRectangle 
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
-from m23.utils import fitDataFromFitImages
-
 
 ### This file is for code related to applying master calibrations (dark, flats)
 ###   onto raw images
