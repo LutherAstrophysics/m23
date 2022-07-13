@@ -99,7 +99,7 @@ def main():
 
         with yaspin(text=f"Making master bias"):
             masterBiasData = makeMasterBias(
-                saveAs=fileInMasterCalibrate("masterBias.fit"),
+                saveAs=fileInMasterCalibrate("masterbias.fit"),
                 headerToCopyFromName=biases[0],
                 listOfBiasData=biasesDataCropped,
             )
@@ -122,7 +122,7 @@ def main():
         )
     with yaspin(text=f"Making master flat"):
         masterFlatData = makeMasterFlat(
-            saveAs=fileInMasterCalibrate("masteflat.fit"),
+            saveAs=fileInMasterCalibrate("masterflat.fit"),
             headerToCopyFromName=flats[0],
             listOfFlatData=flatsDataCropped,
             masterDarkData=masterDarkData,
@@ -163,10 +163,6 @@ def main():
                 for calibratedMatrix in calibratedImagesData
             ]
 
-        alignedImagesData = [
-            imageAlignment(image, referenceImagePath)
-            for image in calibratedImagesFilled
-        ]
         alignedImagesData = []
         for imageIndex in range(len(calibratedImagesFilled)):
             try:

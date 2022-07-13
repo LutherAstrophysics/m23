@@ -8,6 +8,7 @@ import numpy as np
 ### imports from m23
 from m23.matrix import cropIntoRectangle 
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
+from m23.utils import customMedian
 
 ### This file is for code related to applying master calibrations (dark, flats)
 ###   onto raw images
@@ -67,7 +68,7 @@ def applyCalibration(
 
 ):
     ### Calibration Step:
-    if masterBiasData.size > 0:
+    if len(masterBiasData):
         imageData = imageData - masterBiasData
         masterDarkData = masterDarkData - masterBiasData
         
@@ -82,7 +83,7 @@ def applyCalibration(
     ###   image instead of the raw
     ### Calculate the median and standard deviation of the raw image
 
-    medianInRaw = np.median(imageData)
+    medianInRaw = customMedian(imageData)
     stdInRaw = np.std(imageData)
 
     ### NOTE We don't know why it's 2 sigma???
@@ -193,7 +194,7 @@ def calibrateImages(
     ### We save the hot pixels, which are 3 standard deviation higher than the median
     ### We will save their positions (x,y)
     stdInMasterDark = np.std(masterDarkData)
-    medianInMasterDark = np.median(masterDarkData)
+    medianInMasterDark = customMedian(masterDarkData)
 
     ### Find hot pixel positions
     hotPixelPositions = np.column_stack(
@@ -224,8 +225,10 @@ def calibrateImages(
     )
 
     averageFlat = (getCenterAverage(masterFlatData),)
+
     # print("NO OF HOT PIXEL", len(filteredHotPixelPositions))
     ### We need to find the flux values of (x,y) in the calibrated images
+
 
     return [
         applyCalibration(
