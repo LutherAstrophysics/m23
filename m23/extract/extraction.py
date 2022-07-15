@@ -8,23 +8,25 @@ from astropy.io.fits import getdata as getfitsdata
 from functools import cache
 import math
 
-### m23 imports
+# m23 imports
 from m23.trans import createFitFileWithSameHeader
 from m23.matrix import blockRegions
 from m23.file import getLinesWithNumbersFromFile
 
-### There are three methods of photometry
-### 1. Aperture photometry: This is the method we use
-###    for the old camera, we create radii of 3, 4, 5 pixels around a star,
-###    and calculate its flux value
-### 2. Profile photometry: TODO: This method was deemed
-###    inappropriate since the old images did not have
-###    as many pixels, but the new one have a lot more,
-###    so this is a method we want to try
-### 3. Annular photometry
+# There are three methods of photometry
+# 1. Aperture photometry: This is the method we use
+# for the old camera, we create radii of 3, 4, 5 pixels around a star,
+# and calculate its flux value
+# 2. Profile photometry: TODO: This method was deemed
+# inappropriate since the old images did not have
+# as many pixels, but the new one have a lot more,
+# so this is a method we want to try
+# 3. Annular photometry
 
-### radius the raidus used for finding star center,
-###  not the raidus of extraction
+# radius the raidus used for finding star center,
+# not the raidus of extraction
+
+
 def newStarCenters(imageData, oldStarCenters, radius=5):
     def centerFinder(position):
         x, y = position
@@ -55,57 +57,61 @@ def newStarCenters(imageData, oldStarCenters, radius=5):
         for xAxis in range(-5, 6):
             for yAxis in range(-5, 6):
                 if math.ceil(math.sqrt(xAxis ** 2 + yAxis ** 2)) <= 5:
-                    WghtSum = WghtSum + imageData[round(x) + xAxis][round(y) + yAxis]
-                    xWghtSum = xWghtSum + imageData[round(x) + xAxis][round(y) + yAxis] * (x + xAxis)
-                    yWghtSum = yWghtSum + imageData[round(x) + xAxis][round(y) + yAxis] * (y + yAxis)
-        
-        if WghtSum > 0 :
+                    WghtSum = WghtSum + \
+                        imageData[round(x) + xAxis][round(y) + yAxis]
+                    xWghtSum = xWghtSum + \
+                        imageData[round(x) + xAxis][round(y) +
+                                                    yAxis] * (x + xAxis)
+                    yWghtSum = yWghtSum + \
+                        imageData[round(x) + xAxis][round(y) +
+                                                    yAxis] * (y + yAxis)
+
+        if WghtSum > 0:
             xWght = xWghtSum / WghtSum
             yWght = yWghtSum / WghtSum
         else:
-            xWght = x 
+            xWght = x
             yWght = y
-        
+
         return xWght, yWght
 
-
     return [centerFinder(position) for position in oldStarCenters]
-   
+
 
 def extractStars(imageData, referenceLogFileName, saveAs, radiusOfExtraction=5):
     starsPositionsInRefFile = starsPositionsInLogFile(referenceLogFileName)
     starsCentersInNewImage = newStarCenters(imageData, starsPositionsInRefFile)
-    ### ???
+    # ???
     regionSize = 64
     pixelsPerStar = np.count_nonzero(circleMatrix(radiusOfExtraction))
 
     ###
-    ### return
-    ###  an array of arrays of 64x64 matrices
+    # return
+    # an array of arrays of 64x64 matrices
     @cache
     def backgroundRegion():
         row, col = imageData.shape
-        ### block in third row first column can be accessed by [2, 0]
+        # block in third row first column can be accessed by [2, 0]
         return blockRegions(imageData, (regionSize, regionSize)).reshape(
             row // regionSize, col // regionSize, regionSize, regionSize
         )
 
     ###
-    ### backgroundRegionTuple is (2, 0) if referring to region in
-    ###  third row, first column
+    # backgroundRegionTuple is (2, 0) if referring to region in
+    # third row, first column
     @cache
     def backgroundAverage(backgroundRegionTuple):
         row, column = backgroundRegionTuple
         region = backgroundRegion()[row][column]
-        ### throw out the background of zeroes, since
-        ###   they might be at the edge
+        # throw out the background of zeroes, since
+        # they might be at the edge
         sortedData = np.sort(region, axis=None)
         nonZeroIndices = np.nonzero(sortedData)
-        ### ignore the zeros
+        # ignore the zeros
         sortedData = sortedData[nonZeroIndices]
 
         centeredArray = sortedData[
-            int(len(sortedData) // 2 - 0.05 * len(sortedData)) : int(
+            int(len(sortedData) // 2 - 0.05 * len(sortedData)): int(
                 len(sortedData) // 2 + 0.05 * len(sortedData)
             )
         ]
@@ -119,7 +125,8 @@ def extractStars(imageData, referenceLogFileName, saveAs, radiusOfExtraction=5):
     # ###   star flux value after background subtraction
     def fluxSumForStar(position, radius):
         x, y = position
-        starBox = imageData[x - radius : x + radius + 1, y - radius : y + radius + 1]
+        starBox = imageData[x - radius: x +
+                            radius + 1, y - radius: y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
         backgroundAverageInStarRegion = backgroundAverage(
             (x // regionSize, y // regionSize)
@@ -127,33 +134,44 @@ def extractStars(imageData, referenceLogFileName, saveAs, radiusOfExtraction=5):
         subtractedStarFlux = (
             np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
         )
-        return np.sum(starBox), backgroundAverageInStarRegion, subtractedStarFlux
+        ### Convert to zero, in case there's any nan... this ensures that
+        ### two log files correspond to same star number as they are
+        ### or after reading with something like getLinesWithNumbersFromFile 
+        ###  
+        ### This step makes our normalization code fast!
+        return np.nan_to_num(np.sum(starBox)), np.nan_to_num(backgroundAverageInStarRegion), np.nan_to_num(subtractedStarFlux)
 
     starsFluxes = [
         fluxSumForStar(np.round(position).astype("int"), radiusOfExtraction)
         for position in starsCentersInNewImage
     ]
 
-    ### create file
+    # create file
     with open(saveAs, "w") as fd:
         fd.write(
-            f"Stars Found: {len(list(filter(lambda starFlux: starFlux[0] > 0, starsFluxes)))}\n"
+            f"Total no of stars: {len(starsFluxes)}\n"
         )
-        headers = ["X", "Y", "Star Flux", "Background", "Normalized"]
+        headers = ["X", "Y", "Star Flux", "Background", "BG-Subtracted"]
         fd.write("\t".join(headers))
         fd.write("\n")
         for starIndex in range(len(starsFluxes)):
-            ### write only if the star is found
-            if starsFluxes[starIndex][0] > 0:
-                data = starsCentersInNewImage[starIndex][::-1] + starsFluxes[starIndex]
-                fd.write("\t".join(f"{item:.2f}" for item in data))
-                fd.write("\n")
+            # we wont ignore any stars in this step
+            # we'll filter out the bad stars in the normalization step
+            ###
+            # We're reversing the x, y while writing because python
+            # matrices are indexed by row, col but image viewers like Astromagick,
+            # and IDL use col, row
+            ###
+            ###
+            data = starsCentersInNewImage[starIndex][::-1] + starsFluxes[starIndex]
+            fd.write("\t".join(f"{item:.2f}" for item in data))
+            fd.write("\n")
 
 
 @cache
 def starsPositionsInLogFile(fileName):
     linesWithNumbers = getLinesWithNumbersFromFile(fileName)
-    #### Assumes X and Y are the first two columns for the file
+    # Assumes X and Y are the first two columns for the file
     return [np.array(line.split()[:2][::-1], dtype="float16") for line in linesWithNumbers]
 
 
