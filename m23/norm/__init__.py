@@ -1,3 +1,3 @@
-from .normalize import normalize
+from .normalize import normalizeLogFiles
 
-_all__ = ["normalize"]
+_all__ = ["normalizeLogFiles"]

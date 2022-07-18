@@ -24,18 +24,23 @@ from m23.calibrate import (
 from m23.align import imageAlignment
 from m23.combine import imageCombination
 from m23.extract import extractStars
+from m23.norm import normalizeLogFiles
 
 
 ### local imports
-from conventions import rawCalibrationFolderName, rawImagesFolderName
+from conventions import rawCalibrationFolderName, rawImagesFolderName, alternateCalibrationFolderName
 
 
 ### setting import
 from settings import currentSettings
 
 
-def main():
+def main(settings = None):
 
+    ### settings is provied to main function in case of automation
+    ### see automate.py
+    currentSettings = settings or currentSettings
+    
     print(f"Using {currentSettings}, for processing")
 
     ### expected number of rows, and pixels in the image
@@ -51,32 +56,36 @@ def main():
     calibrationFolderName = "Calibration Frames"
     alignedCombinedFolderName = "Aligned Combined"
     logFilesCombinedFolderName = "Log Files Combined"
+    fluxLogsCombinedFolderName = "Flux Logs Combined"
 
     ### helper function for output folder location
     def fileInOutputFolder(fileName):
         return os.path.join(outputFolderLocation, fileName)
 
     ### Create folders if they don't already exist
-    for folder in [calibrationFolderName, alignedCombinedFolderName,  logFilesCombinedFolderName]:
+    for folder in [
+        calibrationFolderName,
+        alignedCombinedFolderName,
+        logFilesCombinedFolderName,
+        fluxLogsCombinedFolderName,
+    ]:
         if not os.path.exists(fileInOutputFolder(folder)):
             os.makedirs(fileInOutputFolder(folder))
 
     def fileInMasterCalibrate(fileName):
         return os.path.join(fileInOutputFolder(calibrationFolderName), fileName)
 
-
     def fileInAlignedCombined(fileName):
-            return os.path.join(fileInOutputFolder(alignedCombinedFolderName), fileName)
-
+        return os.path.join(fileInOutputFolder(alignedCombinedFolderName), fileName)
 
     def fileInLogFilesCombined(fileName):
         return os.path.join(fileInOutputFolder(logFilesCombinedFolderName), fileName)
-
 
     ###
     ### masterCalibration
     ###
     calibrationsFolder = os.path.join(folderLocation, rawCalibrationFolderName)
+    alternateCalibrationFolder = os.path.join(folderLocation, alternateCalibrationFolderName)
     # biases = [
     #     os.path.join(calibrationsFolder, file)
     #     for file in fitFilesInFolder(calibrationsFolder, "bias")
@@ -91,6 +100,11 @@ def main():
         os.path.join(calibrationsFolder, file)
         for file in fitFilesInFolder(calibrationsFolder, "flat")
     ]
+
+    ### Looks for flats in alternate calibration folder
+    ### if it can't find in the main calibration folder
+    if len(flats) < 1:
+        flats = [os.path.join(alternateCalibrationFolder, file) for file in fitFilesInFolder(alternateCalibrationFolder, "flat")]
 
     ### Ignore the maaster bias since we don't use biases
     masterBiasData = None
@@ -180,7 +194,9 @@ def main():
         if len(alignedImagesData):
             combinedImageData = imageCombination(
                 alignedImagesData,
-                fileInAlignedCombined(f"combined-{imageStartIndex}-{imageEndIndex}.fit"),
+                fileInAlignedCombined(
+                    f"combined-{imageStartIndex}-{imageEndIndex}.fit"
+                ),
                 ### fileName we are copying header info from
                 allRawImagesNames[imageStartIndex],
             )
@@ -216,6 +232,16 @@ def main():
                 print(f"{e}")
                 print(f"Continuing with next set...")
                 raise e
+
+    ### After extraction, we want to save the flux log files
+    ### for each star and their normalization factor
+    allLogFiles = [
+        os.path.join(fileInOutputFolder(logFilesCombinedFolderName), file)
+        for file in os.listdir(fileInOutputFolder(logFilesCombinedFolderName))
+    ]
+    normalizeLogFiles(
+        referenceFilePath, allLogFiles, fileInOutputFolder(fluxLogsCombinedFolderName)
+    )
 
 
 if __name__ == "__main__":

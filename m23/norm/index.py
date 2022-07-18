@@ -13,4 +13,3 @@ logFileNames = [rf"C:\Data Processing\xxx\exp-old\Log Files Combined\log-file-{n
 saveAs = r"C:\Data Processing\xxx\exp-old\Flux Logs Combined"
 
 
-normalizeLogFiles(refFileName, logFileNames, saveAs)
