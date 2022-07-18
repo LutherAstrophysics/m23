@@ -68,9 +68,11 @@ def applyCalibration(
 
 ):
     ### Calibration Step:
-    if len(masterBiasData):
-        imageData = imageData - masterBiasData
-        masterDarkData = masterDarkData - masterBiasData
+    
+    ### Completely Ignore bias
+    # if len(masterBiasData):
+        # imageData = imageData - masterBiasData
+        # masterDarkData = masterDarkData - masterBiasData
         
     subtractedRaw = imageData - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)

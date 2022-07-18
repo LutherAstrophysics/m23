@@ -77,10 +77,12 @@ def main():
     ### masterCalibration
     ###
     calibrationsFolder = os.path.join(folderLocation, rawCalibrationFolderName)
-    biases = [
-        os.path.join(calibrationsFolder, file)
-        for file in fitFilesInFolder(calibrationsFolder, "bias")
-    ]
+    # biases = [
+    #     os.path.join(calibrationsFolder, file)
+    #     for file in fitFilesInFolder(calibrationsFolder, "bias")
+    # ]
+    ### Ignore biases
+    biases = []
     darks = [
         os.path.join(calibrationsFolder, file)
         for file in fitFilesInFolder(calibrationsFolder, "dark")
@@ -90,19 +92,20 @@ def main():
         for file in fitFilesInFolder(calibrationsFolder, "flat")
     ]
 
-    masterBiasData = None  # In case there isn't a bias
-    if biases and len(biases):
-        with yaspin(text=f"Cropping biases"):
-            biasesDataCropped = [
-                crop(matrix, row, column) for matrix in (fitDataFromFitImages(biases))
-            ]
+    ### Ignore the maaster bias since we don't use biases
+    # masterBiasData = None  # In case there isn't a bias
+    # if biases and len(biases):
+    #     with yaspin(text=f"Cropping biases"):
+    #         biasesDataCropped = [
+    #             crop(matrix, row, column) for matrix in (fitDataFromFitImages(biases))
+    #         ]
 
-        with yaspin(text=f"Making master bias"):
-            masterBiasData = makeMasterBias(
-                saveAs=fileInMasterCalibrate("masterbias.fit"),
-                headerToCopyFromName=biases[0],
-                listOfBiasData=biasesDataCropped,
-            )
+    #     with yaspin(text=f"Making master bias"):
+    #         masterBiasData = makeMasterBias(
+    #             saveAs=fileInMasterCalibrate("masterbias.fit"),
+    #             headerToCopyFromName=biases[0],
+    #             listOfBiasData=biasesDataCropped,
+    #         )
 
     with yaspin(text=f"Cropping darks"):
         darksDataCropped = [
