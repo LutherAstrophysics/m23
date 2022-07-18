@@ -7,6 +7,7 @@ import astroalign as ast
 from astropy.io.fits import getdata as getfitsdata
 
 
+
 ### imageAlignment
 ###   purpose: align a particular image to a reference image
 ###
@@ -29,6 +30,3 @@ def imageAlignment(imageToAlignData, refImageName):
     alignedImageData, footprint = ast.register(source_fixed, target_fixed, fill_value=0)
 
     return alignedImageData
-
-
-    

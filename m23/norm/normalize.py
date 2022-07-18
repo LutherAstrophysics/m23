@@ -41,7 +41,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     logfile_positions_xy = (0, 1)
 
     def aduInLogData(logData):
-        return [line.split()[logfile_adu_column] for line in logData]
+        return [float(line.split()[logfile_adu_column]) for line in logData]
 
     referenceData = getLinesWithNumbersFromFile(referenceFileName)
     logFilesData = [getLinesWithNumbersFromFile(logFileName) for logFileName in logFilesNamesToNormalize]
@@ -50,9 +50,12 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     ### we would do logFilesData[0][299] (beware of python index starting from 0)
     noOfFiles = len(logFilesData)
     ### Normalization is done with reference to images 20%, 40%, 60% and 80% through night
-    indicesToNormalizeTo = np.floor(np.array([noOfFiles * sample for sample in [0.2, 0.4, 0.6, 0.8]]))
-    data_to_normalize_to = np.array(logFilesData)[indicesToNormalizeTo]
-    adus_in_data_to_normalize_to = aduInLogData(data_to_normalize_to)
+    indicesToNormalizeTo = np.linspace(0, noOfFiles, 6, dtype='int')[1:-1]
+    adus_in_data_to_normalize_to = np.array(logFilesData, dtype='object')[indicesToNormalizeTo]
+    
+    ### get the ADU column in the logfiles
+    adus_in_data_to_normalize_to = np.array([aduInLogData(data) for data in adus_in_data_to_normalize_to])
+    
 
     ### matrix of image by star
     ### so 4th star in 100th image will be 
@@ -61,23 +64,33 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
 
     ### find normalization factor for each file
     allNormFactors = []
-    for file_index in range(len(noOfFiles)):
+    for file_index in range(noOfFiles):
         ### Normalization factor is the median of the scaleFactors of all stars for scaleFactors < 5
         ### where scaleFactor for a star for that image is the ratio of that star's adu in 
         ### sum of data_to_normalize_to / 4 * adu in current image
 
-        adu_of_current_log_file = aduInLogData(logFilesData[file_index])
-        
+        adu_of_current_log_file = np.array(aduInLogData(logFilesData[file_index]), dtype='float64')
+
         ### Find normalization factor
-        scale_factors_for_stars = np.sum(adus_in_data_to_normalize_to, axis=0)/4*adu_of_current_log_file
-        normFactor = np.median(np.where(scale_factors_for_stars < 5))
+        scale_factors_for_stars = np.sum(adus_in_data_to_normalize_to, axis=0)/(4*adu_of_current_log_file)
+        ### Only get the median value for scale factors between 0 and 5, since some values are 
+        ### -inf or nan
+        ### We get the upper threshold 5 from the IDL code
+        good_scale_factors = scale_factors_for_stars[np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))]
+        normFactor = np.median(good_scale_factors)
 
         allNormFactors.append(normFactor)
-        
-        normalized_star_data[file_index] = normFactor * np.array(logFilesData[file_index])
+        normalized_star_data[file_index] = normFactor * np.array(aduInLogData(logFilesData[file_index]))
 
     ### Save the norm factor dot txt
 
+    np.savetxt(os.path.join(saveFolder, 'normalization.txt'), np.array(allNormFactors), fmt="%3.5f")
+
+
     ### Save the normalized data for each star
+    noOfStars = len(normalized_star_data[0])
+    for star_index in range(noOfStars):
+        star_data = [normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)]    
+        np.savetxt(os.path.join(saveFolder, f'{star_index+1}.txt'), np.array(star_data), fmt="%10.2f")
 
 
