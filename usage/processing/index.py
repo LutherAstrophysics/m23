@@ -93,7 +93,7 @@ def main():
     ]
 
     ### Ignore the maaster bias since we don't use biases
-    # masterBiasData = None  # In case there isn't a bias
+    masterBiasData = None
     # if biases and len(biases):
     #     with yaspin(text=f"Cropping biases"):
     #         biasesDataCropped = [
