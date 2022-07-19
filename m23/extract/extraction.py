@@ -136,7 +136,7 @@ def extractStars(imageData, referenceLogFileName, saveAs, imageName=None, radius
         fd.write(f"\tThreshold factor: \n")
 
 
-        headers = ["X", "Y", "XFWHM", "YFWHM", "Avg FWHM", "Sky ADU", "Star ADU 5"]
+        headers = ["X", "Y", "XFWHM", "YFWHM", "Avg FWHM", "Sky ADU", "Star ADU 5", "Star ADU 4", "Star ADU 3"]
         fd.write("\t\t".join(headers))
         fd.write("\n")
         for starIndex in range(len(starsFluxes)):
@@ -144,7 +144,7 @@ def extractStars(imageData, referenceLogFileName, saveAs, imageName=None, radius
             # we'll filter out the bad stars in the normalization step
             ###
             ###
-            data = starsCentersInNewImage[starIndex][::-1] + (0, 0, 0) + starsFluxes[starIndex][1:]
+            data = starsCentersInNewImage[starIndex][::-1] + (0, 0, 0) + starsFluxes[starIndex][1:] + (0, 0)
             fd.write("\t\t".join(f"{item:.2f}" for item in data))
             fd.write("\n")
 

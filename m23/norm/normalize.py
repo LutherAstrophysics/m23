@@ -29,7 +29,7 @@ from m23.file import getLinesWithNumbersFromFile
 ### 
 ###
 ### TODO: Mask out stars with center pixel not matching + crop the outlier stars 
-### using linfit
+###  using linfit
 def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
 
     ### Wrapper around the function so we don't 
@@ -38,7 +38,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     
     ### COLUMN_NUMBERS (0 means first column)
     ref_adu_column = 5
-    logfile_adu_column = 4
+    logfile_adu_column = 6
     ref_positions_xy = (0, 1)
     logfile_positions_xy = (0, 1)
 
@@ -71,7 +71,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
         ### where scaleFactor for a star for that image is the ratio of that star's adu in 
         ### sum of data_to_normalize_to / 4 * adu in current image
 
-        adu_of_current_log_file = np.array(aduInLogData(logFilesData[file_index]), dtype='float64')
+        adu_of_current_log_file = np.array(aduInLogData(logFilesData[file_index]), dtype='float')
 
         ### Find normalization factor
         scale_factors_for_stars = np.sum(adus_in_data_to_normalize_to, axis=0)/(4*adu_of_current_log_file)
@@ -93,6 +93,6 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     noOfStars = len(normalized_star_data[0])
     for star_index in range(noOfStars):
         star_data = [normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)]    
-        np.savetxt(os.path.join(saveFolder, f'{star_index+1}.txt'), np.array(star_data), fmt="%10.2f")
+        np.savetxt(os.path.join(saveFolder, f'{(star_index+1):03}.txt'), np.array(star_data), fmt="%10.2f")
 
 
