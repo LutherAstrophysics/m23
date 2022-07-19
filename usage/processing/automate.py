@@ -2,23 +2,19 @@ from index import main
 from settings import oldCameraSettings, newCameraSettings
 
 import os
+import datetime
 
 ### allNights is a tuple of input folder locations and output folder locations 
 allNights = [
-    (r"E:\Summer 2022\June 16, 2022", r"C:\Data Processing\xxx\Outputs\June 16, 2022"), 
-    (r"E:\Summer 2022\June 17, 2022", r"C:\Data Processing\xxx\Outputs\June 17, 2022"), 
-    (r"E:\Summer 2022\June 19, 2022", r"C:\Data Processing\xxx\Outputs\June 19, 2022"),
-    (r"E:\Summer 2022\June 20, 2022", r"C:\Data Processing\xxx\Outputs\June 20, 2022"),
-    (r"E:\Summer 2022\June 23, 2022", r"C:\Data Processing\xxx\Outputs\June 23, 2022"),
-    (r"E:\Summer 2022\June 26, 2022", r"C:\Data Processing\xxx\Outputs\June 26, 2022"), 
-    (r"E:\Summer 2022\June 29, 2022", r"C:\Data Processing\xxx\Outputs\June 29, 2022"),
-    (r"E:\Summer 2022\July 1, 2022", r"C:\Data Processing\xxx\Outputs\July 1, 2022"),
-    (r"E:\Summer 2022\July 9, 2022", r"C:\Data Processing\xxx\Outputs\July 9, 2022"),
-    (r"E:\Summer 2022\July 17, 2022", r"C:\Data Processing\xxx\Outputs\July 17, 2022")
+    (r"E:\Summer 2021\June 4, 2021", r"C:\Data Processing\xxx\Outputs\June 4, 2021"), 
+    (r"E:\Summer 2021\June 5, 2021", r"C:\Data Processing\xxx\Outputs\June 5, 2021"), 
+    (r"E:\Summer 2021\June 8, 2021", r"C:\Data Processing\xxx\Outputs\June 8, 2021"),
+    (r"E:\Summer 2021\June 12, 2021", r"C:\Data Processing\xxx\Outputs\June 12, 2021"),
 ]
 
-mySetting = newCameraSettings
+mySetting = oldCameraSettings
 
+print(f"Starting {datetime.now}")
 for night in allNights:
 
     ### create output folder if it doesn't exist
@@ -33,3 +29,5 @@ for night in allNights:
         print("Error in night", night)
         print("Continuing to other nights")
         pass
+
+print(f"Finished {datetime.now}")

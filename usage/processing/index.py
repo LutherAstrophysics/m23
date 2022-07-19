@@ -39,19 +39,19 @@ def main(settings = None):
 
     ### settings is provied to main function in case of automation
     ### see automate.py
-    currentSettings = settings or currentSettings
+    settingsToUse = settings or currentSettings
     
     print(f"Using {currentSettings}, for processing")
 
     ### expected number of rows, and pixels in the image
-    row, column = currentSettings.rows, currentSettings.columns
-    folderLocation = currentSettings.imagesFolderLocation
+    row, column = settingsToUse.rows, settingsToUse.columns
+    folderLocation = settingsToUse.imagesFolderLocation
 
-    outputFolderLocation = currentSettings.outputLocation
-    referenceImagePath = currentSettings.refImageLocation
-    referenceFilePath = currentSettings.refFilePath
-    noOfImagesInOneCombination = currentSettings.noOfCombination
-    cropRegion = currentSettings.listOfPolygonsToFill
+    outputFolderLocation = settingsToUse.outputLocation
+    referenceImagePath = settingsToUse.refImageLocation
+    referenceFilePath = settingsToUse.refFilePath
+    noOfImagesInOneCombination = settingsToUse.noOfCombination
+    cropRegion = settingsToUse.listOfPolygonsToFill
 
     calibrationFolderName = "Calibration Frames"
     alignedCombinedFolderName = "Aligned Combined"

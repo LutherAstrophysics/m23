@@ -101,10 +101,13 @@ def makeMasterFlat(saveAs, masterDarkData, headerToCopyFromName=None, listOfFlat
     ### the we take the median of the scaled flats
     combinedFlats = getMedianOfMatrices(listOfFlatData)
     masterFlatData = combinedFlats - masterDarkData
+
+    ### convert flat data to matrix of ints
+    masterFlatData = np.array(masterFlatData, dtype='int')
+
     # listOfFlats[0] is the file whose header we're copying to
     #  save in masterDark
     createFitFileWithSameHeader(masterFlatData, saveAs, headerToCopyFromName)
-
     return masterFlatData
 
 
