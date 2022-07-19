@@ -30,45 +30,20 @@ from m23.file import getLinesWithNumbersFromFile
 def newStarCenters(imageData, oldStarCenters, radius=5):
     def centerFinder(position):
         x, y = position
-        # roundedX, roundedY = np.round(position).astype("int")
 
-        # starBox = imageData[
-        #     roundedX - radius : roundedX + radius + 1,
-        #     roundedY - radius : roundedY + radius + 1,
-        # ]
-        # starBox = np.multiply(starBox, circleMatrix(radius))
-        # rowSum = np.sum(starBox, axis=0)
-        # colSum = np.sum(starBox, axis=1)
-        # if np.sum(rowSum) == 0 or np.sum(colSum) == 0:
-        #     starXPosition, starYPosition = position
-        # else:
-        #     starXPosition = np.average(
-        #         np.arange(len(rowSum)) + (x - radius), weights=rowSum
-        #     )
-        #     starYPosition = np.average(
-        #         np.arange(len(colSum)) + (y - radius), weights=colSum
-        #     )
-
-        # return (starXPosition, starYPosition)
-
-        xWghtSum = 0
-        yWghtSum = 0
+        colWghtSum = 0
+        rowWghtSum = 0
         WghtSum = 0
-        for xAxis in range(-5, 6):
-            for yAxis in range(-5, 6):
-                if math.ceil(math.sqrt(xAxis ** 2 + yAxis ** 2)) <= 5:
-                    WghtSum = WghtSum + \
-                        imageData[round(x) + xAxis][round(y) + yAxis]
-                    xWghtSum = xWghtSum + \
-                        imageData[round(x) + xAxis][round(y) +
-                                                    yAxis] * (x + xAxis)
-                    yWghtSum = yWghtSum + \
-                        imageData[round(x) + xAxis][round(y) +
-                                                    yAxis] * (y + yAxis)
+        for col in range(-5, 6):
+            for row in range(-5, 6):
+                if math.ceil(math.sqrt((col ** 2) + (row ** 2))) <= 5:
+                    WghtSum += imageData[round(y) + row][round(x) + col]
+                    colWghtSum += imageData[round(y) + row][round(x) + col] * (x + col)
+                    rowWghtSum += imageData[round(y) + row][round(x) + col] * (y + row)
 
         if WghtSum > 0:
-            xWght = xWghtSum / WghtSum
-            yWght = yWghtSum / WghtSum
+            xWght = colWghtSum / WghtSum
+            yWght = rowWghtSum / WghtSum
         else:
             xWght = x
             yWght = y
@@ -158,12 +133,8 @@ def extractStars(imageData, referenceLogFileName, saveAs, radiusOfExtraction=5):
             # we wont ignore any stars in this step
             # we'll filter out the bad stars in the normalization step
             ###
-            # We're reversing the x, y while writing because python
-            # matrices are indexed by row, col but image viewers like Astromagick,
-            # and IDL use col, row
             ###
-            ###
-            data = starsCentersInNewImage[starIndex][::-1] + starsFluxes[starIndex]
+            data = starsCentersInNewImage[starIndex] + starsFluxes[starIndex]
             fd.write("\t".join(f"{item:.2f}" for item in data))
             fd.write("\n")
 
@@ -172,7 +143,12 @@ def extractStars(imageData, referenceLogFileName, saveAs, radiusOfExtraction=5):
 def starsPositionsInLogFile(fileName):
     linesWithNumbers = getLinesWithNumbersFromFile(fileName)
     # Assumes X and Y are the first two columns for the file
-    return [np.array(line.split()[:2][::-1], dtype="float16") for line in linesWithNumbers]
+    ### NP WARNING
+    ### IF dtype='float16' is specified, a number like '745.54' becomes 745.5
+    ### Which means it gets rounded down, which is a HUGE problem if you're trying
+    ### to match the output to IDL code
+    ### So, we're using dtype='float'!!! 
+    return [np.array(line.split()[:2], dtype="float") for line in linesWithNumbers]
 
 
 @cache

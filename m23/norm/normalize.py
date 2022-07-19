@@ -28,6 +28,8 @@ from m23.file import getLinesWithNumbersFromFile
 ### faster than the IDL version.
 ### 
 ###
+### TODO: Mask out stars with center pixel not matching + crop the outlier stars 
+### using linfit
 def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
 
     ### Wrapper around the function so we don't 

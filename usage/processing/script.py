@@ -9,21 +9,21 @@ if "../../" not in sys.path:
 from astropy.io.fits import getdata
 import random
 
-new = r"C:\Data Processing\xxx\exp-old\Calibration Frames"
-newcc = r"C:\Data Processing\xxx\exp-old\Aligned Combined"
+# new = r"C:\Data Processing\xxx\exp-old\Calibration Frames"
+newcc = r"C:\Data Processing\xxx\Outputs\June 4, 2021\Aligned Combined"
 
-old = r"C:\Data Processing\xxx\exp-old-idl\Calibration frames"
-oldcc = r"C:\Data Processing\xxx\exp-old-idl\Combined"
+# old = r"C:\Data Processing\xxx\exp-old-idl\Calibration frames"
+oldcc = r"C:\Data Processing\xxx\exp-test-idl"
 
 
-ourflat = getdata(f"{new}\masterflat.fit")
-theirflat = getdata(f"{old}\masterflat_06-12-21.fit")
+# ourflat = getdata(f"{new}\masterflat.fit")
+# theirflat = getdata(f"{old}\masterflat_06-12-21.fit")
 
-ourdark = getdata(f"{new}\masterdark.fit")
-theirdark = getdata(f"{old}\masterdark.fit")
+# ourdark = getdata(f"{new}\masterdark.fit")
+# theirdark = getdata(f"{old}\masterdark.fit")
 
-ourbias = getdata(f"{new}\masterbias.fit")
-theirbias = getdata(f"{old}\masterbias.fit")
+# ourbias = getdata(f"{new}\masterbias.fit")
+# theirbias = getdata(f"{old}\masterbias.fit")
 
 
 ourcc = getdata(f"{newcc}\combined-0-10.fit")
@@ -40,16 +40,16 @@ def examineMatrix(matrixA, matrixB, *positions):
     print(f"Second: {matrixB[x][y]}")
 
 
-def flat(*positions):
-    return examineMatrix(ourflat, theirflat, *positions)
+# def flat(*positions):
+#     return examineMatrix(ourflat, theirflat, *positions)
 
 
-def dark(*positions):
-    return examineMatrix(ourdark, theirdark, *positions)
+# def dark(*positions):
+#     return examineMatrix(ourdark, theirdark, *positions)
 
 
-def bias(*positions):
-    return examineMatrix(ourbias, theirbias, *positions)
+# def bias(*positions):
+#     return examineMatrix(ourbias, theirbias, *positions)
 
 
 def cc(*positions):
