@@ -23,8 +23,8 @@ def imageAlignment(imageToAlignData, refImageName):
 
     ### workaround for endian type mismatch error in astroalign
     ### f4 means we're converting data to float 32
-    target_fixed = np.array(refImageData, dtype="<f4")
-    source_fixed = np.array(imageToAlignData, dtype="<f4")
+    target_fixed = np.array(refImageData, dtype="float")
+    source_fixed = np.array(imageToAlignData, dtype="float")
 
     # alignedImageData, footprint = ast.register(imageToAlignData, refImageData, fill_value=50000)
     alignedImageData, footprint = ast.register(source_fixed, target_fixed, fill_value=0)

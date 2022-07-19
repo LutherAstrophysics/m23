@@ -9,11 +9,11 @@ if "../../" not in sys.path:
 from astropy.io.fits import getdata
 import random
 
-# new = r"C:\Data Processing\xxx\exp-old\Calibration Frames"
-newcc = r"C:\Data Processing\xxx\Outputs\June 4, 2021\Aligned Combined"
+# new = r"C:\Data Processing\xxx\Outputs\June 12, 2021\Calibration Frames"
+newcc = r"C:\Data Processing\xxx\PY-OUT\Aligned Combined"
 
-# old = r"C:\Data Processing\xxx\exp-old-idl\Calibration frames"
-oldcc = r"C:\Data Processing\xxx\exp-test-idl"
+# old = r"C:\Data Processing\Summer 2021 M23\June 12\Calibration Frames"
+oldcc = r"C:\Data Processing\xxx\IDL-OUT\Aligned Combined"
 
 
 # ourflat = getdata(f"{new}\masterflat.fit")

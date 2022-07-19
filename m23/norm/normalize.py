@@ -93,6 +93,6 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     noOfStars = len(normalized_star_data[0])
     for star_index in range(noOfStars):
         star_data = [normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)]    
-        np.savetxt(os.path.join(saveFolder, f'{(star_index+1):03}.txt'), np.array(star_data), fmt="%10.2f")
+        np.savetxt(os.path.join(saveFolder, f'{(star_index+1):04}.txt'), np.array(star_data), fmt="%10.2f")
 
 
