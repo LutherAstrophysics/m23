@@ -235,10 +235,10 @@ def main(settings = None):
 
     ### After extraction, we want to save the flux log files
     ### for each star and their normalization factor
-    allLogFiles = [
+    allLogFiles = sorted([
         os.path.join(fileInOutputFolder(logFilesCombinedFolderName), file)
         for file in os.listdir(fileInOutputFolder(logFilesCombinedFolderName))
-    ]
+    ])
     normalizeLogFiles(
         referenceFilePath, allLogFiles, fileInOutputFolder(fluxLogsCombinedFolderName)
     )

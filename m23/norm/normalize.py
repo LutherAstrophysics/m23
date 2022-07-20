@@ -79,7 +79,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
         ### -inf or nan
         ### We get the upper threshold 5 from the IDL code
         good_scale_factors = scale_factors_for_stars[np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))]
-        normFactor = np.median(good_scale_factors)
+        normFactor = np.median(good_scale_factors) if len(good_scale_factors) else 0
 
         allNormFactors.append(normFactor)
         normalized_star_data[file_index] = normFactor * np.array(aduInLogData(logFilesData[file_index]))
@@ -92,7 +92,9 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     ### Save the normalized data for each star
     noOfStars = len(normalized_star_data[0])
     for star_index in range(noOfStars):
-        star_data = [normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)]    
+        star_data = [normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)]
+        ### turn all star_data that's negative to 0
+        star_data = [currentData if currentData > 0 else 0 for currentData in star_data]    
         np.savetxt(os.path.join(saveFolder, f'{(star_index+1):04}.txt'), np.array(star_data), fmt="%10.2f")
 
 
