@@ -37,7 +37,7 @@ Once you clone the repo, you must install the required pacakges for
 our library. Using your terminal, `cd` into the correct repo where the
 root of this library lives (if you're new to command line tools, see
 some examples in google on how to navigate around directories using
-command line on (windows/linxu/mac whatever you're on). To install the
+command line on windows/linxu/mac whatever you're on). To install the
 software it's recommended to first instal python virutal environment
 by doing `python -m venv .venv`. This installs a virtual environment
 in the directory you're on in a `.venv` folder. To activate the venv,
