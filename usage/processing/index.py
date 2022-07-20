@@ -207,8 +207,9 @@ def main(settings = None):
             extractStars(
                 combinedImageData,
                 referenceFilePath,
+                ### similar format to IDL code output
                 saveAs=fileInLogFilesCombined(
-                    f"log-file-{imageStartIndex}-{imageEndIndex}.txt"
+                    f"00-00-00_m23_7.0-{imageEndIndex // 10 : 03}.txt"
                 ),
             )
         else:

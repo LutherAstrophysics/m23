@@ -8,9 +8,9 @@ if "../../" not in sys.path:
 import os 
 from m23.norm import normalizeLogFiles
 
-refFile = r"C:\Data Processing\RefImage\ref_test.txt"
+refFile = r"C:\Data Processing\RefImage\ref_revised_71.txt"
 
-logFilesFolder = r"C:\Data Processing\xxx\Outputs\logs"
-allLogFiles = sorted(os.listdir(logFilesFolder))
+logFilesFolder = r"C:\Data Processing\xxx\June-12-Reprocessed\Log Files Combined"
+allLogFiles = os.listdir(logFilesFolder)
 logFilesFullName = [os.path.join(logFilesFolder, file) for file in allLogFiles]
-normalizeLogFiles(refFile, logFilesFullName, r"C:\Data Processing\xxx\Outputs\stars")
+normalizeLogFiles(refFile, logFilesFullName, r"C:\Data Processing\xxx\June-12-Reprocessed\PY Normalized RERUN")

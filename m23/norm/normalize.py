@@ -95,6 +95,6 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
         star_data = [normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)]
         ### turn all star_data that's negative to 0
         star_data = [currentData if currentData > 0 else 0 for currentData in star_data]    
-        np.savetxt(os.path.join(saveFolder, f'{(star_index+1):04}.txt'), np.array(star_data), fmt="%10.2f")
+        np.savetxt(os.path.join(saveFolder, f'00-00-00_m23_7.0-ref_revised_71_{(star_index+1):04}_flux.txt'), np.array(star_data), fmt="%10.2f")
 
 
