@@ -15,3 +15,4 @@ def renameFile(fileName, folderName, renameFunction):
     newName = renameFunction(fileName)
     oldFilePath = os.path.join(folderName, fileName)
     newFilePath = os.path.join(folderName, newName)
+    os.rename(oldFilePath, newFilePath)

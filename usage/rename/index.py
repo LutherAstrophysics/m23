@@ -18,4 +18,4 @@ def newNameFromOldName(oldName):
     lastNumber = int(re.search("-\d*.txt$", oldName)[0][1:-4]) // 10
     return f"06-12-21_m23_7.0-{lastNumber:03}.txt"
 
-rename(folder, newNameFromOldName, dry=True)
+rename(folder, newNameFromOldName, dry=False)
