@@ -11,6 +11,7 @@ class ProcessingSettings:
         refImageLocation,
         refFilePath,
         name,
+        alternateMasterFlat = None,
     ):
         self.rows = rows
         self.columns = columns
@@ -22,6 +23,7 @@ class ProcessingSettings:
         self.refImageLocation = refImageLocation
         self.refFilePath = refFilePath
         self.name = name
+        self.alternateMasterFlat = alternateMasterFlat
                 # self.name = name
 
 
@@ -41,8 +43,11 @@ NEW_CAMERA_CROP_REGION = [
 NEW_CAMERA_IMAGE_HEIGHT = 2048
 NEW_CAMERA_IMAGE_WIDTH = 2048
 
-folderLocation = r"E:\Summer 2021\June 12, 2021"
-outputFolderLocation = r"C:\Data Processing\xxx\June-12-Reprocessed_2"
+folderLocation = r"E:\Summer 2021\March 19, 2021"
+### Provide full filename (w/ folder location) of masterflat to use
+### if that night doesn't have flats shot!
+alternateMasterFlat = r"C:\Data Processing\Summer 2021 M23\March 19\Calibration Frames\masterflat_03-11-21.fit"
+outputFolderLocation = r"C:\Data Processing\xxx\Outputs\March 19, 2021"
 noOfCombination = 10
 referenceImagePath = (
     r"C:\Data Processing\RefImage\m23_3.5_071.fit" # This is the reference image 
@@ -61,6 +66,7 @@ oldCameraSettings = ProcessingSettings(
     refImageLocation=referenceImagePath,
     refFilePath=referenceFilePath,
     name="Old Camera Settings (< June 16 2022)",
+    alternateMasterFlat=alternateMasterFlat
 )
 newCameraSettings = ProcessingSettings(
     NEW_CAMERA_IMAGE_HEIGHT,
@@ -73,6 +79,7 @@ newCameraSettings = ProcessingSettings(
     refImageLocation=referenceImagePath,
     refFilePath=referenceFilePath,
     name="New Camera Settings (>= June 16 2022)",
+    alternateMasterFlat=alternateMasterFlat
 )
 
 allSettings = [oldCameraSettings, newCameraSettings]
