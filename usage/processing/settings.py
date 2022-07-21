@@ -42,7 +42,7 @@ NEW_CAMERA_IMAGE_HEIGHT = 2048
 NEW_CAMERA_IMAGE_WIDTH = 2048
 
 folderLocation = r"E:\Summer 2021\June 12, 2021"
-outputFolderLocation = r"C:\Data Processing\xxx\June-12-Reprocessed"
+outputFolderLocation = r"C:\Data Processing\xxx\June-12-Reprocessed_2"
 noOfCombination = 10
 referenceImagePath = (
     r"C:\Data Processing\RefImage\m23_3.5_071.fit" # This is the reference image 
