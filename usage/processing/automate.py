@@ -9,17 +9,26 @@ from datetime import datetime
 ###     - output folder locations
 ###     - (optional) path to masteflat to use (in case the night doesn't have masterflat shot!) 
 allNights = [
-    (r"E:\Summer 2021\June 4, 2021", r"C:\Data Processing\xxx\Outputs\June 4, 2021", r"C:\Data Processing\Summer 2021 M23\June 12\Calibration Frames\masterflat_06-12-21.fit"), 
-    (r"E:\Summer 2021\June 5, 2021", r"C:\Data Processing\xxx\Outputs\June 5, 2021", r"C:\Data Processing\Summer 2021 M23\June 12\Calibration Frames\masterflat_06-12-21.fit"), 
-    (r"E:\Summer 2021\June 8, 2021", r"C:\Data Processing\xxx\Outputs\June 8, 2021", r"C:\Data Processing\Summer 2021 M23\June 12\Calibration Frames\masterflat_06-12-21.fit"),
-    # (r"E:\Summer 2021\June 12, 2021", r"C:\Data Processing\xxx\Outputs\June 12, 2021"),
+    (r"F:\Summer 2022\June 19, 2022", r"C:\Data Processing\June 19, 2022"), 
+    (r"F:\Summer 2022\June 16, 2022", r"C:\Data Processing\June 16, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"), 
+    (r"F:\Summer 2022\June 17, 2022", r"C:\Data Processing\June 17, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\June 20, 2022", r"C:\Data Processing\June 20, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\June 23, 2022", r"C:\Data Processing\June 23, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\June 26, 2022", r"C:\Data Processing\June 26, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\June 29, 2022", r"C:\Data Processing\June 29, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\July 1, 2022", r"C:\Data Processing\July 1, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\July 9, 2022", r"C:\Data Processing\July 9, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit"),
+    (r"F:\Summer 2022\July 17, 2022", r"C:\Data Processing\July 17, 2022", r"C:\Data Processing\June 19, 2022\Calibration Frames\masterflat.fit")
 ]
 
-mySetting = oldCameraSettings
+### set the camera settings to old or new 
+### depending on the data
+mySetting = newCameraSettings
 
 print(f"Starting automation script: {datetime.now()}")
 
-
+### Start the automation process
+###
 for night in allNights:
 
     ### create output folder if it doesn't exist

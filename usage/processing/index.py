@@ -44,19 +44,30 @@ def main(settings = None):
     ### see automate.py
     settingsToUse = settings or currentSettings
     newlinechar = "\n"
-    print(f"Using {currentSettings}, for processing")
 
     ### expected number of rows, and pixels in the image
     row, column = settingsToUse.rows, settingsToUse.columns
     folderLocation = settingsToUse.imagesFolderLocation
-
     outputFolderLocation = settingsToUse.outputLocation
+
+    print(f"Using {currentSettings}, for processing {os.path.dirname(folderLocation)}")
+
+    ### Create output folder if it doesn't exist
+    if not os.path.exists(outputFolderLocation):
+        os.makedirs(outputFolderLocation)
+    
+    ### Set these to the same as settings.py: 
+    ### ref image, ref file paths, number of 
+    ### combined images, crop region, and master flat
+    ### to use in case the night does not have flats taken
     referenceImagePath = settingsToUse.refImageLocation
     referenceFilePath = settingsToUse.refFilePath
     noOfImagesInOneCombination = settingsToUse.noOfCombination
     cropRegion = settingsToUse.listOfPolygonsToFill
     alternateMasterFlat = settingsToUse.alternateMasterFlat
+    radiusOfExtraction = settingsToUse.radius
 
+    ### Make the folders to hold the processed data
     calibrationFolderName = "Calibration Frames"
     alignedCombinedFolderName = "Aligned Combined"
     logFilesCombinedFolderName = "Log Files Combined"
@@ -74,9 +85,10 @@ def main(settings = None):
     logfd.write(f"Created logfile to process {folderLocation} at {datetime.now()} {newlinechar}")
 
     ### write pre process logs
+    logfd.write(f"Using {settingsToUse} {newlinechar}")
     logfd.write(f"Using reffile {referenceFilePath} {newlinechar}")
     logfd.write(f"Using ref image {referenceImagePath} {newlinechar}")
-
+    logfd.write(f"Using radius of extraction: {radiusOfExtraction}{newlinechar}")
     
 
     ### Create folders if they don't already exist
@@ -201,6 +213,8 @@ def main(settings = None):
     ###  which includes
     ###  Cropping, Filling, Calibrating, Aligning, Combining, Extracting
     def process(imageStartIndex, imageEndIndex):
+        
+        ### Cropping the edges of the images
         rawImagesCropedData = [
             crop(matrix, row, column)
             for matrix in (
@@ -208,6 +222,7 @@ def main(settings = None):
             )
         ]
 
+        ### Image calibration
         calibratedImagesData = calibrateImages(
             masterDarkData=masterDarkData,
             masterFlatData=masterFlatData,
@@ -215,6 +230,7 @@ def main(settings = None):
             listOfImagesData=rawImagesCropedData,
         )
 
+        ### Filling out the four dark corners of the images
         calibratedImagesFilled = calibratedImagesData
         if len(cropRegion):
             calibratedImagesFilled = [
@@ -222,6 +238,7 @@ def main(settings = None):
                 for calibratedMatrix in calibratedImagesData
             ]
 
+        ### Image alignment
         alignedImagesData = []
         for imageIndex in range(len(calibratedImagesFilled)):
             try:
@@ -234,19 +251,18 @@ def main(settings = None):
                 print(f"Could not align image {imageStartIndex + imageIndex}")
                 logfd.write(f"{newlinechar}Could not align image no {imageStartIndex + imageIndex} - {allRawImagesNames[imageStartIndex + imageIndex]}{newlinechar}")
 
+        ### Image combination (10 images stack)
         if len(alignedImagesData):
             combinedImageData = imageCombination(
                 alignedImagesData,
                 fileInAlignedCombined(
-                    f"m_23_7.0-{(imageEndIndex // 10):03}.fit"
+                    f"m_23_7.0-{(imageEndIndex // noOfImagesInOneCombination):03}.fit"
                 ),
                 ### fileName we are copying header info from
                 allRawImagesNames[imageStartIndex],
             )
 
-            ###
             ### Extraction
-            ###
             extractStars(
                 combinedImageData,
                 referenceFilePath,
@@ -254,6 +270,7 @@ def main(settings = None):
                 saveAs=fileInLogFilesCombined(
                     f"00-00-00_m23_7.0-{(imageEndIndex // 10):03}.txt"
                 ),
+                radiusOfExtraction=radiusOfExtraction
             )
         else:
             print(
@@ -262,6 +279,9 @@ def main(settings = None):
 
     noOfCombinedImages = len(allRawImagesNames) // noOfImagesInOneCombination
 
+    ###
+    ### This code is for printing the process on the terminal
+    ###
     for i in range(noOfCombinedImages):
         fromIndex = i * noOfImagesInOneCombination
         toIndex = (i + 1) * noOfImagesInOneCombination
@@ -270,7 +290,7 @@ def main(settings = None):
         ###   then only one combined image is formed, the last 6 are ignored
         with yaspin(text=f"Processing images {fromIndex}-{toIndex}"):
             try:
-                logfd.write(f"Processing images {fromIndex}-{toIndex} {datetime.now()}")
+                logfd.write(f"Processing images {fromIndex}-{toIndex} {datetime.now()}{newlinechar}")
                 process(fromIndex, toIndex)
             except Exception as e:
                 print(f"Failed processing {fromIndex} - {toIndex}")
@@ -289,10 +309,22 @@ def main(settings = None):
     logfd.write(f"{newlinechar.join(allLogFiles)}")
     logfd.write(f"{newlinechar}")
 
+    ###
+    ### Create a folder inside flux logs combined for corresponding raidus of extraction
+    ###
+    fluxLogsFolder = fileInOutputFolder(fluxLogsCombinedFolderName)
+    starRadiusFolder = os.path.join(fluxLogsFolder, f"{radiusOfExtraction} Pixel Radius")
+    if not os.path.exists(starRadiusFolder):
+        os.makedirs(starRadiusFolder)
+
+    ###
+    ### Normalize the log files and save the stars and norm factors
+    ### in output folder
     normalizeLogFiles(
-        referenceFilePath, allLogFiles, fileInOutputFolder(fluxLogsCombinedFolderName)
+        referenceFilePath, allLogFiles, starRadiusFolder
     )
 
+    ### To keep track of how long the code takes to run
     logfd.write(f"{newlinechar}Done normalization {datetime.now()}")
 
     ### close processing log file handle
