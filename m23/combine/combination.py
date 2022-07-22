@@ -26,6 +26,6 @@ def imageCombination(imagesData, fileName, fitFileNameToCopyHeaderFrom):
     imagesData = np.array(imagesData)
     combinedImageData = np.sum(imagesData, axis=0)
 
-    createFitFileWithSameHeader(combinedImageData, fileName, fitFileNameToCopyHeaderFrom)
+    createFitFileWithSameHeader(combinedImageData.astype("int"), fileName, fitFileNameToCopyHeaderFrom)
     return combinedImageData
 
