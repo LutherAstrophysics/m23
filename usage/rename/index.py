@@ -3,9 +3,10 @@
 ### First use this following boilerplater like we do in all our code
 
 import sys
-import re
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
+
+import re
 
 ### Now import our rename module
 from m23.utils import rename
