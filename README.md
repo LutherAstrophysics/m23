@@ -23,7 +23,8 @@ README](./usage/processing/README.md).**
 
 But the point here is that you
 can use as little of our modules in m23 to make something like a
-[supercombine](./usage/supercombine) program or use it extensively to
+[supercombine](./usage/supercombine) program (program to make supercombine images for a night) 
+or use it extensively to
 make the entirety of our data processing. 
 
 #### Using the software
