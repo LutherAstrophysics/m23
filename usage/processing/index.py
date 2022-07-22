@@ -50,7 +50,7 @@ def main(settings = None):
     folderLocation = settingsToUse.imagesFolderLocation
     outputFolderLocation = settingsToUse.outputLocation
 
-    print(f"Using {currentSettings}, for processing {os.path.dirname(folderLocation)}")
+    print(f"Using {currentSettings}, for processing {os.path.split(folderLocation)[-1]}")
 
     ### Create output folder if it doesn't exist
     if not os.path.exists(outputFolderLocation):
