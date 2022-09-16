@@ -4,6 +4,6 @@
 ### blockSize is the tuple/array of sizes
 def blockRegions(arr, blockSize):
     # arr is input array, blockSizeis block-size
-    m,n = arr.shape
-    M,N = blockSize
-    return arr.reshape(m//M, M, n//N, N).swapaxes(1,2).reshape(-1,M,N)
+    m, n = arr.shape
+    M, N = blockSize
+    return arr.reshape(m // M, M, n // N, N).swapaxes(1, 2).reshape(-1, M, N)

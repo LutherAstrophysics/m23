@@ -1,7 +1,7 @@
 import os
 
-from astropy.io.fits import getdata as getfitsdata
 import numpy as np
+from astropy.io.fits import getdata as getfitsdata
 
 ### local imports
 from .rename import rename
@@ -33,5 +33,6 @@ def customMedian(arr, *args, **kwargs):
         return np.median(newArray, *args, **kwargs)
     else:
         return np.median(arr, *args, **kwargs)
+
 
 __all__ = ["customeMedian", "fitFilesInFolder", "rename"]

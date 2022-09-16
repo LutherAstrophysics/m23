@@ -1,12 +1,11 @@
 import sys
+
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
-import numpy as np
 import astroalign as ast
+import numpy as np
 from astropy.io.fits import getdata as getfitsdata
-
-
 
 ### imageAlignment
 ###   purpose: align a particular image to a reference image
@@ -14,9 +13,10 @@ from astropy.io.fits import getdata as getfitsdata
 ###   parameters:
 ###   imageToAlign: the image you want to align
 ###   refImage: the reference image (default is ref_revised_71)
-###   
+###
 ###   returns
 ###   aligned Image data as fit file
+
 
 def imageAlignment(imageToAlignData, refImageName):
     refImageData = getfitsdata(refImageName)

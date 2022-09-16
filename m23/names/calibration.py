@@ -1,4 +1,5 @@
 import re
-def nameAfterCalibration(nameToCalibrate):
-    return (re.sub('.fit$', '-calibrated.fit', nameToCalibrate))
 
+
+def nameAfterCalibration(nameToCalibrate):
+    return re.sub(".fit$", "-calibrated.fit", nameToCalibrate)

@@ -5,9 +5,10 @@ if "../../" not in sys.path:
 
 import numpy as np
 
-### imports from m23
-from m23.matrix import cropIntoRectangle 
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
+
+### imports from m23
+from m23.matrix import cropIntoRectangle
 from m23.utils import customMedian
 
 ### This file is for code related to applying master calibrations (dark, flats)
@@ -65,15 +66,14 @@ def applyCalibration(
     masterBiasData,
     averageFlatData,
     hotPixelsInMasterDark,
-
 ):
     ### Calibration Step:
-    
+
     ### Completely Ignore bias
     # if len(masterBiasData):
-        # imageData = imageData - masterBiasData
-        # masterDarkData = masterDarkData - masterBiasData
-        
+    # imageData = imageData - masterBiasData
+    # masterDarkData = masterDarkData - masterBiasData
+
     subtractedRaw = imageData - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)
     ### dtype is set to float32 for our image viewing software Astromagic, since it does not support float64
@@ -187,10 +187,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
 
 def calibrateImages(
-    masterDarkData,
-    masterFlatData,
-    listOfImagesData,
-    masterBiasData=np.array([])
+    masterDarkData, masterFlatData, listOfImagesData, masterBiasData=np.array([])
 ):
 
     ### We save the hot pixels, which are 3 standard deviation higher than the median
@@ -230,7 +227,6 @@ def calibrateImages(
 
     # print("NO OF HOT PIXEL", len(filteredHotPixelPositions))
     ### We need to find the flux values of (x,y) in the calibrated images
-
 
     return [
         applyCalibration(

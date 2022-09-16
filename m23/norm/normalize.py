@@ -3,14 +3,15 @@ import sys
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
+import math
 import os
 
 ### external libraries
 import numpy as np
-import math
 
 ### m23 imports
 from m23.file import getLinesWithNumbersFromFile
+
 
 ###
 ### Function: normalizeLogFiles

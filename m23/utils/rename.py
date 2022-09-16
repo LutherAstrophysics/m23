@@ -1,8 +1,9 @@
 import os
 
+
 ### Dry specifies if you want to acutally make the changes
 ### or just see what the changes will be
-### 
+###
 def rename(folder, newNameFromOldName, dry=True):
     files = os.listdir(folder)
     for file in files:
@@ -10,6 +11,7 @@ def rename(folder, newNameFromOldName, dry=True):
             print(f"{file} -> {newNameFromOldName(file)}")
         else:
             renameFile(file, folder, newNameFromOldName)
+
 
 def renameFile(fileName, folderName, renameFunction):
     newName = renameFunction(fileName)

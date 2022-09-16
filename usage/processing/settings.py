@@ -1,5 +1,6 @@
 from dataclasses import dataclass, replace
 
+
 @dataclass
 class ProcessingSettings:
     rows: int
@@ -22,34 +23,37 @@ class ProcessingSettings:
         return self.__repr__()
 
 
-### These are the settings you need to 
-### change, they include: 
+### These are the settings you need to
+### change, they include:
 ###  input and output folders, number of images per combination,
 ###  reference image and file paths, and the radius of extraction
 folderLocation = r"F:\Summer 2021\March 19, 2021"
 outputFolderLocation = r"C:\Data Processing\March 19, 2021"
 noOfCombination = 10
-referenceImagePath = (r"F:\RefImage\m23_3.5_071.fit")
-referenceFilePath = (r"F:\RefImage\ref_revised_71.txt")
+referenceImagePath = r"F:\RefImage\m23_3.5_071.fit"
+referenceFilePath = r"F:\RefImage\ref_revised_71.txt"
 radiusOfExtraction = 5
 
-### path to the master flat to use if the night 
+### path to the master flat to use if the night
 ### does not have flat frames
-alternateMasterFlat = r"C:\Data Processing\June 12, 2021\Calibration Frames\masterflat.fit"
+alternateMasterFlat = (
+    r"C:\Data Processing\June 12, 2021\Calibration Frames\masterflat.fit"
+)
 
 oldCameraSettings = ProcessingSettings(
-    rows=1024, 
-    columns=1024, 
-    listOfPolygonsToFill=[], 
+    rows=1024,
+    columns=1024,
+    listOfPolygonsToFill=[],
     polygonFillValue=1,
-    noOfCombination=noOfCombination, 
+    noOfCombination=noOfCombination,
     outputLocation=outputFolderLocation,
     imagesFolderLocation=folderLocation,
-    refImageLocation = referenceImagePath,
+    refImageLocation=referenceImagePath,
     refFilePath=referenceFilePath,
-    name= "Old Camera Settings  (< June 16 2022)",
+    name="Old Camera Settings  (< June 16 2022)",
     alternateMasterFlat=alternateMasterFlat,
-    radius=radiusOfExtraction)
+    radius=radiusOfExtraction,
+)
 
 ### Settings for the new camera
 NEW_CAMERA_CROP_REGION = [

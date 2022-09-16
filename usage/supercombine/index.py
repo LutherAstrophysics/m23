@@ -7,9 +7,9 @@ if "../../" not in sys.path:
 
 import os
 import re
+
 from m23.combine import imageCombination
 from yaspin import yaspin
-
 
 
 def nameAfterCombination(date, year, numberOfCombinations):
@@ -18,7 +18,12 @@ def nameAfterCombination(date, year, numberOfCombinations):
 
 def allFilesList(folderPath):
     allFiles = os.listdir(folderPath)
-    return list(filter(lambda x : x.endswith(".fit"),[os.path.join(folderPath, file) for file in os.listdir(folderPath)]))
+    return list(
+        filter(
+            lambda x: x.endswith(".fit"),
+            [os.path.join(folderPath, file) for file in os.listdir(folderPath)],
+        )
+    )
 
 
 def processYear(yearLocation, year):
@@ -27,9 +32,11 @@ def processYear(yearLocation, year):
         processDay(
             folderPath=os.path.join(yearLocation, date, "Aligned Combined"),
             saveAs=nameAfterCombination(
-                date, year, len(os.listdir(os.path.join(yearLocation, date, "Aligned Combined")))
+                date,
+                year,
+                len(os.listdir(os.path.join(yearLocation, date, "Aligned Combined"))),
             ),
-            day=f"{date}-{year}"
+            day=f"{date}-{year}",
         )
 
 
@@ -44,16 +51,17 @@ def processDay(folderPath, saveAs, day):
         print(f"Error proceesing {day} in {folderPath}")
         # raise e
 
+
 def main():
     years = [
-    ("C:\Data Processing\Summer 2021 M23", 2021), 
-    ("C:\Data Processing\Summer 2020 M23", 2020),
-    ("C:\Data Processing\Summer 2019 M23", 2019),
-    ("C:\Data Processing\Summer 2018 M23", 2018),
-
+        ("C:\Data Processing\Summer 2021 M23", 2021),
+        ("C:\Data Processing\Summer 2020 M23", 2020),
+        ("C:\Data Processing\Summer 2019 M23", 2019),
+        ("C:\Data Processing\Summer 2018 M23", 2018),
     ]
     for year in years:
         processYear(*year)
+
 
 if __name__ == "__main__":
     main()

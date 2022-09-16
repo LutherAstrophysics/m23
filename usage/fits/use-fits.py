@@ -1,11 +1,12 @@
-### 
+###
 ### Boilerplate for local testing
 import sys
-if '../../' not in sys.path: sys.path.insert(0, '../../')
+
+if "../../" not in sys.path:
+    sys.path.insert(0, "../../")
 
 ### Begin
-from m23.trans import readFits 
-
+from m23.trans import readFits
 
 
 def workWithFit(fd):
@@ -14,7 +15,7 @@ def workWithFit(fd):
     # header
     # myHeader = fd.header
 
-    # myData is a numpy array 
+    # myData is a numpy array
     # so you can do anything you can do with numpy array
     myData = fd.data
 
@@ -23,5 +24,6 @@ def workWithFit(fd):
 
     print("middleItem", middleItem)
     print(fd.header)
+
 
 readFits("m23_7.0-001.fit", workWithFit)

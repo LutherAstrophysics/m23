@@ -6,8 +6,9 @@ if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
 
-from astropy.io.fits import getdata
 import random
+
+from astropy.io.fits import getdata
 
 # new = r"C:\Data Processing\xxx\Outputs\June 12, 2021\Calibration Frames"
 newcc = r"C:\Data Processing\xxx\PY-OUT\Aligned Combined"
@@ -29,12 +30,13 @@ oldcc = r"C:\Data Processing\xxx\IDL-OUT\Aligned Combined"
 ourcc = getdata(f"{newcc}\combined-0-10.fit")
 theircc = getdata(f"{oldcc}\m23_7.0-001.fit")
 
+
 def examineMatrix(matrixA, matrixB, *positions):
     if len(positions) == 2:
         x, y = positions
     else:
         x, y = random.randrange(1024), random.randrange(1024)
-    
+
     print(f"At position x, y {x} {y}")
     print(f"First: {matrixA[x][y]}")
     print(f"Second: {matrixB[x][y]}")
@@ -54,4 +56,3 @@ def examineMatrix(matrixA, matrixB, *positions):
 
 def cc(*positions):
     return examineMatrix(ourcc, theircc, *positions)
-

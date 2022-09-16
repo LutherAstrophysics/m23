@@ -1,6 +1,8 @@
-from astropy.io import fits
 import numpy as np
+from astropy.io import fits
+
 from m23.funcs.hof import noOfArgs
+
 
 ###
 ### readFit

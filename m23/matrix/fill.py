@@ -1,8 +1,10 @@
 import sys
-if '../../' not in sys.path: sys.path.insert(0, '../../')
 
-import numpy as np
+if "../../" not in sys.path:
+    sys.path.insert(0, "../../")
+
 import cv2 as cv
+import numpy as np
 
 ### fillMatrix
 ###
@@ -13,7 +15,7 @@ import cv2 as cv
 ###   polygons: array of array of tuples (x, y) defining a polygon fill region
 ###   fillValue: value to fill
 ###
-### example: 
+### example:
 ###   matrix:  np.arange(50).reshape(2, 5, 5)[1]
 ###   pol1: [(0,0), (1,1), (0,4)]
 ###   pol2: [(4, 0), (3, 1), (4,4)]
@@ -24,6 +26,5 @@ import cv2 as cv
 ###    Mutated original matrix
 
 
-
-def fillMatrix(matrix, polygons, fillValue)->None:
+def fillMatrix(matrix, polygons, fillValue) -> None:
     return cv.fillPoly(matrix, np.array(polygons), fillValue)

@@ -18,13 +18,16 @@ from m23.utils import customMedian, fitDataFromFitImages
 ###  purpose: creates masterBias, saves to fileName + returns masterBiasData
 ###
 
-def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, listOfBiasData=None):
+
+def makeMasterBias(
+    saveAs, headerToCopyFromName=None, listOfBiasNames=None, listOfBiasData=None
+):
 
     if listOfBiasNames:
         listOfBiasData = fitDataFromFitImages(listOfBiasNames)
-    
+
     if not listOfBiasNames and not listOfBiasData:
-        raise Exception("Neither Bias data nor names were provided")  
+        raise Exception("Neither Bias data nor names were provided")
 
     if not headerToCopyFromName and listOfBiasNames:
         headerToCopyFromName = listOfBiasNames[0]
@@ -45,13 +48,15 @@ def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, list
 ###
 ### we generate the masterDark by "taking median of the dark frames"
 ###   --Richard Berry, James Burnell
-def makeMasterDark(saveAs, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None):
+def makeMasterDark(
+    saveAs, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None
+):
 
     if listOfDarkNames:
         listOfDarkData = fitDataFromFitImages(listOfDarkNames)
-    
+
     if not listOfDarkNames and not listOfDarkData:
-        raise Exception("Neither Dark data nor names were provided")  
+        raise Exception("Neither Dark data nor names were provided")
 
     if not headerToCopyFromName and listOfDarkNames:
         headerToCopyFromName = listOfDarkNames[0]
@@ -70,10 +75,16 @@ def makeMasterDark(saveAs, headerToCopyFromName=None, listOfDarkNames=None, list
 ###
 ###  purpose: creates masterFlat, saves to fileName + returns masterFlatData
 ###
-### we generate the masterFlat by 
+### we generate the masterFlat by
 ###   taking the median of flats and subtracting the masterDarkData
-###  
-def makeMasterFlat(saveAs, masterDarkData, headerToCopyFromName=None, listOfFlatNames=None, listOfFlatData=None):
+###
+def makeMasterFlat(
+    saveAs,
+    masterDarkData,
+    headerToCopyFromName=None,
+    listOfFlatNames=None,
+    listOfFlatData=None,
+):
 
     ### We're supposed to use flat dark for the master flat
     ### but we did not take any for the new camera, so we're
@@ -83,9 +94,9 @@ def makeMasterFlat(saveAs, masterDarkData, headerToCopyFromName=None, listOfFlat
 
     if listOfFlatNames:
         listOfFlatData = fitDataFromFitImages(listOfFlatNames)
-   
+
     if not listOfFlatNames and not listOfFlatData:
-        raise Exception("Neither Flat data nor names were provided")  
+        raise Exception("Neither Flat data nor names were provided")
 
     if not headerToCopyFromName and listOfFlatNames:
         headerToCopyFromName = listOfFlatNames[0]
@@ -96,20 +107,22 @@ def makeMasterFlat(saveAs, masterDarkData, headerToCopyFromName=None, listOfFlat
     ### We scale all flats w.r.t. first flat image
     ###   like the current IDL code does
     ###   https://github.com/LutherAstrophysics/idl-files/blob/f3d10e770d4d268908438deb4cda2076f21f1b14/master_calibration_frame_makerNEWEST.pro#L199
-    listOfFlatData = [flatData * firstFlatMedian / customMedian(flatData) for flatData in listOfFlatData]
+    listOfFlatData = [
+        flatData * firstFlatMedian / customMedian(flatData)
+        for flatData in listOfFlatData
+    ]
 
     ### the we take the median of the scaled flats
     combinedFlats = getMedianOfMatrices(listOfFlatData)
     masterFlatData = combinedFlats - masterDarkData
 
     ### convert flat data to matrix of ints
-    masterFlatData = np.array(masterFlatData, dtype='int')
+    masterFlatData = np.array(masterFlatData, dtype="int")
 
     # listOfFlats[0] is the file whose header we're copying to
     #  save in masterDark
     createFitFileWithSameHeader(masterFlatData, saveAs, headerToCopyFromName)
     return masterFlatData
-
 
 
 def getMedianOfMatrices(listOfMatrices):
