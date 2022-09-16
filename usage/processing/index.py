@@ -1,7 +1,6 @@
 ###
 ### Boilerplate
 import sys
-from turtle import settiltangle
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
