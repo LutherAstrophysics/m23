@@ -246,12 +246,29 @@ def main(settings = None):
                         calibratedImagesFilled[imageIndex], referenceImagePath
                     )
                 )
-            except:
+            except Exception as e:
                 print(f"Could not align image {imageStartIndex + imageIndex}")
                 logfd.write(f"{newlinechar}Could not align image no {imageStartIndex + imageIndex} - {allRawImagesNames[imageStartIndex + imageIndex]}{newlinechar}")
 
-        ### Image combination (10 images stack)
-        if len(alignedImagesData):
+                ###
+                ### We're throwing an exception here means that we don't
+                ### want the code to proceed further in this function call
+                ### process if an image could not be aligned.
+                ###
+                ### What this means is that if we were trying to do data
+                ### processing of 205 images with 10 as number of images per
+                ### combination, then the image no. 25 could not be aligned, then
+                ### the images in the range 20-30 shall be ignored...
+                
+                ### This is better than just using images 20-24, 26-30 because we
+                ### would then be combining only 9 images... the idea solution would
+                ### use images 20-31 (ignoring 25) but we're not doing it right now.
+                ###
+                raise e
+
+        ### Guard to check that we're always using the same number of 
+        ### images in any combination for that night of data.
+        if len(alignedImagesData) == noOfImagesInOneCombination:
             combinedImageData = imageCombination(
                 alignedImagesData,
                 fileInAlignedCombined(
