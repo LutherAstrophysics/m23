@@ -9,8 +9,8 @@ yearFolderLocations = r"F:\Summer 2019"
 
 # The code below is supposed to be static
 def handleDay(dayPath: Path) -> tuple[int]:
-    flats = list(dayPath.glob("Calibration Frames/flat*.fit"))
-    biases = list(dayPath.glob("Calibration Frames/bias*.fit"))
+    flats = list(dayPath.glob("Calibration Frames/*flat*.fit"))
+    biases = list(dayPath.glob("Calibration Frames/*bias*.fit"))
     print(f"{dayPath.name:20s}{len(flats):^6}{len(biases):^6}")
     return len(flats), len(biases)
 
