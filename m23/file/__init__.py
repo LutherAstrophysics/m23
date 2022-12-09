@@ -1,3 +1,3 @@
-from .index import getLinesWithNumbersFromFile
+from .index import formatWindowsPath, getLinesWithNumbersFromFile
 
-__all__ = ["getLinesWithNumbersFromFile"]
+__all__ = ["getLinesWithNumbersFromFile", "formatWindowsPath"]

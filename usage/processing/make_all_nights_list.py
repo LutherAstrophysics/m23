@@ -19,6 +19,8 @@ from pathlib import Path, WindowsPath
 from re import I
 from typing import List
 
+from m23.file import formatWindowsPath
+
 # Change this
 yearFolderLocation = r"F:\Summer 2019"
 outputFolderLocation = r"C:\Data Processing\2019 Python Processed"
@@ -27,11 +29,6 @@ DayLikeName = str
 
 # The code below is supposed to be static
 def getAllNightsList(yearFolderLocation, outputFolderLocation):
-    def formatWindowsPath(p: WindowsPath):
-        # The anchor trickery was need to remove windows backward slash
-        a = "/".join([p.drive] + list(p.parts[1:]))
-        return a
-
     root = Path(yearFolderLocation)
     allNights = []
     for day in root.iterdir():

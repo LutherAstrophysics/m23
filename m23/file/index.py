@@ -1,4 +1,5 @@
 import re
+from pathlib import WindowsPath
 
 
 def getLinesWithNumbersFromFile(fileName):
@@ -10,3 +11,7 @@ def getLinesWithNumbersFromFile(fileName):
                 allLines,
             )
         )
+
+def formatWindowsPath(p: WindowsPath):
+        # The anchor trickery was need to remove windows backward slash
+       return "/".join([p.drive] + list(p.parts[1:]))
