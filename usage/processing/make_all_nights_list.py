@@ -15,6 +15,7 @@
 # The root outer folder location where all the days folders are to be created
 
 ### Boilerplate to be able to import from m23
+import pprint
 import sys
 
 if "../../" not in sys.path:
@@ -92,7 +93,8 @@ def getAllNightsList(yearFolderLocation, outputFolderLocation):
 
 
 def main():
-    print(getAllNightsList(yearFolderLocation, outputFolderLocation))
+    pp = pprint.PrettyPrinter(width=100, compact=True)
+    pp.pprint(getAllNightsList(yearFolderLocation, outputFolderLocation))
 
 
 if __name__ == "__main__":
