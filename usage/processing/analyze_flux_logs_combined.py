@@ -11,7 +11,6 @@
 import sys
 
 ### Boilerplate to be able to import m23
-from cgitb import text
 from typing import List, Tuple
 
 if "../../" not in sys.path:
