@@ -3,6 +3,8 @@ import os
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata
 
+from .date import get_closet_date
+
 ### local imports
 from .rename import rename
 
@@ -27,12 +29,10 @@ def fitDataFromFitImages(images):
 def customMedian(arr, *args, **kwargs):
     arr = np.array(arr)
     if len(arr) % 2 == 0:
-        newArray = np.append(
-            arr, [np.multiply(np.ones(arr[0].shape), np.max(arr))], axis=0
-        )
+        newArray = np.append(arr, [np.multiply(np.ones(arr[0].shape), np.max(arr))], axis=0)
         return np.median(newArray, *args, **kwargs)
     else:
         return np.median(arr, *args, **kwargs)
 
 
-__all__ = ["customeMedian", "fitFilesInFolder", "rename"]
+__all__ = ["customeMedian", "fitFilesInFolder", "rename", "get_closet_date"]
