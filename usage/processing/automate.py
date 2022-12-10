@@ -15,6 +15,8 @@ from settings import newCameraSettings, oldCameraSettings
 # This way this file can stay as a reference and don't need to be re-committed
 # to git everytime someone call this for different night.
 
+# This list can be easily generated for you by the make_all_nights_list script
+
 allNights = [
     (r"F:\Summer 2022\June 19, 2022", r"C:\Data Processing\June 19, 2022"),
     (
