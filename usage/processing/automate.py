@@ -8,6 +8,13 @@ from settings import newCameraSettings, oldCameraSettings
 ###     - input folder locations
 ###     - output folder locations
 ###     - (optional) path to masteflat to use (in case the night doesn't have masterflat shot!)
+
+# Please don't modify this file
+# Copy the contents of this to my_automate.py in the same folder
+# that this is in. Then run the script.
+# This way this file can stay as a reference and don't need to be re-committed
+# to git everytime someone call this for different night.
+
 allNights = [
     (r"F:\Summer 2022\June 19, 2022", r"C:\Data Processing\June 19, 2022"),
     (
