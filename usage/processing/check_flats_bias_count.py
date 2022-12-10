@@ -2,10 +2,15 @@
 # For each particular day folder, inside the year folder
 # traverses to the Calibration Frames folder and prints
 # the number of flats and biases
+import argparse
 from pathlib import Path
 
-# Change this
-yearFolderLocation = r"F:\Summer 2019"
+# Note that this is a command line utility, so you would run this as
+# Running from the folder where this file is situated at
+#
+# python .\check_flats_bias_count.py 'F:/Summer 2022/'
+# Also note the use of forward slash for foler location. If backward slash
+# doesn't work in windows, use forward slash.
 
 # The code below is supposed to be static
 def handleDay(dayPath: Path) -> tuple[int]:
@@ -15,7 +20,7 @@ def handleDay(dayPath: Path) -> tuple[int]:
     return len(flats), len(biases)
 
 
-def main():
+def main(yearFolderLocation: str):
     root = Path(yearFolderLocation)
     print(f"{'Day':20s}{'Flats':^6s}{'Bias':^6s}")
     f_total, b_total = 0, 0
@@ -27,4 +32,10 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        prog="Check Flats Bias Count",
+        description="Generates a list of count for no of flats, bias images for a year",
+    )
+    parser.add_argument("folder_location")  # positional argument, folder_locationmain()
+    args = parser.parse_args()
+    main(args.folder_location)
