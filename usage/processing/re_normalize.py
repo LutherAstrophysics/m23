@@ -137,7 +137,9 @@ def main():
         logging.info(f"\t:{x}")
     logging.info(f"Performing normalization")
     try:
-        normalizeLogFiles(ref_file, list_of_log_files_to_use, normalized_output_location)
+        normalizeLogFiles(
+            ref_file, list_of_log_files_to_use, normalized_output_location, start_index, end_index
+        )
     except Exception as e:
         logging.error(f"There was an error during nomralization \n{e}")
         print(e)

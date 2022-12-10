@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
@@ -32,13 +33,13 @@ from m23.file import getLinesWithNumbersFromFile
 ###
 ### TODO: Mask out stars with center pixel not matching + crop the outlier stars
 ###  using linfit
-def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
+def normalizeLogFiles(
+    referenceFileName, logFilesNamesToNormalize, saveFolder, startImageUsed="", endImageUsed=""
+):
 
     ### Wrapper around the function so we don't
     ### have to keep passing the saveFolder as argument
-    saveFileInFolder = lambda *args, **kwargs: saveFileInFolder(
-        saveFolder, *args, **kwargs
-    )
+    saveFileInFolder = lambda *args, **kwargs: saveFileInFolder(saveFolder, *args, **kwargs)
 
     ### COLUMN_NUMBERS (0 means first column)
     ref_adu_column = 5
@@ -60,8 +61,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
 
     referenceData = getLinesWithNumbersFromFile(referenceFileName)
     logFilesData = [
-        getLinesWithNumbersFromFile(logFileName)
-        for logFileName in logFilesNamesToNormalize
+        getLinesWithNumbersFromFile(logFileName) for logFileName in logFilesNamesToNormalize
     ]
 
     ### At this point, if we want to look at 300-th star in our first image
@@ -69,9 +69,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     noOfFiles = len(logFilesData)
     ### Normalization is done with reference to images 20%, 40%, 60% and 80% through night
     indicesToNormalizeTo = np.linspace(0, noOfFiles, 6, dtype="int")[1:-1]
-    adus_in_data_to_normalize_to = np.array(logFilesData, dtype="object")[
-        indicesToNormalizeTo
-    ]
+    adus_in_data_to_normalize_to = np.array(logFilesData, dtype="object")[indicesToNormalizeTo]
 
     ### get the ADU column in the logfiles
     adus_in_data_to_normalize_to = np.array(
@@ -79,9 +77,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     )
 
     referenceFileStarPositions = [
-        np.array(
-            line.split()[ref_positions_xy[0] : ref_positions_xy[1] + 1], dtype="float"
-        )
+        np.array(line.split()[ref_positions_xy[0] : ref_positions_xy[1] + 1], dtype="float")
         for line in referenceData
     ]
 
@@ -97,9 +93,7 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
         ### where scaleFactor for a star for that image is the ratio of that star's adu in
         ### sum of data_to_normalize_to / 4 * adu in current image
 
-        adu_of_current_log_file = np.array(
-            aduInLogData(logFilesData[file_index]), dtype="float"
-        )
+        adu_of_current_log_file = np.array(aduInLogData(logFilesData[file_index]), dtype="float")
 
         starPositions = starPositionsInLogData(logFilesData[file_index])
 
@@ -140,16 +134,28 @@ def normalizeLogFiles(referenceFileName, logFilesNamesToNormalize, saveFolder):
     noOfStars = len(normalized_star_data[0])
     for star_index in range(noOfStars):
         star_data = [
-            normalized_star_data[file_index][star_index]
-            for file_index in range(noOfFiles)
+            normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)
         ]
         ### turn all star_data that's negative to 0
         star_data = [currentData if currentData > 0 else 0 for currentData in star_data]
-        np.savetxt(
+
+        # Add header information to the file
+        # To make the layout consistent with output from IDL version
+        with open(
             os.path.join(
                 saveFolder,
                 f"00-00-00_m23_7.0-ref_revised_71_{(star_index+1):04}_flux.txt",
             ),
-            np.array(star_data),
-            fmt="%10.2f",
-        )
+            "w",
+        ) as f:
+            f.write(f"Program:\n")
+            f.write(f"Started with image\t{startImageUsed}\n")
+            f.write(f"Ended with image\t{endImageUsed}\n")
+            f.write(f"Aligned with image {Path(referenceFileName).name}\n")
+            f.write(f"X location:\t{Path(referenceFileName).name}\n")
+            f.write(f"Y location:\t{Path(referenceFileName).name}\n")
+            np.savetxt(
+                f,
+                np.array(star_data),
+                fmt="%10.2f",
+            )
