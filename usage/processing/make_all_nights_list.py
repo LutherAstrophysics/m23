@@ -14,6 +14,12 @@
 # Input folder root location (the year folder)
 # The root outer folder location where all the days folders are to be created
 
+### Boilerplate to be able to import from m23
+import sys
+
+if "../../" not in sys.path:
+    sys.path.insert(0, "../../")
+
 # Note that this script might only work in windows
 from pathlib import Path, WindowsPath
 from re import I
