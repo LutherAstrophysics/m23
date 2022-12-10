@@ -10,9 +10,13 @@
 #   are processed first so that nights that need master flat from other
 #   night can use the master flat generated from its processing.
 
-# Needs
+# This is a command line utlity and would need the following as positional arumgnets
 # Input folder root location (the year folder)
 # The root outer folder location where all the days folders are to be created
+
+# Example of running this file:
+# python make_all_nights_list.py "F:/Summer 2022" "C:/Data Processing/2022 Python Processed"
+
 
 ### Boilerplate to be able to import from m23
 import pprint
@@ -21,17 +25,14 @@ import sys
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
 
+import argparse
+
 # Note that this script might only work in windows
 from pathlib import Path, WindowsPath
-from re import I
 from typing import List
 
 from m23.file import formatWindowsPath
 from m23.utils import get_closet_date
-
-# Change this
-yearFolderLocation = r"F:\Summer 2019"
-outputFolderLocation = r"C:\Data Processing\2019 Python Processed"
 
 DayLikeName = str
 
@@ -90,6 +91,14 @@ def getAllNightsList(yearFolderLocation, outputFolderLocation):
 
 
 def main():
+    parser = argparse.ArgumentParser(
+        prog="Make all nights list",
+        description="Creates list to be used in automate.py to process many nights at once",
+    )
+    parser.add_argument("input_location")  # positional argument Input Folder for the year
+    parser.add_argument("output_location")  # positional argument Ouput Folder for the year
+    args = parser.parse_args()
+    yearFolderLocation, outputFolderLocation = args.input_location, args.output_location
     pp = pprint.PrettyPrinter(width=100, compact=True)
     pp.pprint(getAllNightsList(yearFolderLocation, outputFolderLocation))
 
