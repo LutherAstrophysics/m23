@@ -176,3 +176,4 @@ experiment
 ### Custom daily data processing
 my_data_processing
 usage/processing/my_automate.py
+usage/processing/my_renormalize_all.py
