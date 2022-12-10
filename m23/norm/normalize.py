@@ -152,8 +152,8 @@ def normalizeLogFiles(
             f.write(f"Started with image\t{startImageUsed}\n")
             f.write(f"Ended with image\t{endImageUsed}\n")
             f.write(f"Aligned with image {Path(referenceFileName).name}\n")
-            f.write(f"X location:\t{Path(referenceFileName).name}\n")
-            f.write(f"Y location:\t{Path(referenceFileName).name}\n")
+            f.write(f"X location:\t{''}\n")
+            f.write(f"Y location:\t{''}\n")
             np.savetxt(
                 f,
                 np.array(star_data),
