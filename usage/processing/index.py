@@ -199,8 +199,11 @@ def main(settings=None):
         allRawImagesNames = [
             imageName for _, imageName in sorted(zip(rawImageIndices, allRawImagesNames))
         ]
-        breakpoint()
         logfd.write(f"Raw Images {datetime.now()}{newlinechar}")
+        if len(allRawImagesNames) == 0:
+            print("No raw images found, returning")
+            logfd.write(f"No raw images found to process")
+            return
         logfd.write(f"{newlinechar.join(allRawImagesNames)}")
         logfd.write(f"{newlinechar}")
     except Exception as e:
