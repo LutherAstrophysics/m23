@@ -312,7 +312,6 @@ def main(settings=None):
                 print(f"Failed processing {fromIndex} - {toIndex}")
                 print(f"{e}")
                 print(f"Continuing with next set...")
-                raise e
 
     ### After extraction, we want to save the flux log files
     ### for each star and their normalization factor
