@@ -73,10 +73,6 @@ def getAllNightsList(yearFolderLocation, outputFolderLocation):
 
     # Add alternate masterflat for the remaining nights
     def get_closest_night(nightsWithFlats: List[DayLikeName], day: DayLikeName):
-        # TODO
-        # Return the closest night name
-        import random
-
         return get_closet_date(base_date=day, list_of_dates=nightsWithFlats, format="%B %d, %Y")
 
     def make_flat_path_from_night(day: DayLikeName):
