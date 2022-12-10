@@ -27,6 +27,7 @@ from re import I
 from typing import List
 
 from m23.file import formatWindowsPath
+from m23.utils import get_closet_date
 
 # Change this
 yearFolderLocation = r"F:\Summer 2019"
@@ -76,7 +77,7 @@ def getAllNightsList(yearFolderLocation, outputFolderLocation):
         # Return the closest night name
         import random
 
-        return random.choice(nightsWithFlats)
+        return get_closet_date(base_date=day, list_of_dates=nightsWithFlats, format="%B %d, %Y")
 
     def make_flat_path_from_night(day: DayLikeName):
         # Returns the filepath where the master flat file will be stored
