@@ -34,8 +34,9 @@ if "../../" not in sys.path:
 
 import argparse
 import logging
+import re
 from operator import le
-from pathlib import Path
+from pathlib import Path, WindowsPath
 
 from m23.file import formatWindowsPath
 from m23.norm import normalizeLogFiles
@@ -75,6 +76,11 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
     all_log_files = list(log_files_combined_path.glob("*m23*"))
     no_of_log_files = len(all_log_files)
 
+    # TODO
+    # Get a list of valid images
+    # Simple indexing wont work because some image in range [start_index : end_index] might not be there
+    # because of alignment issues, primarirly.
+
     if not (start_index <= end_index <= no_of_log_files and start_index > 0):
         print(f"Bad image start, end index")
         print(
@@ -101,10 +107,19 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
     # Log files, start, end index good
     # Call normalization function
 
-    # Get lsit of log files paths and convert to absolute file path
+    # Get list of log files paths and convert to absolute file path
+    def is_image_in_range(file_path: WindowsPath):
+        match_result = re.search(r"m23_7.0-0?(\d+).txt$", str(file_path))
+        if len(match_result.groups()) < 1:
+            return False
+        else:
+            int_value = int(match_result.groups()[0])
+            return start_index <= int_value <= end_index
+
     list_of_log_files_to_use = list(
-        map(formatWindowsPath, all_log_files[start_index - 1 : end_index])
+        map(formatWindowsPath, filter(is_image_in_range, all_log_files))
     )
+
     ref_file = formatWindowsPath(reference_file_path)
     normalized_output_location = formatWindowsPath(radius_folder_path)
 
