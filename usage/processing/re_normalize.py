@@ -52,26 +52,11 @@ def remove_pathlib_folder(folder: Path):
             remove_pathlib_folder(f)
 
 
-def main():
-    # Command line argument parsing
-    parser = argparse.ArgumentParser(
-        prog="Normalize",
-        description="Generates normalized star flux using selected log files",
-    )
-    parser.add_argument("folder_location")  # positional argument, folder_location
-    parser.add_argument("start", type=int)  # positional argument, image start index
-    parser.add_argument("end", type=int)  # positional argument, image start index
-    # Optional path to reference file, uses default if not provided
-    parser.add_argument(
-        "-r", "--reference", default=default_reference_file, required=False
-    )  # option that takes a value
-
-    args = parser.parse_args()
-
+def re_normalize(folder_location: str, start_index: int, end_index: int, reference_file_path: str):
     # Error checking
 
     # Check if the main folder exists
-    folder_path = Path(args.folder_location)
+    folder_path = Path(folder_location)
     if not folder_path.exists():
         print(
             f"Can't find folder, {folder_path.absolute()}",
@@ -89,8 +74,7 @@ def main():
     # Check for bad start/end file index
     all_log_files = list(log_files_combined_path.glob("*m23*"))
     no_of_log_files = len(all_log_files)
-    start_index = args.start
-    end_index = args.end
+
     if not (start_index <= end_index <= no_of_log_files and start_index > 0):
         print(f"Bad image start, end index")
         print(
@@ -99,9 +83,9 @@ def main():
         return
 
     # Check if reference file exists
-    reference_file_path = Path(args.reference)
+    reference_file_path = Path(reference_file_path)
     if not reference_file_path.exists():
-        print(f"Can't find the reference file, {args.reference}")
+        print(f"Can't find the reference file, {formatWindowsPath(reference_file_path)}")
         return
 
     # If the Flux Logs Combined folder doesn't exist create
@@ -144,6 +128,28 @@ def main():
         logging.error(f"There was an error during nomralization \n{e}")
         print(e)
     logging.info(f"Normalization completed")
+
+
+def main():
+    # Command line argument parsing
+    parser = argparse.ArgumentParser(
+        prog="Normalize",
+        description="Generates normalized star flux using selected log files",
+    )
+    parser.add_argument("folder_location")  # positional argument, folder_location
+    parser.add_argument("start", type=int)  # positional argument, image start index
+    parser.add_argument("end", type=int)  # positional argument, image start index
+    # Optional path to reference file, uses default if not provided
+    parser.add_argument(
+        "-r", "--reference", default=default_reference_file, required=False
+    )  # option that takes a value
+
+    args = parser.parse_args()
+    folder_location = args.folder_location
+    start_index = args.start
+    end_index = args.end
+    reference_file_path = args.reference
+    re_normalize(folder_location, start_index, end_index, reference_file_path)
 
 
 if __name__ == "__main__":
