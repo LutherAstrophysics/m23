@@ -10,21 +10,29 @@ import re
 from datetime import date, datetime
 
 from astropy.io.fits import getdata
-### local imports
-from conventions import rawCalibrationFolderName, rawImagesFolderName
 from m23.align import imageAlignment
-from m23.calibrate import (calibrateImages, makeMasterBias, makeMasterDark,
-                           makeMasterFlat)
+from m23.calibrate import (
+    calibrateImages,
+    makeMasterBias,
+    makeMasterDark,
+    makeMasterFlat,
+)
 from m23.combine import imageCombination
 from m23.extract import extractStars
 from m23.matrix import crop, fillMatrix
 from m23.norm import normalizeLogFiles
+
 ### m23 imports
 from m23.utils import fitDataFromFitImages, fitFilesInFolder
-### setting import
-from settings import currentSettings
+
 ###
 from yaspin import yaspin
+
+### local imports
+from conventions import rawCalibrationFolderName, rawImagesFolderName
+
+### setting import
+from settings import currentSettings
 
 
 def main(settings=None):
@@ -39,9 +47,7 @@ def main(settings=None):
     folderLocation = settingsToUse.imagesFolderLocation
     outputFolderLocation = settingsToUse.outputLocation
 
-    print(
-        f"Using {currentSettings}, for processing {os.path.split(folderLocation)[-1]}"
-    )
+    print(f"Using {currentSettings}, for processing {os.path.split(folderLocation)[-1]}")
 
     ### Create output folder if it doesn't exist
     if not os.path.exists(outputFolderLocation):
@@ -73,9 +79,7 @@ def main(settings=None):
     ### as it moves forward
     logfd = open(fileInOutputFolder(logfileName), "w")
 
-    logfd.write(
-        f"Created logfile to process {folderLocation} at {datetime.now()} {newlinechar}"
-    )
+    logfd.write(f"Created logfile to process {folderLocation} at {datetime.now()} {newlinechar}")
 
     ### write pre process logs
     logfd.write(f"Using {settingsToUse} {newlinechar}")
@@ -137,9 +141,7 @@ def main(settings=None):
     #         )
 
     with yaspin(text=f"Cropping darks"):
-        darksDataCropped = [
-            crop(matrix, row, column) for matrix in (fitDataFromFitImages(darks))
-        ]
+        darksDataCropped = [crop(matrix, row, column) for matrix in (fitDataFromFitImages(darks))]
 
     ### if there are flats for the night
     if len(flats):
@@ -185,22 +187,19 @@ def main(settings=None):
     ###
     rawImagesFolder = os.path.join(folderLocation, rawImagesFolderName)
     allRawImagesNames = [
-        os.path.join(rawImagesFolder, file)
-        for file in fitFilesInFolder(rawImagesFolder)
+        os.path.join(rawImagesFolder, file) for file in fitFilesInFolder(rawImagesFolder)
     ]
 
     ###
     ### Sort raw images names to avoid indexing issue
     ###
     try:
-        rawImagesNumbers = [
-            re.search("-.*.fit", img)[0][1:-4] for img in allRawImagesNames
-        ]
+        rawImagesNumbers = [re.search("-.*.fit", img)[0][1:-4] for img in allRawImagesNames]
         rawImageIndices = [int(img) for img in rawImagesNumbers]
         allRawImagesNames = [
-            imageName
-            for _, imageName in sorted(zip(rawImageIndices, allRawImagesNames))
+            imageName for _, imageName in sorted(zip(rawImageIndices, allRawImagesNames))
         ]
+        breakpoint()
         logfd.write(f"Raw Images {datetime.now()}{newlinechar}")
         logfd.write(f"{newlinechar.join(allRawImagesNames)}")
         logfd.write(f"{newlinechar}")
@@ -216,9 +215,7 @@ def main(settings=None):
         ### Cropping the edges of the images
         rawImagesCropedData = [
             crop(matrix, row, column)
-            for matrix in (
-                fitDataFromFitImages(allRawImagesNames[imageStartIndex:imageEndIndex])
-            )
+            for matrix in (fitDataFromFitImages(allRawImagesNames[imageStartIndex:imageEndIndex]))
         ]
 
         ### Image calibration
@@ -242,9 +239,7 @@ def main(settings=None):
         for imageIndex in range(len(calibratedImagesFilled)):
             try:
                 alignedImagesData.append(
-                    imageAlignment(
-                        calibratedImagesFilled[imageIndex], referenceImagePath
-                    )
+                    imageAlignment(calibratedImagesFilled[imageIndex], referenceImagePath)
                 )
             except Exception as e:
                 print(f"Could not align image {imageStartIndex + imageIndex}")
@@ -285,9 +280,7 @@ def main(settings=None):
                 combinedImageData,
                 referenceFilePath,
                 ### similar format to IDL code output
-                saveAs=fileInLogFilesCombined(
-                    f"00-00-00_m23_7.0-{(imageEndIndex // 10):03}.txt"
-                ),
+                saveAs=fileInLogFilesCombined(f"00-00-00_m23_7.0-{(imageEndIndex // 10):03}.txt"),
                 radiusOfExtraction=radiusOfExtraction,
             )
         else:
@@ -337,9 +330,7 @@ def main(settings=None):
     ### Create a folder inside flux logs combined for corresponding raidus of extraction
     ###
     fluxLogsFolder = fileInOutputFolder(fluxLogsCombinedFolderName)
-    starRadiusFolder = os.path.join(
-        fluxLogsFolder, f"{radiusOfExtraction} Pixel Radius"
-    )
+    starRadiusFolder = os.path.join(fluxLogsFolder, f"{radiusOfExtraction} Pixel Radius")
     if not os.path.exists(starRadiusFolder):
         os.makedirs(starRadiusFolder)
 
