@@ -133,6 +133,8 @@ def main():
 
     logging.info(f"Using ref file {ref_file}")
     logging.info(f"Using log files: {start_index} - {end_index}")
+    for x in list_of_log_files_to_use:
+        logging.info(f"\t:{x}")
     logging.info(f"Performing normalization")
     try:
         normalizeLogFiles(ref_file, list_of_log_files_to_use, normalized_output_location)
