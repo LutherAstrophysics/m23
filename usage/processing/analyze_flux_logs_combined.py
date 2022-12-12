@@ -56,6 +56,7 @@ def analyze_year(
         # Analyze the start, end image for each night
         flux_logs_folder = night.joinpath(radius5FluxLogsCombinedFolderPath)
         # Read one of the star Flux Logs Combined Files for analysis
+        breakpoint()
         try:
             file_to_read = list(flux_logs_folder.glob("*flux*"))[0]
         except IndexError as e:
