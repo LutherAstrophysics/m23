@@ -54,10 +54,10 @@ def analyze_year(
         print(f"{'Night':<20s}{'Start':>10s}{'End':>10s}")
     for night in filter(lambda x: not x.is_file(), year_path.glob("*")):
         # Analyze the start, end image for each night
-        flux_logs_folder = night.joinpath(radius5FluxLogsCombinedFolderPath)
+        flux_logs_folder = night.glob(radius5FluxLogsCombinedFolderPath)
         # Read one of the star Flux Logs Combined Files for analysis
         try:
-            file_to_read = list(flux_logs_folder.glob("*flux*"))[0]
+            file_to_read = list(night.glob(f"{radius5FluxLogsCombinedFolderPath}/*flux*"))[0]
         except IndexError as e:
             if print_result:
                 print(f"No matching file found in", formatWindowsPath(flux_logs_folder))
