@@ -177,3 +177,4 @@ experiment
 my_data_processing
 usage/processing/my_automate*.py
 usage/processing/my_renormalize_all*.py
+usage/processing/my_renormalize_generator*.py
