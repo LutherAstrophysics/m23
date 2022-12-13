@@ -19,7 +19,6 @@ if "../../" not in sys.path:
 
 import argparse
 import re
-from multiprocessing.sharedctypes import Value
 from pathlib import Path
 
 from m23.file import formatWindowsPath
@@ -100,8 +99,16 @@ def main():
         description="Gives list of which images were used when calculating flux logs",
     )
     parser.add_argument("folder_location")  # positional argument
+    parser.add_argument("-o", "--output", required=False)  # providing output location provides a verbose output
     args = parser.parse_args()
-    analyze_year(args.folder_location, print_result=True)
+    result = analyze_year(args.folder_location, print_result=True)
+    if output_folder := args.output:
+        output_path = Path(output_folder)
+        if not output_path.exists():
+            print("output path", formatWindowsPath(output_path), "doesn't exist") 
+            return
+        for r in range(len(result)):
+            result[r] = formatWindowsPath(output_path.joinpath("Flux Logs Combined"))
 
 
 if __name__ == "__main__":
