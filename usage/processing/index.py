@@ -283,7 +283,7 @@ def main(settings=None):
             combinedImageData = imageCombination(
                 alignedImagesData,
                 fileInAlignedCombined(
-                    f"m_23_7.0-{(imageEndIndex // noOfImagesInOneCombination):03}.fit"
+                    f"m23_7.0-{(imageEndIndex // noOfImagesInOneCombination):03}.fit"
                 ),
                 ### fileName we are copying header info from
                 allRawImagesNames[imageStartIndex],
@@ -294,7 +294,9 @@ def main(settings=None):
                 combinedImageData,
                 referenceFilePath,
                 ### similar format to IDL code output
-                saveAs=fileInLogFilesCombined(f"00-00-00_m23_7.0-{(imageEndIndex // 10):03}.txt"),
+                saveAs=fileInLogFilesCombined(
+                    f"{proper_date.strftime('%m-%d-%y')}_m23_7.0-{(imageEndIndex // 10):03}.txt"
+                ),
                 radiusOfExtraction=radiusOfExtraction,
             )
         else:
