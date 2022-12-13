@@ -261,8 +261,8 @@ def main(settings=None):
                 ### the images in the range 20-30 shall be ignored...
 
                 ### This is better than just using images 20-24, 26-30 because we
-                ### would then be combining only 9 images... the idea solution would
-                ### use images 20-31 (ignoring 25) but we're not doing it right now.
+                ### would then be combining only 9 images... one might think that the idea solution would
+                ### use images 20-31 (ignoring 25) but it would be problematic since we might end up combining imaged from vastly different periods of night that way
                 ###
                 raise e
 
