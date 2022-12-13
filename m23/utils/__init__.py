@@ -3,7 +3,7 @@ import os
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata
 
-from .date import get_closet_date
+from .date import get_closet_date, raw_data_name_format
 
 ### local imports
 from .rename import rename
@@ -35,4 +35,10 @@ def customMedian(arr, *args, **kwargs):
         return np.median(arr, *args, **kwargs)
 
 
-__all__ = ["customeMedian", "fitFilesInFolder", "rename", "get_closet_date"]
+__all__ = [
+    "customeMedian",
+    "fitFilesInFolder",
+    "rename",
+    "get_closet_date",
+    "raw_data_name_format",
+]

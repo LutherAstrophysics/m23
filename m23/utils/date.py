@@ -24,3 +24,6 @@ def get_closet_date(base_date: str, list_of_dates: str, format: str):
 
     list_of_datetimes.sort(key=lambda x: abs((base_datetime - x)).days)
     return list_of_datetimes[0].strftime(format)
+
+
+raw_data_name_format = "%B %d, %Y"

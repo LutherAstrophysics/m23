@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import List
 
 from m23.file import formatWindowsPath
-from m23.utils import get_closet_date
+from m23.utils import get_closet_date, raw_data_name_format
 
 DayLikeName = str
 
@@ -74,7 +74,9 @@ def getAllNightsList(yearFolderLocation, outputFolderLocation):
 
     # Add alternate masterflat for the remaining nights
     def get_closest_night(nightsWithFlats: List[DayLikeName], day: DayLikeName):
-        return get_closet_date(base_date=day, list_of_dates=nightsWithFlats, format="%B %d, %Y")
+        return get_closet_date(
+            base_date=day, list_of_dates=nightsWithFlats, format=raw_data_name_format
+        )
 
     def make_flat_path_from_night(day: DayLikeName):
         # Returns the filepath where the master flat file will be stored

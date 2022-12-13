@@ -1,6 +1,7 @@
 ###
 ### Boilerplate
 import sys
+from pathlib import Path
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
@@ -23,7 +24,7 @@ from m23.matrix import crop, fillMatrix
 from m23.norm import normalizeLogFiles
 
 ### m23 imports
-from m23.utils import fitDataFromFitImages, fitFilesInFolder
+from m23.utils import fitDataFromFitImages, fitFilesInFolder, raw_data_name_format
 
 ###
 from yaspin import yaspin
@@ -46,6 +47,16 @@ def main(settings=None):
     row, column = settingsToUse.rows, settingsToUse.columns
     folderLocation = settingsToUse.imagesFolderLocation
     outputFolderLocation = settingsToUse.outputLocation
+
+    # Check against the input folder name format
+    input_folder_path = Path(folderLocation)
+    assert input_folder_path.exists()
+    try:
+        proper_date = datetime.strptime(input_folder_path.name, raw_data_name_format)
+    except ValueError as e:
+        print("Aborting because of improper date name format for", folderLocation)
+        print("Name should be in format (Month Name Day, Year): December 28, 2019")
+        raise e
 
     print(f"Using {currentSettings}, for processing {os.path.split(folderLocation)[-1]}")
 
@@ -332,7 +343,9 @@ def main(settings=None):
     ### Create a folder inside flux logs combined for corresponding raidus of extraction
     ###
     fluxLogsFolder = fileInOutputFolder(fluxLogsCombinedFolderName)
-    starRadiusFolder = os.path.join(fluxLogsFolder, f"{radiusOfExtraction} Pixel Radius")
+    # Check guard to tell that we currently only support 5px radius of extraction.
+    assert radiusOfExtraction == 5
+    starRadiusFolder = os.path.join(fluxLogsFolder, "Five Pixel Radius")
     if not os.path.exists(starRadiusFolder):
         os.makedirs(starRadiusFolder)
 

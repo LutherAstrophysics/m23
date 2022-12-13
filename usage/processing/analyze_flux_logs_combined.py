@@ -22,6 +22,7 @@ import re
 from pathlib import Path
 
 from m23.file import formatWindowsPath
+from m23.utils import raw_data_name_format
 
 
 def analyze_year(
@@ -56,7 +57,11 @@ def analyze_year(
             continue
         # Ignore if the folder name doesn't match a ceratin convention
         try:
-            datetime.strptime(night.name, "%B %d")
+            # Multiple try except to handle the format inconsistenty in our old data
+            try:
+                datetime.strptime(night.name, "%B %d")
+            except ValueError:
+                datetime.strptime(night.name, raw_data_name_format)
         except ValueError:
             continue
         # Analyze the start, end image for each night
