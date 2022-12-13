@@ -24,4 +24,9 @@ to_normalize = [
 ]
 
 for night in to_normalize:
-    re_normalize(*night)
+    try:
+        re_normalize(*night)
+    except Exception as e:
+        print("Error in night", night)
+        print(e)
+        print("\nProcedeeing to next night")
