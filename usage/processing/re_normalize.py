@@ -82,7 +82,7 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
     # because of alignment issues, primarirly.
 
     if not (start_index <= end_index <= no_of_log_files and start_index > 0):
-        print(f"Bad image start, end index")
+        print(f"Bad image start, end index", folder_location)
         print(
             f"Start provided : {start_index} End Provided : {end_index} No of logs found: {no_of_log_files}"
         )
@@ -95,7 +95,7 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
         return
 
     # If the Flux Logs Combined folder doesn't exist create
-    radius_folder_path = folder_path.joinpath("Flux Logs Combined/5 Pixel Radius")
+    radius_folder_path = folder_path.joinpath("Flux Logs Combined/Five Pixel Radius")
     if radius_folder_path.exists():
         # Clear the folder contents
         remove_pathlib_folder(radius_folder_path)
