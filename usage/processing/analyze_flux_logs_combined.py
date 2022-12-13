@@ -23,8 +23,6 @@ from pathlib import Path
 
 from m23.file import formatWindowsPath
 
-from conventions import radius5FluxLogsCombinedFolderPath
-
 
 def analyze_year(
     folder_location: str, print_result=False
@@ -54,10 +52,10 @@ def analyze_year(
         print(f"{'Night':<20s}{'Start':>10s}{'End':>10s}")
     for night in filter(lambda x: not x.is_file(), year_path.glob("*")):
         # Analyze the start, end image for each night
-        flux_logs_folder = night.glob(radius5FluxLogsCombinedFolderPath)
+        flux_logs_folder = night.glob("Flux Logs Combined*/Five Pixel Radius")
         # Read one of the star Flux Logs Combined Files for analysis
         try:
-            file_to_read = list(night.glob(f"{radius5FluxLogsCombinedFolderPath}/*flux*"))[0]
+            file_to_read = list(night.glob(f"Flux Logs Combined*/Five Pixel Radius/*flux*"))[0]
         except IndexError as e:
             if print_result:
                 print(f"No matching file found in", formatWindowsPath(flux_logs_folder))

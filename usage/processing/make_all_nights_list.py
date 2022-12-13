@@ -28,7 +28,7 @@ if "../../" not in sys.path:
 import argparse
 
 # Note that this script might only work in windows
-from pathlib import Path, WindowsPath
+from pathlib import Path
 from typing import List
 
 from m23.file import formatWindowsPath
