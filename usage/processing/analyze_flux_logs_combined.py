@@ -64,15 +64,7 @@ def analyze_year(
         try:
             file_to_read = list(night.glob(f"Flux Logs Combined*/Five Pixel Radius/*flux*"))[0]
         except IndexError as e:
-            if print_result:
-                print(
-                    f"No matching Flux Logs Combined file found in",
-                    formatWindowsPath(night.absolute()),
-                )
-                return
-            else:
-                raise e
-
+            continue
         # Read the start image and end image value from file_to_read
         with file_to_read.open() as fd:
             fd.readline()  # Ignore the first line
