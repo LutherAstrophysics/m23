@@ -9,6 +9,7 @@
 # when passing folder location.
 
 import sys
+from datetime import datetime
 
 ### Boilerplate to be able to import m23
 from typing import List, Tuple
@@ -51,14 +52,24 @@ def analyze_year(
         print(f"Year\t{year_path.name}")
         print(f"{'Night':<20s}{'Start':>10s}{'End':>10s}")
     for night in filter(lambda x: not x.is_file(), year_path.glob("*")):
+        # Ignore if a not a folder
+        if night.is_file():
+            continue
+        # Ignore if the folder name doesn't match a ceratin convention
+        try:
+            datetime.striptime(night.name, "%B %d")
+        except ValueError:
+            continue
         # Analyze the start, end image for each night
-        flux_logs_folder = night.glob("Flux Logs Combined*/Five Pixel Radius")
         # Read one of the star Flux Logs Combined Files for analysis
         try:
             file_to_read = list(night.glob(f"Flux Logs Combined*/Five Pixel Radius/*flux*"))[0]
         except IndexError as e:
             if print_result:
-                print(f"No matching file found in", formatWindowsPath(flux_logs_folder))
+                print(
+                    f"No matching Flux Logs Combined file found in",
+                    formatWindowsPath(night.absolute()),
+                )
                 return
             else:
                 raise e
