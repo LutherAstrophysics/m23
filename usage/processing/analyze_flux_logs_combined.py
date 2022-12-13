@@ -57,7 +57,7 @@ def analyze_year(
             continue
         # Ignore if the folder name doesn't match a ceratin convention
         try:
-            datetime.striptime(night.name, "%B %d")
+            datetime.strptime(night.name, "%B %d")
         except ValueError:
             continue
         # Analyze the start, end image for each night
