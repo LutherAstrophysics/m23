@@ -26,8 +26,10 @@
 #
 
 
-### Boilerplate to be able to import m23
 import sys
+
+### Boilerplate to be able to import m23
+from datetime import datetime
 
 if "../../" not in sys.path:
     sys.path.insert(0, "../../")
@@ -40,6 +42,7 @@ from pathlib import Path, WindowsPath
 
 from m23.file import formatWindowsPath
 from m23.norm import normalizeLogFiles
+from m23.utils import raw_data_name_format
 
 default_reference_file = "C:/Data Processing/RefImage/ref_revised_71.txt"
 
@@ -64,6 +67,13 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
         )
         return
 
+    try:
+        proper_date = datetime.strptime(folder_path.name, raw_data_name_format)
+    except ValueError as e:
+        print("Aborting because of improper date name format for", folder_path)
+        print("Name should be in format (Month Name Day, Year): December 28, 2019")
+        raise e
+
     # Check for the Log Files Combined folder
     log_files_combined_path = folder_path.joinpath("Log Files Combined")
     if not log_files_combined_path.exists():
@@ -76,7 +86,6 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
     all_log_files = list(log_files_combined_path.glob("*m23*"))
     no_of_log_files = len(all_log_files)
 
-    # TODO
     # Get a list of valid images
     # Simple indexing wont work because some image in range [start_index : end_index] might not be there
     # because of alignment issues, primarirly.
@@ -137,7 +146,12 @@ def re_normalize(folder_location: str, start_index: int, end_index: int, referen
     logging.info(f"Performing normalization")
     try:
         normalizeLogFiles(
-            ref_file, list_of_log_files_to_use, normalized_output_location, start_index, end_index
+            ref_file,
+            list_of_log_files_to_use,
+            normalized_output_location,
+            proper_date,
+            start_index,
+            end_index,
         )
     except Exception as e:
         logging.error(f"There was an error during nomralization \n{e}")

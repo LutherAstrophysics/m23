@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 from pathlib import Path
 
 if "../../" not in sys.path:
@@ -34,7 +35,12 @@ from m23.file import getLinesWithNumbersFromFile
 ### TODO: Mask out stars with center pixel not matching + crop the outlier stars
 ###  using linfit
 def normalizeLogFiles(
-    referenceFileName, logFilesNamesToNormalize, saveFolder, startImageUsed="", endImageUsed=""
+    referenceFileName,
+    logFilesNamesToNormalize,
+    saveFolder,
+    date_of_night: datetime,
+    startImageUsed="",
+    endImageUsed="",
 ):
 
     ### Wrapper around the function so we don't
@@ -144,7 +150,7 @@ def normalizeLogFiles(
         with open(
             os.path.join(
                 saveFolder,
-                f"00-00-00_m23_7.0-ref_revised_71_{(star_index+1):04}_flux.txt",
+                f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_{(star_index+1):04}_flux.txt",
             ),
             "w",
         ) as f:

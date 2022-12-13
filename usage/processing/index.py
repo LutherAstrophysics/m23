@@ -354,7 +354,7 @@ def main(settings=None):
     ###
     ### Normalize the log files and save the stars and norm factors
     ### in output folder
-    normalizeLogFiles(referenceFilePath, allLogFiles, starRadiusFolder)
+    normalizeLogFiles(referenceFilePath, allLogFiles, starRadiusFolder, proper_date)
 
     ### To keep track of how long the code takes to run
     logfd.write(f"{newlinechar}Done normalization {datetime.now()}")
