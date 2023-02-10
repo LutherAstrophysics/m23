@@ -50,7 +50,7 @@ def customMedian(arr, *args, **kwargs):
 
 
 __all__ = [
-    "customeMedian",
+    "customMedian",
     "fitFilesInFolder",
     "rename",
     "get_closet_date",
