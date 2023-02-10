@@ -1,0 +1,35 @@
+[image]
+rows = 2048
+columns = 2048
+# New camera images (>= June 16 2022) have vignetting ring effect which we crop.
+# Array of crop regions. The last and first co-ordinate are joined to make an enclosing region
+crop_region = [
+    [[0, 448], [0, 0], [492, 0], [210, 181]], 
+    [[0, 1600], [0, 2048], [480, 2048], [210, 1867]],
+    [[1400, 2048], [2048, 2048], [2048, 1500], [1834, 1830]],
+    [[1508, 0], [1852, 241], [2048, 521], [2048, 0]]
+]
+
+
+[processing]
+no_of_images_to_combine = 10
+radii_of_extraction = [3, 4, 5,]
+
+
+[input]
+
+    [[input.nights]]
+    path = "F://Summer 2022/September 4, 2022"
+    masterflat = "C://Data Processing/2022/Python Processed/September 4 2022"
+
+    [[input.nights]]
+    path = "F://Summer 2022/September 9, 2022"
+    # Because we haven't provided masterflat, this night must have flats to use 
+
+    [[input.nights]]
+    path = "F://Summer 2022/September 8, 2022"
+    # Because we haven't provided masterflat, this night must have flats to use 
+
+
+[output]
+path = "D://xxx"
