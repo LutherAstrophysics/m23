@@ -1,12 +1,26 @@
 import os
+from pathlib import Path, PosixPath
+from typing import Iterable
 
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata
 
 from .date import get_closet_date, raw_data_name_format
 
-### local imports
+# local imports
 from .rename import rename
+
+
+def get_raw_flats(folder: Path) -> Iterable[PosixPath]:
+    return folder.glob("*flat*.fit")
+
+
+def get_raw_darks(folder: Path) -> Iterable[PosixPath]:
+    return folder.glob("*dark*.fit")
+
+
+def get_all_fit_files(folder: Path) -> Iterable[PosixPath]:
+    return folder.glob("*.fit")
 
 
 def fitFilesInFolder(folder, fileType="All"):

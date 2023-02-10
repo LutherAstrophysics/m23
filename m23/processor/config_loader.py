@@ -1,11 +1,13 @@
-from functools import reduce
 import os
 import sys
+from functools import reduce
 from pathlib import Path
 from typing import Dict, List, NotRequired, TypedDict
-import toml
 
+import toml
 from exception import ConfigurationFileFormatError
+
+from m23.utils import get_all_fit_files, get_raw_darks, get_raw_flats
 
 
 # TYPE related to Config object described by the configuration file
@@ -69,7 +71,7 @@ def sanity_check(config_dict: Config) -> Config:
     This method performs any sanity checks on the configuration file.
     """
 
-    def prompt_to_continue(msg):
+    def prompt_to_continue(msg: str):
         sys.stdout(f"{msg}\n")
         response = input("Do you want to continue (y/yes to continue): ")
         if response.upper() not in ["Y", "YES"]:
@@ -139,8 +141,19 @@ def validate_night(night: ConfigInputNight) -> bool:
             sys.stdout(f"Provided masterflat path for {night} doesn't exist.\n")
             return False
     # If masterflat isn't provided, the night should have flats to use
-    else:
-        pass
+    elif len(list(get_raw_flats(CALIBRATION_FOLDER_PATH))) == 0:
+        sys.stdout(f"Night {night} doesn't contain flats. Provide masterflat path.\n")
+        return False
+
+    # Check for darks
+    if len(list(get_raw_darks(CALIBRATION_FOLDER_PATH))) == 0:
+        sys.stdout(f"Night {night} doesn't contain darks. Cannot continue without darks.\n")
+        return False
+
+    # Check for raw images
+    if len(list(get_all_fit_files(M23_FOLDER_PATH))) == 0:
+        sys.stdout(f"Night {night} doesn't raw images.\n")
+        return False
 
     return True  # Assuming we did the best we could to catch errors
 
@@ -176,9 +189,7 @@ def validate_file(file_path: Path, on_success):
             ):
                 on_success(sanity_check(load_defaults(toml.load(file_path))))
             case _:
-                sys.stdout(
-                    "Stopping because the provided configuration file has issues.\n"
-                )
+                sys.stdout("Stopping because the provided configuration file has issues.\n")
     except TypeError as e:
         raise ConfigurationFileFormatError()
     except toml.TomlDecodeError as e:
