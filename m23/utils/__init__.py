@@ -1,11 +1,12 @@
 import os
+from datetime import date, datetime
 from pathlib import Path, PosixPath
 from typing import Iterable
 
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata
 
-from .date import get_closet_date, raw_data_name_format
+from m23.constants import INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT
 
 # local imports
 from .rename import rename
@@ -21,6 +22,10 @@ def get_raw_darks(folder: Path) -> Iterable[PosixPath]:
 
 def get_all_fit_files(folder: Path) -> Iterable[PosixPath]:
     return folder.glob("*.fit")
+
+
+def get_date_from_input_night_folder_name(name: str) -> date:
+    return datetime.strptime(name, INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT).date()
 
 
 def fitFilesInFolder(folder, fileType="All"):

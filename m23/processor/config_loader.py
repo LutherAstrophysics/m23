@@ -2,12 +2,17 @@ import os
 import sys
 from functools import reduce
 from pathlib import Path
-from typing import Dict, List, NotRequired, TypedDict
+from typing import Callable, Dict, List, NotRequired, TypedDict
 
 import toml
-from exception import ConfigurationFileFormatError
 
-from m23.utils import get_all_fit_files, get_raw_darks, get_raw_flats
+from m23.constants import CALIBRATION_FOLDER_NAME, M23_RAW_IMAGES_FOLDER_NAME
+from m23.utils import (
+    get_all_fit_files,
+    get_date_from_input_night_folder_name,
+    get_raw_darks,
+    get_raw_flats,
+)
 
 
 # TYPE related to Config object described by the configuration file
@@ -122,13 +127,20 @@ def validate_night(night: ConfigInputNight) -> bool:
         sys.stdout(f"Images path for {night} doesn't exist")
         return False
 
-    CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / "Calibration Frames"
+    # Check if the name of input folder matches the convention
+    try:
+        get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
+    except:
+        sys.stdout(f"Night {night} folder name doesn't match the naming convention")
+        return False
+
+    CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / CALIBRATION_FOLDER_NAME
     # Check if Calibration Frames exists
     if not CALIBRATION_FOLDER_PATH.exists():
         sys.stdout(f"Path {CALIBRATION_FOLDER_PATH} doesn't exist\n")
         return False
 
-    M23_FOLDER_PATH = NIGHT_INPUT_PATH / "m23"
+    M23_FOLDER_PATH = NIGHT_INPUT_PATH / M23_RAW_IMAGES_FOLDER_NAME
     # Check if m23 folder exists
     if not M23_FOLDER_PATH.exists():
         sys.stdout(f"Path {M23_FOLDER_PATH} doesn't exist\n")
@@ -165,42 +177,28 @@ def validate_input_nights(list_of_nights: List[ConfigInputNight]) -> bool:
     return all([validate_night(night) for night in list_of_nights])
 
 
-def validate_night_date(date: str) -> bool:
-    return False
-
-
-def validate_file(file_path: Path, on_success):
+def validate_file(file_path: Path, on_success: Callable[[Config]]) -> None:
+    """
+    This method reads data processing configuration from the file path
+    provided and calls the unary function on_success if the configuration
+    file is valid with the configuration dictionary (Note, *not* config file).
+    """
     if not file_path.exists() or not file_path.exists():
         raise FileNotFoundError("Cannot find configuration file")
-    try:
-        match toml.load(file_path):
-            case {
-                "image": {"rows": int(_), "columns": int(_), **optional_image_options},
-                "processing": {
-                    "no_of_images_to_combine": int(_),
-                    "radii_of_extraction": list(radii_of_extraction),
-                },
-                "input": {"nights": list(list_of_nights)},
-                "output": {"path": str(_)},
-            } if (
-                verify_optional_image_options(optional_image_options)
-                and is_valid_radii_of_extraction(radii_of_extraction)
-                and validate_input_nights(list_of_nights)
-            ):
-                on_success(sanity_check(load_defaults(toml.load(file_path))))
-            case _:
-                sys.stdout("Stopping because the provided configuration file has issues.\n")
-    except TypeError as e:
-        raise ConfigurationFileFormatError()
-    except toml.TomlDecodeError as e:
-        raise ConfigurationFileFormatError()
-
-
-def main():
-    on_success = lambda data: print(data)
-    # validate_file(b, on_success)
-    validate_file(r, on_success)
-
-
-if __name__ == "__main__":
-    main()
+    match toml.load(file_path):
+        case {
+            "image": {"rows": int(_), "columns": int(_), **optional_image_options},
+            "processing": {
+                "no_of_images_to_combine": int(_),
+                "radii_of_extraction": list(radii_of_extraction),
+            },
+            "input": {"nights": list(list_of_nights)},
+            "output": {"path": str(_)},
+        } if (
+            verify_optional_image_options(optional_image_options)
+            and is_valid_radii_of_extraction(radii_of_extraction)
+            and validate_input_nights(list_of_nights)
+        ):
+            on_success(sanity_check(load_defaults(toml.load(file_path))))
+        case _:
+            sys.stdout("Stopping because the provided configuration file has issues.\n")
