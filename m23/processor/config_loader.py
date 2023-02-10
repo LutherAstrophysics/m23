@@ -28,7 +28,7 @@ class ConfigProcessing(TypedDict):
 
 
 class ConfigInputNight(TypedDict):
-    path: str
+    path: str | Path
     masterflat: NotRequired[str]
 
 
@@ -38,18 +38,14 @@ class ConfigInput(TypedDict):
 
 
 class ConfigOutput(TypedDict):
-    path: str
+    path: str | Path
 
 
 class Config(TypedDict):
     image: ConfigImage
     processing: ConfigProcessing
-    input: ConfigImage
+    input: ConfigInput
     output: ConfigOutput
-
-
-b = Path("./brown.toml")
-r = Path("./rainbow.toml")
 
 
 def is_valid_radii_of_extraction(lst):
@@ -60,13 +56,26 @@ def is_valid_radii_of_extraction(lst):
     return is_valid
 
 
-def load_defaults(config_dict: Config) -> Config:
+def create_processing_config(config_dict: Config) -> Config:
     """
-    Mutates `config_dict` with default values if optional values aren't provided
+    Mutates `config_dict` to :
+    1. Provide default values if optional values aren't provided.
+    2. Replace all path str with Path objects
     """
     # Add empty list as the crop region if not present
     if not config_dict["image"].get("crop_region"):
         config_dict["image"]["crop_region"] = []
+
+    # Convert input night str to Path objects
+    for night in config_dict["input"]["nights"]:
+        if type(night["path"]) == str:
+            night["path"] = Path(night["path"])
+        if night.get("masterflat") and type(night["masterflat"] == str):
+            night["masterflat"] = Path(night["masterflat"])
+
+    # Convert output path to Path object
+    if type(config_dict["output"]["path"]) == str:
+        config_dict["output"]["path"] = Path(config_dict["output"]["path"])
 
     return config_dict
 
@@ -77,7 +86,7 @@ def sanity_check(config_dict: Config) -> Config:
     """
 
     def prompt_to_continue(msg: str):
-        sys.stdout(f"{msg}\n")
+        sys.stdout(msg + "\n")
         response = input("Do you want to continue (y/yes to continue): ")
         if response.upper() not in ["Y", "YES"]:
             os._exit(1)
@@ -124,14 +133,14 @@ def validate_night(night: ConfigInputNight) -> bool:
     NIGHT_INPUT_PATH = Path(night["path"])
     # Check if the night input path exists
     if not NIGHT_INPUT_PATH.exists():
-        sys.stdout(f"Images path for {night} doesn't exist")
+        sys.stdout(f"Images path for {night} doesn't exist\n")
         return False
 
     # Check if the name of input folder matches the convention
     try:
         get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
     except:
-        sys.stdout(f"Night {night} folder name doesn't match the naming convention")
+        sys.stdout(f"Night {night} folder name doesn't match the naming convention\n")
         return False
 
     CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / CALIBRATION_FOLDER_NAME
@@ -154,17 +163,21 @@ def validate_night(night: ConfigInputNight) -> bool:
             return False
     # If masterflat isn't provided, the night should have flats to use
     elif len(list(get_raw_flats(CALIBRATION_FOLDER_PATH))) == 0:
-        sys.stdout(f"Night {night} doesn't contain flats. Provide masterflat path.\n")
+        sys.stdout(
+            f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}. Provide masterflat path.\n"
+        )
         return False
 
     # Check for darks
     if len(list(get_raw_darks(CALIBRATION_FOLDER_PATH))) == 0:
-        sys.stdout(f"Night {night} doesn't contain darks. Cannot continue without darks.\n")
+        sys.stdout(
+            f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}. Cannot continue without darks.\n"
+        )
         return False
 
     # Check for raw images
     if len(list(get_all_fit_files(M23_FOLDER_PATH))) == 0:
-        sys.stdout(f"Night {night} doesn't raw images.\n")
+        sys.stdout(f"Night {right} doesn't raw images in {M23_FOLDER_PATH}.\n")
         return False
 
     return True  # Assuming we did the best we could to catch errors
@@ -199,6 +212,6 @@ def validate_file(file_path: Path, on_success: Callable[[Config]]) -> None:
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)
         ):
-            on_success(sanity_check(load_defaults(toml.load(file_path))))
+            on_success(sanity_check(create_processing_config(toml.load(file_path))))
         case _:
             sys.stdout("Stopping because the provided configuration file has issues.\n")

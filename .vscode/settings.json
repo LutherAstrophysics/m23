@@ -8,5 +8,8 @@
       "source.organizeImports": true
     }
   },
-  "cSpell.words": ["astropy", "getdata", "getfitsdata", "masterflat"]
+  "cSpell.words": ["astropy", "getdata", "getfitsdata", "masterflat"],
+  "files.associations": {
+    "**/**/*.toml": "plaintext"
+  }
 }
