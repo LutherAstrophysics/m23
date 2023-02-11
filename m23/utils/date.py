@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime
 
 
 def get_closet_date(base_date: str, list_of_dates: str, format: str):

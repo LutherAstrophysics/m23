@@ -25,6 +25,7 @@
     "normfactors",
     "Rapti",
     "savetxt",
+    "writeto",
     "XFWHM",
     "yaspin",
     "YFWHM"
