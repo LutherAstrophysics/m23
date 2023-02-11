@@ -2,17 +2,13 @@ import os
 import sys
 from functools import reduce
 from pathlib import Path
-from typing import Callable, Dict, List, NotRequired, TypedDict
+from typing import Callable, Dict, List, TypedDict
 
 import toml
+from typing_extensions import NotRequired
 
-from m23.constants import (
-    CALIBRATION_FOLDER_NAME,
-    INPUT_CALIBRATION_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-)
+from m23.constants import INPUT_CALIBRATION_FOLDER_NAME, M23_RAW_IMAGES_FOLDER_NAME
 from m23.utils import (
-    get_all_fit_files,
     get_darks,
     get_date_from_input_night_folder_name,
     get_flats,
@@ -228,7 +224,7 @@ def validate_reference_files(reference_image: str, reference_file: str) -> bool:
     return True
 
 
-def validate_file(file_path: Path, on_success: Callable[[Config]]) -> None:
+def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None:
     """
     This method reads data processing configuration from the file path
     provided and calls the unary function on_success if the configuration

@@ -22,7 +22,7 @@ from m23.constants import (
     MASTER_FLAT_NAME,
     OUTPUT_CALIBRATION_FOLDER_NAME,
 )
-from m23.extract.extraction import extract_stars, extractStars
+from m23.extract.extraction import extract_stars
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.norm.normalize import normalizeLogFiles

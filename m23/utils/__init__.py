@@ -58,7 +58,7 @@ def get_raw_images(folder: Path) -> Iterable[PosixPath]:
     For what defines the image number, see the definition of `get_image_number_in_fit_file`
     function. Note that files without digit are displayed at the top
     """
-    return folder.glob("*.fit", key=get_image_number_in_fit_file)
+    return sorted(folder.glob("*.fit"), key=get_image_number_in_fit_file)
 
 
 def get_radius_folder_name(radius: int) -> str:
