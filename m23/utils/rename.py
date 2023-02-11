@@ -1,7 +1,7 @@
 import os
 
 
-### Dry specifies if you want to acutally make the changes
+### Dry specifies if you want to actually make the changes
 ### or just see what the changes will be
 ###
 def rename(folder, newNameFromOldName, dry=True):

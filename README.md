@@ -1,64 +1,138 @@
 # M23 Data Processing
 
-This repo is named `python-helpers`. But as the project has grown, the
-code aims do to more than just provide some helper functions in
-python, although the underlying philosophy of the current code is
-still the same. This repo has grown to be a library around python
-modules that collectively make our data processing program.
+This is a library of tools that compose raw image processing of fits files. It
+includes modules for calibration, combination, alignment, extraction and
+normalization. Additionally we also have a data processor module that processes
+data based on a provided configuration file using all the aforementioned
+modules.
 
-The repo has two folders: 
-* [m23](./m23)
-* [usage](./usage)
+### Installation
 
-`m23` is where all the modules live. And `usage` is where those
-modules are used to make something out of them. There are two good
-examples of how to use the modules in `m23` currently in the `usage`
-folder. One is [data processing](./usage/processing) and the other is
-[super combination](./usage/supercombine). Data processing is our main data
-processing code, that we used to do in IDL. 
+This packages is available in pypi and can be installed via the `pip` package manger.
+It is recommended that you install this library in a virtual environment however.
+An ideal setup could be to create a directory where you keep the `toml` data processing
+configuration files (explained below) and install this library there so that you can
+easily run the data processing command right from where your configuration files are.
 
-**For information on how to
-use the data processing, [go to that repo's
-README](./usage/processing/README.md).**
+```
+cd ~/Desktop
+mkdir data-processing; cd data-processing
+```
 
-But the point here is that you
-can use as little of our modules in m23 to make something like a
-[supercombine](./usage/supercombine) program (program to make supercombine images for a night) 
-or use it extensively to
-make the entirety of our data processing. 
+After this use python >= 3.10 to create virtual environment. Instead of typing
+`python3.10` you might have to type `py3` or `python` or `python3` or sth else
+depending on what is configured on your system.
 
-#### Using the software
-To use this software, you must first clone this repo. You must go to
-your terminal, or powershell/git bash (on windows) and type
-```git clone git@github.com:LutherAstrophysics/python-helpers.git```
-You must have ssh keys setup to authorize yourself to clone the repo, 
-If you're new to this see [info on
-github](https://docs.github.com/en/authentication/connecting-to-github-with-ssh/adding-a-new-ssh-key-to-your-github-account).
-Once you clone the repo, you must install the required pacakges for
-our library. Using your terminal, `cd` into the correct repo where the
-root of this library lives (if you're new to command line tools, see
-some examples in google on how to navigate around directories using
-command line on windows/linxu/mac whatever you're on). To install the
-software it's recommended to first instal python virutal environment
-by doing `python -m venv .venv`. This installs a virtual environment
-in the directory you're on in a `.venv` folder. To activate the venv,
-you must run command like `./.venv/bin/activate` or something similar.
-This depends on your OS as well, so you can look it up. Once that is done, 
-install the libraries by running `python -m pip install -r
-requirements.txt`. Pip is a package manager for python and
-`requirements.txt` is the file listing the packages that need to be
-installed.
-Once it's done, you're good to go. 
+```
+python3 -m venv .venv
+```
 
-To see some example programs, look at the [usage folder](./usage).
+Then we activate the virtual environment. This is OS and your shell specific, so
+if the following command doesn't work for your just google how to activate
+python virtual environment using `venv` package in Windows/Ubuntu/etc.
 
-If you've already clone the repo and there's a new change that you'd
-like to pull you should run `git pull`. 
+Generally, the following works for UNIX
+
+```
+source ./.venv/bin/activate
+```
+
+Generally, the following works for Windows. [See more here](./https://docs.python.org/3/library/venv.html#how-venvs-work)
+
+```
+./.venv/Scripts/activate.bat
+# OR
+./.venv/Scripts/Activate.ps1
+```
+
+Now, we can install the `m23` library
+
+```
+python -m pip install m23
+```
+
+### Usage
+
+Once you've installed `m23` you can use any of the modules present (example.
+calibration, extraction, normalization, etc) individually or just use the main
+programs `m23` that do data processing for your. To process data for a
+night/nights, you must define a configuration file. The processor reads the
+data processing settings along with the path to input and output directories
+from the configuration file.
+
+##### Configuration Files
+
+(B)rown comes before (R)ainbow so the file [./brown.tml](./brown.toml) denotes
+the configuration for processing pre new camera (< June 16 2022) data.
+
+[./rainbow.toml](./rainbow.toml) is an example configuration file for
+processing data after the new camera (>= June 16 2022)
+
+A sample configuration file (for old camera images) looks like this. For example of new camera
+configuration file see [./rainbow.toml](./rainbow.toml).
+
+```
+# This is a comment, written
+[image]
+rows = 1024
+columns = 1024
+crop_region = [] # We don't crop old camera images < June 16 2022
+
+
+[processing]
+no_of_images_to_combine = 10
+radii_of_extraction = [3, 4, 5]
+
+
+[reference]
+# The image file is an actual fit image while the reffile refers to the stats file for that image
+image = "C://Data Processing/Reference/RefImage.fit"
+file = "C://Data Processing/Reference/reffile.txt"
+
+
+[input]
+
+    [[input.nights]]
+    path = "F://Summer 2019/September 4, 2019"
+    masterflat = "C://Data Processing/2019/Python Processed/September 4 2019"
+
+    [[input.nights]]
+    path = "F://Summer 2019/September 9, 2019"
+    # Because we haven't provided masterflat, this night must have flats to use
+
+    [[input.nights]]
+    path = "F://Summer 2019/September 8, 2019"
+    # Because we haven't provided masterflat, this night must have flats to use
+
+
+[output]
+path = "C://Data Processing/2019 Python Processed"
+```
+
+The file should be pretty self explanatory. Note that `#` denotes the beginning end of line comment.
+Still few things to note:
+
+1. Provide masterflat for only those nights where we would like to use masterflat of other nights.
+2. Any of the paths except the output path provided in the configuration file must exist, otherwise the configuration file is deemed to be problematic. Output path (along with any intermediary directories) are created if they don't already exist. This applies to masterflat path as well. So you cannot process a night that doesn't have flats before the masterflat that you want to use for the night exists.
+3. Make sure that you are not processing old camera nights and new camera images together, unless you absolutely know what you're doing.
+
+Once you have a configuration file, you can start processing by invoking the command line interface as follows:
+
+```
+python -m m23
+```
+
+If you want to do data processing or invoke any of the `m23` modules as part of your python program, you can import
+the respective module/functions/variables as follows
+
+```
+from m23 import start_data_processing # Data processing function
+from m23.align.alignment import imageAlignment
+from m23.constants import ALIGNED_COMBINED_FOLDER_NAME
+```
+
+For detailed info on the behavior these functions/variables, look up the source code.
 
 ### Contributing
-This library has bugs, like most software and needs contribution. To
-make changes to it, you go to the respective folder (mostly m23) and
-make changes in whatever module you're trying to. To commit your
-changes to github, you need to know little about git, so look up how
-to do that, and you're good to go.
 
+This library has bugs, like most software and needs your valuable contribution.

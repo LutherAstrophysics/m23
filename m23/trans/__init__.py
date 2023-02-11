@@ -1,3 +1,3 @@
-from .fits import createFitFileWithSameHeader, fitsToCSV, readFits
+from .fits import createFitFileWithSameHeader
 
-__all__ = ["readFits", "fitsToCSV", "createFitFileWithSameHeader"]
+__all__ = ["createFitFileWithSameHeader"]

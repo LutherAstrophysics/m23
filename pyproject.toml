@@ -1,0 +1,16 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "m23"
+readme = "README.txt"
+requires-python = ">3.10.1"
+version = "0.0.14"
+dependencies = [
+    "numpy==1.24.2",
+    'toml==0.10.2',
+    'astropy==5.2.1',
+    'astroalign==2.4.1',
+    'typing_extensions==4.4.0'
+]

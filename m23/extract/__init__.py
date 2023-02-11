@@ -1,3 +1,3 @@
-from .extraction import extractStars
+from .extraction import extract_stars
 
-__all__ = ["extractStars"]
+__all__ = ["extract_stars"]

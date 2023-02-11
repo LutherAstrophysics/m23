@@ -1,17 +1,10 @@
-import sys
-from datetime import datetime
-from pathlib import Path
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import math
 import os
+from datetime import date
+from pathlib import Path
 
-### external libraries
 import numpy as np
 
-### m23 imports
 from m23.file import getLinesWithNumbersFromFile
 
 
@@ -22,13 +15,13 @@ from m23.file import getLinesWithNumbersFromFile
 ### and folder path to save the new files in
 ###
 ### Produces a normalization.txt file and Flux Logs combined folder
-### with nomralized files in the saveFolder
+### with normalized files in the saveFolder
 ###
 ### BIG ASSUMPTION!!!!
 ### We assume that noOfStars in all log files is the same as no of stars in
 ### reference file. This is the case if the log files were produced using extraction
 ### module in this library. However, in case of log files produced by previous IDL code
-### this was't true. This is also one of the reasons, this normalizaion code might be
+### this was't true. This is also one of the reasons, this normalization code might be
 ### faster than the IDL version.
 ###
 ###
@@ -37,8 +30,9 @@ from m23.file import getLinesWithNumbersFromFile
 def normalizeLogFiles(
     referenceFileName,
     logFilesNamesToNormalize,
-    saveFolder,
-    date_of_night: datetime,
+    logfile_adu_column,
+    saveFolder: Path,
+    date_of_night: date,
     startImageUsed="",
     endImageUsed="",
 ):
@@ -131,10 +125,8 @@ def normalizeLogFiles(
     ### Save the norm factor dot txt
 
     np.savetxt(
-        os.path.join(
-            saveFolder,
-            f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_normfactors.txt",
-        ),
+        saveFolder
+        / f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_normfactors.txt",
         np.array(allNormFactors),
         fmt="%3.5f",
     )

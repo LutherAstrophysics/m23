@@ -7,5 +7,38 @@
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
     }
+  },
+  "cSpell.words": [
+    "adus",
+    "ainbow",
+    "astroalign",
+    "astropy",
+    "astype",
+    "dtype",
+    "FWHM",
+    "getdata",
+    "getfitsdata",
+    "linfit",
+    "linspace",
+    "logfiles",
+    "masterdark",
+    "masterflat",
+    "normfactors",
+    "numpy",
+    "pypi",
+    "Rapti",
+    "renorm",
+    "Renormalize",
+    "rown",
+    "savetxt",
+    "setuptools",
+    "venv",
+    "writeto",
+    "XFWHM",
+    "yaspin",
+    "YFWHM"
+  ],
+  "files.associations": {
+    "**/**/*.toml": "plaintext"
   }
 }

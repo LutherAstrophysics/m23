@@ -1,8 +1,3 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import numpy as np
 
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
@@ -148,9 +143,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
     def doGaussian():
         # print("doing gaussian")
-        surroundingMatrixGaussBox = calibratedImageData[
-            row - 5 : row + 6, col - 5 : col + 6
-        ]
+        surroundingMatrixGaussBox = calibratedImageData[row - 5 : row + 6, col - 5 : col + 6]
 
         ### Create a gaussian matrix for the surrounding matrix
         ### Let the hot pixel value equal to the middle position value of the gaussian box
@@ -162,9 +155,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
     def takeAverage():
         surroundingMatrix = calibratedImageData[row - 1 : row + 2, col - 1 : col + 2]
         surroudingSum = np.sum(surroundingMatrix)
-        surroundingMatrixAverageWithoutCenter = (
-            surroudingSum - calibratedImageData[row][col]
-        ) / 8
+        surroundingMatrixAverageWithoutCenter = (surroudingSum - calibratedImageData[row][col]) / 8
         calibratedImageData[row][col] = surroundingMatrixAverageWithoutCenter
 
     doGaussian() if needsGausian() else takeAverage()
@@ -186,9 +177,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 ###   returns arrray of calibrated image data,
 
 
-def calibrateImages(
-    masterDarkData, masterFlatData, listOfImagesData, masterBiasData=np.array([])
-):
+def calibrateImages(masterDarkData, masterFlatData, listOfImagesData, masterBiasData=np.array([])):
 
     ### We save the hot pixels, which are 3 standard deviation higher than the median
     ### We will save their positions (x,y)
@@ -216,8 +205,7 @@ def calibrateImages(
     filteredHotPixelPositions = tuple(
         filter(
             lambda row_column: not (
-                row_column[0] > totalRows - edgeSize
-                or row_column[1] > totalColumns - edgeSize
+                row_column[0] > totalRows - edgeSize or row_column[1] > totalColumns - edgeSize
             ),
             topLeftFiltered,
         )

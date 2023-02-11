@@ -1,8 +1,3 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import astroalign as ast
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata

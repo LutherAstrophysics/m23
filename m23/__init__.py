@@ -1,4 +1,3 @@
-# m23 Package
-# for Luther Astrophysics
+from .processor import start_data_processing
 
-__version__ = "2022_07_01"
+__all__ = ["start_data_processing"]

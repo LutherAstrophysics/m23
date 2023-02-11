@@ -1,8 +1,3 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import numpy as np
 
 ### imports from m23

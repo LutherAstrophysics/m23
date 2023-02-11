@@ -1,15 +1,9 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import numpy as np
 
-### m23 imports
 from m23.trans import createFitFileWithSameHeader
 from m23.utils import customMedian, fitDataFromFitImages
 
-### please note that code is a direct implementation of steps
+### This code is a direct implementation of steps
 ### mentioned in Handbook of Astronomical Image `Processing by
 ### Richard Berry and James Burnell version 2.0 section 6.3 Standard Calibration
 
@@ -17,11 +11,7 @@ from m23.utils import customMedian, fitDataFromFitImages
 ###
 ###  purpose: creates masterBias, saves to fileName + returns masterBiasData
 ###
-
-
-def makeMasterBias(
-    saveAs, headerToCopyFromName=None, listOfBiasNames=None, listOfBiasData=None
-):
+def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, listOfBiasData=None):
 
     if listOfBiasNames:
         listOfBiasData = fitDataFromFitImages(listOfBiasNames)
@@ -48,9 +38,7 @@ def makeMasterBias(
 ###
 ### we generate the masterDark by "taking median of the dark frames"
 ###   --Richard Berry, James Burnell
-def makeMasterDark(
-    saveAs, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None
-):
+def makeMasterDark(saveAs, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None):
 
     if listOfDarkNames:
         listOfDarkData = fitDataFromFitImages(listOfDarkNames)
@@ -61,7 +49,7 @@ def makeMasterDark(
     if not headerToCopyFromName and listOfDarkNames:
         headerToCopyFromName = listOfDarkNames[0]
     elif not headerToCopyFromName and not listOfDarkNames:
-        raise Exception("Filename to copy header from not provied")
+        raise Exception("Filename to copy header from not provided")
 
     masterDarkData = getMedianOfMatrices(listOfDarkData)
     # listOfDarks[0] is the file whose header we're copying to
@@ -108,8 +96,7 @@ def makeMasterFlat(
     ###   like the current IDL code does
     ###   https://github.com/LutherAstrophysics/idl-files/blob/f3d10e770d4d268908438deb4cda2076f21f1b14/master_calibration_frame_makerNEWEST.pro#L199
     listOfFlatData = [
-        flatData * firstFlatMedian / customMedian(flatData)
-        for flatData in listOfFlatData
+        flatData * firstFlatMedian / customMedian(flatData) for flatData in listOfFlatData
     ]
 
     ### the we take the median of the scaled flats
@@ -128,6 +115,4 @@ def makeMasterFlat(
 def getMedianOfMatrices(listOfMatrices):
 
     ## https://stackoverflow.com/questions/18461623/average-values-in-two-numpy-arrays
-    return customMedian(
-        np.array(listOfMatrices), axis=0, out=np.empty_like(listOfMatrices[0])
-    )
+    return customMedian(np.array(listOfMatrices), axis=0, out=np.empty_like(listOfMatrices[0]))
