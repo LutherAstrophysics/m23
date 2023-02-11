@@ -27,6 +27,8 @@
     "numpy",
     "pypi",
     "Rapti",
+    "renorm",
+    "Renormalize",
     "rown",
     "savetxt",
     "setuptools",

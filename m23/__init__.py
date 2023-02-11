@@ -1,3 +1,3 @@
-from .processor import start_data_processing as process
+from .processor import start_data_processing
 
-__all__ = ["process"]
+__all__ = ["start_data_processing"]

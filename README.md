@@ -126,7 +126,7 @@ If you want to do data processing or invoke any of the `m23` modules as part of 
 the respective module/functions/variables as follows
 
 ```
-from m23 import process # Data processing function
+from m23 import start_data_processing # Data processing function
 from m23.align.alignment import imageAlignment
 from m23.constants import ALIGNED_COMBINED_FOLDER_NAME
 ```
