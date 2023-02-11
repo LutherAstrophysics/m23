@@ -1,3 +1,4 @@
+import logging
 import sys
 from datetime import date
 from pathlib import Path
@@ -51,7 +52,14 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     radii_of_extraction = config["processing"]["radii_of_extraction"]
 
-    # TODO Logging
+    logging.basicConfig(
+        filename=output / f"{night_date}-log.txt",
+        format="%(asctime)s %(message)s",
+        level=logging.INFO,
+    )
+    # Write to std out in addition to writing to a logfile
+    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
+    logging.info(f"Starting processing for {night_date}")
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
@@ -88,11 +96,13 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
         listOfDarkData=darks,
     )
+    logging.info(f"Created master dark")
     del darks  # Deleting to free memory as we don't use darks anymore
 
     # Flats
     if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
+        logging.info(f"Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
         if len(crop_region) > 0:
@@ -105,10 +115,14 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             ).absolute(),  # Gets absolute path of first flat file
             listOfDarkData=flats,
         )
+        logging.info(f"Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
     raw_images: List[Path] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
+    logging.info(f"Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
+    logging.info(f"Using no of images to combine: {no_of_images_to_combine}")
+    logging.info(f"Radii of extraction: {radii_of_extraction}")
 
     # We now Calibrate/Crop/Align/Combine/Extract set of images in the size of no of combination
     # Note the subtle typing difference between no_of_combined_images and no_of_images_to_combine
@@ -141,8 +155,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             try:
                 aligned_images_data.append(imageAlignment(image_data, ref_image_path))
             except Exception as e:
-                sys.stderr.write(f"Could not align image {raw_images[from_index + index]}")
-                sys.stderr.write(f"Skipping combination {from_index}-{to_index}")
+                logging.error(f"Could not align image {raw_images[from_index + index]}")
+                logging.error(f"Skipping combination {from_index}-{to_index}")
                 break
 
         del images_data  # Delete unused object to free up memory
@@ -159,6 +173,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             / f"m23_7.0-{(to_index // no_of_images_to_combine):03}.fit",
             raw_images[from_index],  # Copy header from the first image in combination
         )
+        logging.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
         extract_stars(
@@ -168,9 +183,11 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             / f"{night_date.strftime(LOG_FILE_COMBINED_FILENAME_DATE_FORMAT)}_m23_7.0-{(to_index // 10):03}.txt",
             radii_of_extraction=radii_of_extraction,
         )
+        logging.info(f"Extraction from combination {from_index}-{to_index} completed")
 
     # Normalization
     for index, radius in enumerate(radii_of_extraction):
+        logging.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
         RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
         for file in RADIUS_FOLDER.glob("*"):
