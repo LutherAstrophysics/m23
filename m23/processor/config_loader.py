@@ -6,12 +6,17 @@ from typing import Callable, Dict, List, NotRequired, TypedDict
 
 import toml
 
-from m23.constants import CALIBRATION_FOLDER_NAME, M23_RAW_IMAGES_FOLDER_NAME
+from m23.constants import (
+    CALIBRATION_FOLDER_NAME,
+    INPUT_CALIBRATION_FOLDER_NAME,
+    M23_RAW_IMAGES_FOLDER_NAME,
+)
 from m23.utils import (
     get_all_fit_files,
+    get_darks,
     get_date_from_input_night_folder_name,
-    get_raw_darks,
-    get_raw_flats,
+    get_flats,
+    get_raw_images,
 )
 
 
@@ -52,7 +57,7 @@ def is_valid_radii_of_extraction(lst):
     """Verifies that each radius of extraction is a positive integer"""
     is_valid = all([type(i) == int and i > 0 for i in lst])
     if not is_valid:
-        sys.stdout.write("Radius of extraction must be positive integers\n")
+        sys.stderr.write("Radius of extraction must be positive integers\n")
     return is_valid
 
 
@@ -86,7 +91,7 @@ def sanity_check(config_dict: Config) -> Config:
     """
 
     def prompt_to_continue(msg: str):
-        sys.stdout(msg + "\n")
+        sys.stderr(msg + "\n")
         response = input("Do you want to continue (y/yes to continue): ")
         if response.upper() not in ["Y", "YES"]:
             os._exit(1)
@@ -120,7 +125,7 @@ def verify_optional_image_options(options: Dict) -> bool:
     values: List[int] = reduce(lambda prev, curr: prev + curr, crop_region, [])
     is_valid = all([type(i) == i and i >= 0 for i in values])
     if not is_valid:
-        sys.stdout.write("Crop region must be an array of array of integers >= 0\n")
+        sys.stderr.write("Crop region must be an array of array of integers >= 0\n")
     return is_valid
 
 
@@ -133,52 +138,58 @@ def validate_night(night: ConfigInputNight) -> bool:
     NIGHT_INPUT_PATH = Path(night["path"])
     # Check if the night input path exists
     if not NIGHT_INPUT_PATH.exists():
-        sys.stdout(f"Images path for {night} doesn't exist\n")
+        sys.stderr(f"Images path for {night} doesn't exist\n")
         return False
 
     # Check if the name of input folder matches the convention
     try:
         get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
     except:
-        sys.stdout(f"Night {night} folder name doesn't match the naming convention\n")
+        sys.stderr(f"Night {night} folder name doesn't match the naming convention\n")
         return False
 
-    CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / CALIBRATION_FOLDER_NAME
+    CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / INPUT_CALIBRATION_FOLDER_NAME
     # Check if Calibration Frames exists
     if not CALIBRATION_FOLDER_PATH.exists():
-        sys.stdout(f"Path {CALIBRATION_FOLDER_PATH} doesn't exist\n")
+        sys.stderr(f"Path {CALIBRATION_FOLDER_PATH} doesn't exist\n")
         return False
 
     M23_FOLDER_PATH = NIGHT_INPUT_PATH / M23_RAW_IMAGES_FOLDER_NAME
     # Check if m23 folder exists
     if not M23_FOLDER_PATH.exists():
-        sys.stdout(f"Path {M23_FOLDER_PATH} doesn't exist\n")
+        sys.stderr(f"Path {M23_FOLDER_PATH} doesn't exist\n")
         return False
 
     # Check for flats
     # Either the masterflat should be provided or the night should contain its own flats.
     if night.get("masterflat"):
         if not Path(night["masterflat"]).exists():
-            sys.stdout(f"Provided masterflat path for {night} doesn't exist.\n")
+            sys.stderr(f"Provided masterflat path for {night} doesn't exist.\n")
             return False
     # If masterflat isn't provided, the night should have flats to use
-    elif len(list(get_raw_flats(CALIBRATION_FOLDER_PATH))) == 0:
-        sys.stdout(
+    elif len(list(get_flats(CALIBRATION_FOLDER_PATH))) == 0:
+        sys.stderr(
             f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}. Provide masterflat path.\n"
         )
         return False
 
     # Check for darks
-    if len(list(get_raw_darks(CALIBRATION_FOLDER_PATH))) == 0:
-        sys.stdout(
+    if len(list(get_darks(CALIBRATION_FOLDER_PATH))) == 0:
+        sys.stderr(
             f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}. Cannot continue without darks.\n"
         )
         return False
 
     # Check for raw images
-    if len(list(get_all_fit_files(M23_FOLDER_PATH))) == 0:
-        sys.stdout(f"Night {right} doesn't raw images in {M23_FOLDER_PATH}.\n")
-        return False
+    try:
+        if len(list(get_raw_images(M23_FOLDER_PATH))) == 0:
+            sys.stderr(f"Night {right} doesn't raw images in {M23_FOLDER_PATH}.\n")
+            return False
+    except ValueError as e:
+        sys.stderr(
+            "Raw image in night {night} doesn't confirm to 'something-00x.fit' convention.\n"
+        )
+        raise e
 
     return True  # Assuming we did the best we could to catch errors
 
@@ -214,4 +225,4 @@ def validate_file(file_path: Path, on_success: Callable[[Config]]) -> None:
         ):
             on_success(sanity_check(create_processing_config(toml.load(file_path))))
         case _:
-            sys.stdout("Stopping because the provided configuration file has issues.\n")
+            sys.stderr("Stopping because the provided configuration file has issues.\n")

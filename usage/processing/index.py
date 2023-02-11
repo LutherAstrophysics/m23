@@ -11,6 +11,16 @@ import re
 from datetime import date, datetime
 
 from astropy.io.fits import getdata
+
+### local imports
+from conventions import rawCalibrationFolderName, rawImagesFolderName
+
+### setting import
+from settings import currentSettings
+
+###
+from yaspin import yaspin
+
 from m23.align import imageAlignment
 from m23.calibrate import (
     calibrateImages,
@@ -25,15 +35,6 @@ from m23.norm import normalizeLogFiles
 
 ### m23 imports
 from m23.utils import fitDataFromFitImages, fitFilesInFolder, raw_data_name_format
-
-###
-from yaspin import yaspin
-
-### local imports
-from conventions import rawCalibrationFolderName, rawImagesFolderName
-
-### setting import
-from settings import currentSettings
 
 
 def main(settings=None):
@@ -172,7 +173,7 @@ def main(settings=None):
         logfd.write(f"{newlinechar}")
 
     ### Generate masterflat if flats are provided in calibrations folder
-    ### else expects master flat filepath to be provied in settings
+    ### else expects master flat filepath to be provided in settings
     if len(flats):
         with yaspin(text=f"Making master flat"):
             masterFlatData = makeMasterFlat(

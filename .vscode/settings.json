@@ -8,7 +8,23 @@
       "source.organizeImports": true
     }
   },
-  "cSpell.words": ["astropy", "getdata", "getfitsdata", "masterflat"],
+  "cSpell.words": [
+    "adus",
+    "astropy",
+    "astype",
+    "dtype",
+    "FWHM",
+    "getdata",
+    "getfitsdata",
+    "linfit",
+    "masterdark",
+    "masterflat",
+    "normfactors",
+    "savetxt",
+    "XFWHM",
+    "yaspin",
+    "YFWHM"
+  ],
   "files.associations": {
     "**/**/*.toml": "plaintext"
   }

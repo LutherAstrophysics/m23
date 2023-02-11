@@ -1,5 +1,5 @@
 import sys
-from datetime import datetime
+from datetime import date
 from pathlib import Path
 
 if "../../" not in sys.path:
@@ -22,13 +22,13 @@ from m23.file import getLinesWithNumbersFromFile
 ### and folder path to save the new files in
 ###
 ### Produces a normalization.txt file and Flux Logs combined folder
-### with nomralized files in the saveFolder
+### with normalized files in the saveFolder
 ###
 ### BIG ASSUMPTION!!!!
 ### We assume that noOfStars in all log files is the same as no of stars in
 ### reference file. This is the case if the log files were produced using extraction
 ### module in this library. However, in case of log files produced by previous IDL code
-### this was't true. This is also one of the reasons, this normalizaion code might be
+### this was't true. This is also one of the reasons, this normalization code might be
 ### faster than the IDL version.
 ###
 ###
@@ -38,7 +38,7 @@ def normalizeLogFiles(
     referenceFileName,
     logFilesNamesToNormalize,
     saveFolder,
-    date_of_night: datetime,
+    date_of_night: date,
     startImageUsed="",
     endImageUsed="",
 ):
