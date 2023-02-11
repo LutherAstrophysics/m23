@@ -37,7 +37,7 @@ Generally, the following works for UNIX
 source ./.venv/bin/activate
 ```
 
-Generally, the following works for Windows. [See more here](./https://docs.python.org/3/library/venv.html#how-venvs-work)
+Generally, the following works for Windows. [See more here](https://docs.python.org/3/library/venv.html#how-venvs-work)
 
 ```
 ./.venv/Scripts/activate.bat
