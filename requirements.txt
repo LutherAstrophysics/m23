@@ -37,5 +37,6 @@ termcolor==1.1.0
 tifffile==2022.5.4
 toml==0.10.2
 tomli==2.0.1
+typing_extensions==4.4.0
 urllib3==1.26.9
 yaspin==2.1.0
