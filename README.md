@@ -119,7 +119,9 @@ Still few things to note:
 Once you have a configuration file, you can start processing by invoking the command line interface as follows:
 
 ```
-python -m m23
+python -m m23 process config_file_path
+# Example, if you have 1.toml in current directory
+python -m m23 process 1.toml
 ```
 
 If you want to do data processing or invoke any of the `m23` modules as part of your python program, you can import
