@@ -120,6 +120,7 @@ Once you have a configuration file, you can start processing by invoking the com
 
 ```
 python -m m23 process config_file_path
+
 # Example, if you have 1.toml in current directory
 python -m m23 process 1.toml
 ```
