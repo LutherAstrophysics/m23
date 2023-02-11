@@ -1,6 +1,6 @@
 import argparse
 
-from m23.processor.process_nights import start_data_processing
+from m23 import process
 
 parser = argparse.ArgumentParser(
     prog="M23 Data processor", description="Created by trouts", epilog="Made in Rapti"
@@ -9,4 +9,4 @@ parser = argparse.ArgumentParser(
 parser.add_argument("config_file")  # positional argument
 args = parser.parse_args()
 
-start_data_processing(args.config_file)
+process(args.config_file)

@@ -68,10 +68,71 @@ the configuration for processing pre new camera (< June 16 2022) data.
 [./rainbow.toml](./rainbow.toml) is an example configuration file for
 processing data after the new camera (>= June 16 2022)
 
+A sample configuration file (for old camera images) looks like this. For example of new camera
+configuration file see [./rainbow.toml](./rainbow.toml).
+
+```
+# This is a comment, written
+[image]
+rows = 1024
+columns = 1024
+crop_region = [] # We don't crop old camera images < June 16 2022
+
+
+[processing]
+no_of_images_to_combine = 10
+radii_of_extraction = [3, 4, 5]
+
+
+[reference]
+# The image file is an actual fit image while the reffile refers to the stats file for that image
+image = "C://Data Processing/Reference/RefImage.fit"
+file = "C://Data Processing/Reference/reffile.txt"
+
+
+[input]
+
+    [[input.nights]]
+    path = "F://Summer 2019/September 4, 2019"
+    masterflat = "C://Data Processing/2019/Python Processed/September 4 2019"
+
+    [[input.nights]]
+    path = "F://Summer 2019/September 9, 2019"
+    # Because we haven't provided masterflat, this night must have flats to use
+
+    [[input.nights]]
+    path = "F://Summer 2019/September 8, 2019"
+    # Because we haven't provided masterflat, this night must have flats to use
+
+
+[output]
+path = "C://Data Processing/2019 Python Processed"
+```
+
+The file should be pretty self explanatory. Note that `#` denotes the beginning end of line comment.
+Still few things to note:
+
+1. Provide masterflat for only those nights where we would like to use masterflat of other nights.
+2. Any of the paths except the output path provided in the configuration file must exist, otherwise the configuration file is deemed to be problematic. Output path (along with any intermediary directories) are created if they don't already exist. This applies to masterflat path as well. So you cannot process a night that doesn't have flats before the masterflat that you want to use for the night exists.
+3. Make sure that you are not processing old camera nights and new camera images together, unless you absolutely know what you're doing.
+
+Once you have a configuration file, you can start processing by invoking the command line interface as follows:
+
+```
+python -m m23
+```
+
+If you want to do data processing or invoke any of the `m23` modules as part of your python program, you can import
+the respective module/functions/variables as follows
+
+```
+from m23 import process # Data processing function
+from m23.align.alignment import imageAlignment
+from m23.constants import ALIGNED_COMBINED_FOLDER_NAME
+```
+
+For detailed info on the behavior these functions/variables, look up the source code.
+
 ### Contributing
 
-This library has bugs, like most software and needs contribution. To
-make changes to it, you go to the respective folder (mostly m23) and
-make changes in whatever module you're trying to. To commit your
-changes to github, you need to know little about git, so look up how
-to do that, and you're good to go.
+This library has bugs, like most software and needs your valuable contribution.
