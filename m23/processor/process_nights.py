@@ -140,8 +140,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             try:
                 aligned_images_data.append(imageAlignment(image_data, ref_image_path))
             except Exception as e:
-                sys.stderr(f"Could not align image {raw_images[from_index + index]}")
-                sys.stderr(f"Skipping combination {from_index}-{to_index}")
+                sys.stderr.write(f"Could not align image {raw_images[from_index + index]}")
+                sys.stderr.write(f"Skipping combination {from_index}-{to_index}")
                 break
 
         del images_data  # Delete unused object to free up memory
@@ -199,7 +199,7 @@ def start_data_processing_auxiliary(config: Config):
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
 
 
-def start_data_processing_helper(file_path: Path):
+def start_data_processing(file_path: Path):
     """
     Starts data processing with the configuration file `file_path` provided as the argument.
     Calls auxiliary function `start_data_processing_auxiliary` if the configuration is valid.
