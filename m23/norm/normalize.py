@@ -37,7 +37,8 @@ from m23.file import getLinesWithNumbersFromFile
 def normalizeLogFiles(
     referenceFileName,
     logFilesNamesToNormalize,
-    saveFolder,
+    logfile_adu_column,
+    saveFolder: Path,
     date_of_night: date,
     startImageUsed="",
     endImageUsed="",
@@ -131,10 +132,8 @@ def normalizeLogFiles(
     ### Save the norm factor dot txt
 
     np.savetxt(
-        os.path.join(
-            saveFolder,
-            f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_normfactors.txt",
-        ),
+        saveFolder
+        / f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_normfactors.txt",
         np.array(allNormFactors),
         fmt="%3.5f",
     )

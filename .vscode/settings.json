@@ -17,6 +17,8 @@
     "getdata",
     "getfitsdata",
     "linfit",
+    "linspace",
+    "logfiles",
     "masterdark",
     "masterflat",
     "normfactors",

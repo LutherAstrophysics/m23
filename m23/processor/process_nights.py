@@ -44,7 +44,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     """
     # Save the config file used to do the current data processing
     CONFIG_PATH = output / CONFIG_FILE_NAME
-    toml.dump(config, CONFIG_PATH)
+    with CONFIG_PATH.open("w+") as fd:
+        toml.dump(config, fd)
 
     # Number of expected rows and columns in all raw images
     rows, cols = config["image"]["rows"], config["image"]["columns"]
@@ -73,7 +74,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
     ]:
         if folder.exists():
-            [file.unlink() for file in folder.glob("*")]  # Remove existing files
+            [file.unlink() for file in folder.glob("*") if file.is_file()]  # Remove existing files
         folder.mkdir(exist_ok=True)
 
     crop_region = config["image"]["crop_region"]
@@ -90,7 +91,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     del darks  # Deleting to free memory as we don't use darks anymore
 
     # Flats
-    if night["masterflat"]:
+    if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
@@ -169,13 +170,19 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         )
 
     # Normalization
-    for radius in radii_of_extraction:
+    for index, radius in enumerate(radii_of_extraction):
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
         RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
         for file in RADIUS_FOLDER.glob("*"):
-            file.unlink()  # Remove each file in the folder
+            if file.is_file():
+                file.unlink()  # Remove each file in the folder
+        logfile_adu_column = 6 + index  # 6th column is the first column with Star ADU
         normalizeLogFiles(
-            ref_file_path, LOG_FILES_COMBINED_OUTPUT_FOLDER.glob("*"), radius, night_date
+            ref_file_path,
+            LOG_FILES_COMBINED_OUTPUT_FOLDER.glob("*"),
+            logfile_adu_column,
+            RADIUS_FOLDER,
+            night_date,
         )
 
 
@@ -194,8 +201,8 @@ def start_data_processing_auxiliary(config: Config):
         night_path: Path = night["path"]
         night_date = get_date_from_input_night_folder_name(night_path.name)
         OUTPUT_NIGHT_FOLDER = OUTPUT_PATH / get_output_folder_name_from_night_date(night_date)
-        # Create output folder, if it doesn't already exist
-        OUTPUT_PATH.mkdir(exist_ok=True)
+        # Create output folder for the night, if it doesn't already exist
+        OUTPUT_NIGHT_FOLDER.mkdir(exist_ok=True)
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
 
 

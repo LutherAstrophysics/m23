@@ -72,7 +72,7 @@ def extract_stars(
         fd.write(f"Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n")
         fd.write(f"\tImage {image_name or ''}:\n")
         fd.write(f"\tTotal no of stars: {no_of_stars}\n")
-        fd.write(f"\tRadius of star diaphragm {','.join(radii_of_extraction)}:\n")
+        fd.write(f"\tRadius of star diaphragm {', '.join(map(str, radii_of_extraction))}:\n")
         fd.write(f"\tSky annulus inner radius: \n")
         fd.write(f"\tSky annulus outer radius: \n")
         fd.write(f"\tThreshold factor: \n")
@@ -89,7 +89,7 @@ def extract_stars(
             f"{headers[0]:>16s}{headers[1]:>16s}{headers[2]:>16s}{headers[3]:>16s}{headers[4]:>16s}{headers[5]:>16s}{headers[6]:>16s}{headers[7]:>16s}{headers[8]:>16s}"
         )
         fd.write("\n")
-        for star_index in range(len(no_of_stars)):
+        for star_index in range(no_of_stars):
             # We keep all stars in this step, filtering bad ones only in the normalization step
             data = (
                 stars_centers_in_new_image[star_index][::-1]
@@ -100,9 +100,9 @@ def extract_stars(
                         2
                     ],  # Star ADU for first radius of extraction
                 )
-                + [
-                    star_fluxes[i][star_index][2] for i in radii_of_extraction[1:]
-                ]  # Star ADU for rest of the radii of extractions
+                + tuple(
+                    [star_fluxes[i][star_index][2] for i in radii_of_extraction[1:]]
+                )  # Star ADU for rest of the radii of extractions
             )
             fd.write(
                 f"{data[0]:>16.2f}{data[1]:>16.2f}{data[2]:>16.4f}{data[3]:>16.4f}{data[4]:>16.4f}{data[5]:>16.2f}"

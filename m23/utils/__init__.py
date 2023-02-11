@@ -17,16 +17,16 @@ from m23.constants import (
 from .rename import rename
 
 
-def get_image_number_in_fit_file(msg: str) -> int:
+def get_image_number_in_fit_file(file: Path) -> int:
     """
     Returns the image number of the fit file, or raises error if image number not found
     Examples:
         In the filename, m23_7.0-010.fit, image number is 10
         More generally, In something-xxx.fit, integer representing xxx defines the image number
     """
-    results = re.findall(r"^.*-(\d+)\.fit", msg)
+    results = re.findall(r"^.*-(\d+)\.fit", file.name)
     if len(results) == 0:
-        raise ValueError(f"{msg} is not in something-xxx.fit format")
+        raise ValueError(f"{file.name} is not in something-xxx.fit format")
     else:
         return int(results[0])
 
