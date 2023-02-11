@@ -42,6 +42,11 @@ class ConfigInput(TypedDict):
     radii_of_extraction: List[int]
 
 
+class ConfigReference(TypedDict):
+    image: str | Path
+    file: str | Path
+
+
 class ConfigOutput(TypedDict):
     path: str | Path
 
@@ -49,6 +54,7 @@ class ConfigOutput(TypedDict):
 class Config(TypedDict):
     image: ConfigImage
     processing: ConfigProcessing
+    reference: ConfigReference
     input: ConfigInput
     output: ConfigOutput
 
@@ -81,6 +87,12 @@ def create_processing_config(config_dict: Config) -> Config:
     # Convert output path to Path object
     if type(config_dict["output"]["path"]) == str:
         config_dict["output"]["path"] = Path(config_dict["output"]["path"])
+
+    # Convert reference file/img to Path object
+    if type(config_dict["reference"]["file"]) == str:
+        config_dict["reference"]["file"] = Path(config_dict["reference"]["file"])
+    if type(config_dict["reference"]["image"]) == str:
+        config_dict["reference"]["image"] = Path(config_dict["reference"]["image"])
 
     return config_dict
 
@@ -201,6 +213,21 @@ def validate_input_nights(list_of_nights: List[ConfigInputNight]) -> bool:
     return all([validate_night(night) for night in list_of_nights])
 
 
+def validate_reference_files(reference_image: str, reference_file: str) -> bool:
+    """
+    Returns True if reference_image and reference_file paths exist
+    """
+    img_path = Path(reference_image)
+    file_path = Path(reference_file)
+    if not (img_path.exists() and img_path.is_file() and img_path.suffix == ".fit"):
+        sys.stderr("Make sure that the reference exists and has .fit extension")
+        return False
+    if not (file_path.exists() and file_path.is_file() and file_path.suffix == ".txt"):
+        sys.stderr("Make sure that the reference file exists and has .txt extension")
+        return False
+    return True
+
+
 def validate_file(file_path: Path, on_success: Callable[[Config]]) -> None:
     """
     This method reads data processing configuration from the file path
@@ -216,12 +243,17 @@ def validate_file(file_path: Path, on_success: Callable[[Config]]) -> None:
                 "no_of_images_to_combine": int(_),
                 "radii_of_extraction": list(radii_of_extraction),
             },
+            "reference": {
+                "image": str(reference_image),
+                "file": str(reference_file),
+            },
             "input": {"nights": list(list_of_nights)},
             "output": {"path": str(_)},
         } if (
             verify_optional_image_options(optional_image_options)
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)
+            and validate_reference_files(reference_image, reference_file)
         ):
             on_success(sanity_check(create_processing_config(toml.load(file_path))))
         case _:

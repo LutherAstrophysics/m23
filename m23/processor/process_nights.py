@@ -52,9 +52,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     # TODO Logging
 
-    # TODO
-    ref_image_path = "TODO"
-    ref_file_path = "TODO"
+    ref_image_path = config["reference"]["image"]
+    ref_file_path = config["reference"]["file"]
 
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]

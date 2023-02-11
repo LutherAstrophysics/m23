@@ -9,6 +9,12 @@ no_of_images_to_combine = 10
 radii_of_extraction = [3, 4, 5]
 
 
+[reference]
+# The image file is an actual fit image while the reffile refers to the stats file for that image
+image = "C://Data Processing/Reference/RefImage.fit" 
+file = "C://Data Processing/Reference/reffile.txt"
+
+
 [input]
 
     [[input.nights]]
