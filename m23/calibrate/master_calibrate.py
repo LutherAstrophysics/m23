@@ -1,15 +1,9 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import numpy as np
 
-### m23 imports
 from m23.trans import createFitFileWithSameHeader
 from m23.utils import customMedian, fitDataFromFitImages
 
-### please note that code is a direct implementation of steps
+### This code is a direct implementation of steps
 ### mentioned in Handbook of Astronomical Image `Processing by
 ### Richard Berry and James Burnell version 2.0 section 6.3 Standard Calibration
 
@@ -17,8 +11,6 @@ from m23.utils import customMedian, fitDataFromFitImages
 ###
 ###  purpose: creates masterBias, saves to fileName + returns masterBiasData
 ###
-
-
 def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, listOfBiasData=None):
 
     if listOfBiasNames:

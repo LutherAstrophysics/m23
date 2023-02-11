@@ -1,19 +1,10 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import math
 from functools import cache
 
 import numpy as np
-from astropy.io.fits import getdata as getfitsdata
 
 from m23.file import getLinesWithNumbersFromFile
 from m23.matrix import blockRegions
-
-# m23 imports
-from m23.trans import createFitFileWithSameHeader
 
 # There are three methods of photometry
 # 1. Aperture photometry: This is the method we use

@@ -1,8 +1,3 @@
-import sys
-
-if "../../" not in sys.path:
-    sys.path.insert(0, "../../")
-
 import cv2 as cv
 import numpy as np
 
