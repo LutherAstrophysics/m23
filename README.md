@@ -136,6 +136,15 @@ from m23.constants import ALIGNED_COMBINED_FOLDER_NAME
 
 For detailed info on the behavior these functions/variables, look up the source code.
 
+### Updating package
+
+The package's is available in pypi at <https://pypi.org/project/m23/>. If the version that you've isn't the lasted version,
+it is recommended that you upgrade the package by running the following command after activating your virtual environment.
+
+```
+python -m pip install --upgrade m23
+```
+
 ### Contributing
 
 This library has bugs, like most software and needs your valuable contribution.
