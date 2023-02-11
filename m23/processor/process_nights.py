@@ -52,8 +52,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     radii_of_extraction = config["processing"]["radii_of_extraction"]
 
+    log_file_path = output / f"Night-{night_date}-Processing-log.txt"
+    # Clear file contents if exists, so that reprocessing a night wipes out contents instead of appending to it
+    if log_file_path.exists():
+        log_file_path.unlink()
     logging.basicConfig(
-        filename=output / f"{night_date}-log.txt",
+        filename=log_file_path,
         format="%(asctime)s %(message)s",
         level=logging.INFO,
     )
