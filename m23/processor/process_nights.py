@@ -223,9 +223,9 @@ def start_data_processing_auxiliary(config: Config):
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
 
 
-def start_data_processing(file_path: Path):
+def start_data_processing(file_path: str):
     """
     Starts data processing with the configuration file `file_path` provided as the argument.
     Calls auxiliary function `start_data_processing_auxiliary` if the configuration is valid.
     """
-    validate_file(file_path, on_success=start_data_processing_auxiliary)
+    validate_file(Path(file_path), on_success=start_data_processing_auxiliary)
