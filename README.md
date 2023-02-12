@@ -72,7 +72,7 @@ A sample configuration file (for old camera images) looks like this. For example
 configuration file see [./rainbow.toml](./rainbow.toml).
 
 ```
-# This is a comment, written
+# This is a comment
 [image]
 rows = 1024
 columns = 1024
