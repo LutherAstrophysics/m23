@@ -1,0 +1,19 @@
+[processing]
+radii_of_extraction = [3, 4, 5,]
+
+
+[reference]
+file = "C://Data Processing/Reference/refile.txt"
+
+
+[input]
+    
+    [[input.nights]]
+    path = "F://Summer 2022/September 4, 2022"
+    first_logfile_number = 10
+    last_logfile_number = 45
+    
+    [[input.nights]]
+    path = "F://Summer 2022/September 12, 2022"
+    first_logfile_number = 30
+    last_logfile_number = 66

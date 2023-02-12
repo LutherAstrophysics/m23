@@ -17,6 +17,19 @@ from m23.constants import (
 from .rename import rename
 
 
+def get_image_number_in_log_file_combined_file(file: Path) -> int:
+    """
+    Returns the image number log file combined file, or raises error if image number not found
+    Examples:
+        In the filename, 07-07-18_m23_7.0-112.txt, the image number is 112
+    """
+    results = re.findall(r"^.*-(\d+)\.txt", file.name)
+    if len(results) == 0:
+        raise ValueError(f"{file.name} is not in something-xxx.txt format")
+    else:
+        return int(results[0])
+
+
 def get_image_number_in_fit_file(file: Path) -> int:
     """
     Returns the image number of the fit file, or raises error if image number not found

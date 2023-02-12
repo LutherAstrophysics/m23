@@ -39,6 +39,33 @@ from m23.utils import (
 )
 
 
+def normalization_helper(
+    radii_of_extraction: List[int],
+    FLUX_LOGS_COMBINED_OUTPUT_FOLDER: Path,
+    ref_file_path: Path,
+    log_files_to_use: List[Path],
+    night_date: date,
+):
+    """
+    This is a normalization helper function extracted so that it can be reused by the renormalization script
+    """
+    for index, radius in enumerate(radii_of_extraction):
+        logging.info(f"Normalizing for radius of extraction {radius} px")
+        RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
+        RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
+        for file in RADIUS_FOLDER.glob("*"):
+            if file.is_file():
+                file.unlink()  # Remove each file in the folder
+        logfile_adu_column = 6 + index  # 6th column is the first column with Star ADU
+        normalizeLogFiles(
+            ref_file_path,
+            log_files_to_use,
+            logfile_adu_column,
+            RADIUS_FOLDER,
+            night_date,
+        )
+
+
 def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):
     """
     Processes a given night of data based on the settings provided in `config` dict
@@ -190,21 +217,17 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
 
     # Normalization
-    for index, radius in enumerate(radii_of_extraction):
-        logging.info(f"Normalizing for radius of extraction {radius} px")
-        RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
-        RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
-        for file in RADIUS_FOLDER.glob("*"):
-            if file.is_file():
-                file.unlink()  # Remove each file in the folder
-        logfile_adu_column = 6 + index  # 6th column is the first column with Star ADU
-        normalizeLogFiles(
-            ref_file_path,
-            LOG_FILES_COMBINED_OUTPUT_FOLDER.glob("*"),
-            logfile_adu_column,
-            RADIUS_FOLDER,
-            night_date,
-        )
+    normalization_helper(
+        radii_of_extraction,
+        FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
+        ref_file_path,
+        [
+            i
+            for i in LOG_FILES_COMBINED_OUTPUT_FOLDER.glob("*")
+            if i.is_file() and i.suffix == ".txt"
+        ],
+        night_date,
+    )
 
 
 def start_data_processing_auxiliary(config: Config):

@@ -20,6 +20,7 @@
     "getfitsdata",
     "linfit",
     "linspace",
+    "logfile",
     "logfiles",
     "masterdark",
     "masterflat",
