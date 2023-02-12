@@ -33,6 +33,7 @@ from m23.utils import (
     get_darks,
     get_date_from_input_night_folder_name,
     get_flats,
+    get_log_file_name,
     get_output_folder_name_from_night_date,
     get_radius_folder_name,
     get_raw_images,
@@ -79,7 +80,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     radii_of_extraction = config["processing"]["radii_of_extraction"]
 
-    log_file_path = output / f"Night-{night_date}-Processing-log.txt"
+    log_file_path = output / get_log_file_name(night_date)
     # Clear file contents if exists, so that reprocessing a night wipes out contents instead of appending to it
     if log_file_path.exists():
         log_file_path.unlink()

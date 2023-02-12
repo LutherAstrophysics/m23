@@ -122,6 +122,10 @@ def fit_data_from_fit_images(images: Iterable[str | Path]) -> List[DTypeLike]:
     return [getfitsdata(item) for item in images]
 
 
+def get_log_file_name(night_date: date):
+    return f"Night-{night_date}-Processing-log.txt"
+
+
 ### Similar to the default version of IDL Median
 ### https://github.com/LutherAstrophysics/python-helpers/issues/8
 def customMedian(arr, *args, **kwargs):
