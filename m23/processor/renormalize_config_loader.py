@@ -84,16 +84,19 @@ def is_valid(config: RenormalizeConfig) -> bool:
         last_logfile = night["last_logfile_number"]
 
         # Validate path
-        LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
         if not path.exists():
             sys.stderr.write(f"Path {path} doesn't exist\n")
+            return False
 
         # Check if the naming convention is valid for the input night
         if not is_night_name_valid(path):
             return False
 
+        LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
+
         if not LOG_FILES_COMBINED_FOLDER.exists():
             sys.stderr.write(f"Path {LOG_FILES_COMBINED_FOLDER} doesn't exist\n")
+            return False
 
         if (type(first_logfile) != int or type(last_logfile) != int) and not (
             last_logfile >= first_logfile >= 1
@@ -115,6 +118,8 @@ def is_valid(config: RenormalizeConfig) -> bool:
         ):
             sys.stderr.write(f"No logfiles in range {first_logfile}-{last_logfile} \n")
             return False
+
+        return True  # No errors detected
 
 
 def sanity_check(config: RenormalizeConfig):
