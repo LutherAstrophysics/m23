@@ -14,9 +14,9 @@ from .renormalize_config_loader import (
 def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
     for night in renormalize_dict["input"]["nights"]:
         NIGHT_FOLDER = night["path"]
-        night_date = (get_date_from_input_night_folder_name(NIGHT_FOLDER.name),)
+        night_date = get_date_from_input_night_folder_name(NIGHT_FOLDER.name)
         log_file_path = NIGHT_FOLDER / get_log_file_name(night_date)
-        radii_of_extraction = (renormalize_dict["processing"]["radii_of_extraction"],)
+        radii_of_extraction = renormalize_dict["processing"]["radii_of_extraction"]
         logging.basicConfig(
             filename=log_file_path,
             format="%(asctime)s %(message)s",

@@ -9,7 +9,7 @@ file = "C://Data Processing/Reference/refile.txt"
 [input]
     
     [[input.nights]]
-    path = "F://Summer 2022/September 4, 2022"
+    path = "F://Summer 2022/September 04, 2022"
     first_logfile_number = 10
     last_logfile_number = 45
     
