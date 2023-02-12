@@ -1,8 +1,14 @@
 name: Upload Python Package
 
 on:
+  
+  # Run when a release is created
+  release:
+    types: [published]
+
+  # This runs after completion of our other action called 'Release with commit'
   workflow_run:
-      workflows: ["Main release"]
+      workflows: ["Release with commit"]
       types: [completed]
 
 permissions:
