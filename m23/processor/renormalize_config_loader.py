@@ -54,7 +54,7 @@ def get_relevant_log_files_combined_files(folder: Path, start: int, end: int) ->
     for file in folder.glob("*"):
         if file.is_file() and file.suffix == ".txt":
             if start <= get_image_number_in_log_file_combined_file(file) <= end:
-                result.push(file)
+                result.append(file)
     return result
 
 
