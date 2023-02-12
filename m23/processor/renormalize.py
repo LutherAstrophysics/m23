@@ -16,13 +16,15 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         NIGHT_FOLDER = night["path"]
         night_date = (get_date_from_input_night_folder_name(NIGHT_FOLDER.name),)
         log_file_path = NIGHT_FOLDER / get_log_file_name(night_date)
+        radii_of_extraction = (renormalize_dict["processing"]["radii_of_extraction"],)
         logging.basicConfig(
             filename=log_file_path,
             format="%(asctime)s %(message)s",
             level=logging.INFO,
         )
+        logging.info(f"Running renormalization for radii {radii_of_extraction}")
         normalization_helper(
-            renormalize_dict["processing"]["radii_of_extraction"],
+            radii_of_extraction,
             NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME,
             renormalize_dict["reference"]["file"],
             night["files_to_use"],
