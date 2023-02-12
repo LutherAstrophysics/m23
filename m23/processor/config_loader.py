@@ -137,6 +137,22 @@ def verify_optional_image_options(options: Dict) -> bool:
     return is_valid
 
 
+def is_night_name_valid(NIGHT_INPUT_PATH: Path):
+    """
+    Returns if the input night folder name follows naming conventions.
+    Prints msg to stderr if invalid.
+    """
+    # Check if the name of input folder matches the convention
+    try:
+        get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
+        return True
+    except:
+        sys.stderr.write(
+            f"Night {NIGHT_INPUT_PATH} folder name doesn't match the naming convention\n"
+        )
+        return False
+
+
 def validate_night(night: ConfigInputNight) -> bool:
     """
     Checks whether the input configuration provided for night is valid.
@@ -149,11 +165,7 @@ def validate_night(night: ConfigInputNight) -> bool:
         sys.stderr.write(f"Images path for {night} doesn't exist\n")
         return False
 
-    # Check if the name of input folder matches the convention
-    try:
-        get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
-    except:
-        sys.stderr.write(f"Night {night} folder name doesn't match the naming convention\n")
+    if not is_night_name_valid(NIGHT_INPUT_PATH):
         return False
 
     CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / INPUT_CALIBRATION_FOLDER_NAME

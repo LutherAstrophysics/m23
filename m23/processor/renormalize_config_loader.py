@@ -8,6 +8,10 @@ import toml
 from typing_extensions import NotRequired
 
 from m23.constants import LOG_FILES_COMBINED_FOLDER_NAME
+from m23.processor.config_loader import (
+    is_night_name_valid,
+    is_valid_radii_of_extraction,
+)
 from m23.utils import get_image_number_in_log_file_combined_file
 
 
@@ -63,8 +67,7 @@ def is_valid(config: RenormalizeConfig) -> bool:
     Returns whether any error can be found in renormalize config dict
     """
     # Validate radii of extraction
-    if not all([type(i) == int and i > 0 for i in config["processing"]["radii_of_extraction"]]):
-        sys.stderr.write("Invalid radii of extraction\n")
+    if not is_valid_radii_of_extraction(config["processing"]["radii_of_extraction"]):
         return False
 
     # Validate reference file
@@ -76,6 +79,7 @@ def is_valid(config: RenormalizeConfig) -> bool:
     # Validate each night
     for night in config["input"]["nights"]:
         path = Path(night["path"])
+
         first_logfile = night["first_logfile_number"]
         last_logfile = night["last_logfile_number"]
 
@@ -83,6 +87,11 @@ def is_valid(config: RenormalizeConfig) -> bool:
         LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
         if not path.exists():
             sys.stderr.write(f"Path {path} doesn't exist\n")
+
+        # Check if the naming convention is valid for the input night
+        if not is_night_name_valid(path):
+            return False
+
         if not LOG_FILES_COMBINED_FOLDER.exists():
             sys.stderr.write(f"Path {LOG_FILES_COMBINED_FOLDER} doesn't exist\n")
 

@@ -23,9 +23,14 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             level=logging.INFO,
         )
         logging.info(f"Running renormalization for radii {radii_of_extraction}")
+
+        LOG_FILES_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
+        # Create log files combined folder if it doesn't yet exist
+        LOG_FILES_COMBINED_FOLDER.mkdir(exist_ok=True)
+
         normalization_helper(
             radii_of_extraction,
-            NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME,
+            LOG_FILES_COMBINED_FOLDER,
             renormalize_dict["reference"]["file"],
             night["files_to_use"],
             night_date,
