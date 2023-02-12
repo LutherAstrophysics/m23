@@ -60,9 +60,10 @@ night/nights, you must define a configuration file. The processor reads the
 data processing settings along with the path to input and output directories
 from the configuration file.
 
-##### Configuration Files
+#### Process Command
 
-(B)rown comes before (R)ainbow so the file [./brown.tml](./brown.toml) denotes
+Examples for configuration file for process command provided here are named Brown
+and Rainbow. (B)rown comes before (R)ainbow so the file [./brown.tml](./brown.toml) denotes
 the configuration for processing pre new camera (< June 16 2022) data.
 
 [./rainbow.toml](./rainbow.toml) is an example configuration file for
@@ -124,6 +125,42 @@ python -m m23 process config_file_path
 # Example, if you have 1.toml in current directory
 python -m m23 process 1.toml
 ```
+
+#### Norm Command
+
+`norm` is another command (a subcommand, technically) available in `m23` CLI. This is a command to renormalize LOG_FILES_COMBINED for one or more nights.
+The way our data processing works is that we first do a full data processing (full meaning involving Calibration, Combination, Alignment, Extraction, and Normalization) and then re-normalize the data. To re-normalize, we look at the normfactors and see what section of night of has non-erratic data. The `norm` subcommand take a configuration file that describes what section of the night to use to generate LOG_FILES_COMBINED. The section of the night is described by two numbers `fist_logfile_number`, and `last_logfile_number` that describe the the range of logfiles to use. The file [./renormalize.toml](./renormalize.toml) contains an example of re-normalization configuration file.
+
+```
+[processing]
+radii_of_extraction = [3, 4, 5,]
+
+
+[reference]
+file = "C://Data Processing/Reference/refile.txt"
+
+
+[input]
+
+    [[input.nights]]
+    path = "F://Summer 2022/September 4, 2022"
+    first_logfile_number = 10
+    last_logfile_number = 45
+
+    [[input.nights]]
+    path = "F://Summer 2022/September 12, 2022"
+    first_logfile_number = 30
+    last_logfile_number = 66
+```
+
+As you can see in the renormalization configuration, the `norm` subcommand lets you re-normalize multiple nights in a go. You can run the renormalization command as follows:
+
+```
+# Assuming you have conf.toml in your directory
+python -m m23 norm conf.toml
+```
+
+#### Using specific module
 
 If you want to do data processing or invoke any of the `m23` modules as part of your python program, you can import
 the respective module/functions/variables as follows
