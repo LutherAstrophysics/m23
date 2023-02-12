@@ -142,7 +142,9 @@ def create_enhanced_config(config: RenormalizeConfig):
             night["path"] = Path(night["path"])
         # Set the list of log files to use for normalization based on the provided start, end indices
         night["files_to_use"] = get_relevant_log_files_combined_files(
-            night["path"], night["first_logfile_number"], night["last_logfile_number"]
+            night["path"] / LOG_FILES_COMBINED_FOLDER_NAME,
+            night["first_logfile_number"],
+            night["last_logfile_number"],
         )
 
     return config
