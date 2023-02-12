@@ -12,6 +12,6 @@ dependencies = [
     'toml==0.10.2',
     'astropy==5.2.1',
     'astroalign==2.4.1',
-    'typing_extensions==4.4.0'
+    'typing_extensions==4.4.0',
     'opencv-python==4.7.0.68'
 ]
