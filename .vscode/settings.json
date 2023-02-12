@@ -26,6 +26,7 @@
     "masterflat",
     "normfactors",
     "numpy",
+    "opencv",
     "pypi",
     "Rapti",
     "renorm",
