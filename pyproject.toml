@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "m23"
 readme = "README.txt"
 requires-python = ">3.10.1"
-version = "0.0.162"
+version = "0.0.163"
 dependencies = [
     "numpy==1.24.2",
     'toml==0.10.2',
