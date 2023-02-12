@@ -60,4 +60,7 @@ norm_parser.set_defaults(func=norm)
 
 
 args = parser.parse_args()
-args.func(args)
+if hasattr(args, "func"):
+    args.func(args)
+else:
+    parser.parse_args(["-h"])
