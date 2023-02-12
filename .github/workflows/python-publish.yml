@@ -1,8 +1,8 @@
 name: Upload Python Package
 
-on:
+on: 
   release:
-    draft: false
+    type: [released, published]
 
 permissions:
   contents: read
