@@ -203,7 +203,7 @@ def validate_night(night: ConfigInputNight) -> bool:
     # Check for raw images
     try:
         if len(list(get_raw_images(M23_FOLDER_PATH))) == 0:
-            sys.stderr.write(f"Night {right} doesn't raw images in {M23_FOLDER_PATH}.\n")
+            sys.stderr.write(f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}.\n")
             return False
     except ValueError as e:
         sys.stderr.write(
