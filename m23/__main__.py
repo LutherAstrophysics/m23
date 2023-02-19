@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from m23 import start_data_processing
-from m23.processor import renormalize
+from m23.processor import generate_masterflat, renormalize
 
 
 def process(args):
@@ -36,6 +36,21 @@ def norm(args):
     renormalize(config_file.absolute())
 
 
+def mf(args):
+    """
+    This is a subcommand that handles generating masterflat for a night from
+    the flat images taken for the night
+    """
+    config_file: Path = args.config_file
+    if not config_file.exists():
+        sys.stdout.write("Provided file doesn't exist\n")
+        return
+    if not config_file.is_file():
+        sys.stdout.write("Invalid configuration file provided\n")
+        return
+    generate_masterflat(config_file.absolute())
+
+
 parser = argparse.ArgumentParser(prog="M23 Data processor", epilog="Made in Rapti")
 subparsers = parser.add_subparsers()
 
@@ -58,6 +73,13 @@ norm_parser.add_argument(
 # Adding a default value so we later know which subcommand was invoked
 norm_parser.set_defaults(func=norm)
 
+# Masterflat generator parser
+mf_parser = subparsers.add_parser("mf", help="Generate masterflat for a night from its raw flats")
+norm_parser.add_argument(
+    "config_file", type=Path, help="Path to toml configuration file for renormalization"
+)  # positional argument
+# Adding a default value so we later know which subcommand was invoked
+norm_parser.set_defaults(func=mf)
 
 args = parser.parse_args()
 if hasattr(args, "func"):
