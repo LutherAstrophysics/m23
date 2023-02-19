@@ -217,7 +217,8 @@ python -m pip install --upgrade m23
 
 If you're making changes to this package, here are a few things to note.
 
-1. To publish the package to pypi, make sure you update the version number in [./pyproject.toml](./pyproject.toml) and then commit your changes. If your commit message matches the pattern 'Release x.y.z-alpha|beta|rc' where x, y, z are numbers and `alpha`, `beta`, `rc` are literals, a github release action will be triggered and the package should be published to pypi. For exact details, see the [github workflow files](./.github)
+1. To publish the package to pypi, make sure you update the version number in [./pyproject.toml](./pyproject.toml) and then commit your changes. Then create a release from the this repos github homepage. This should trigger the github workflow that builds uploads the package to
+   pypi.
 
 ### Contributing
 
