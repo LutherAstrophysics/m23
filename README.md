@@ -160,6 +160,37 @@ As you can see in the renormalization configuration, the `norm` subcommand lets 
 python -m m23 norm conf.toml
 ```
 
+#### mf Command
+
+`mf` is another command available as part of `m23` CLI. It takes a configuration file specifying the input night folder
+and generates a masterflat for that night based to the provided output folder (creating the folder if it doesn't already exist). Note that
+in order to generate the masterflat, it uses the flats from the nights provided as input. These flats should be inside the standard Calibration Frames folder that we use for our raw image processing (with the calibration folder itself being inside the folder for the night
+provided as input. Additionally note that the provided folder name should match the naming convention of our raw image night folder.) The output is just a single masterflat file whose name is prepended with the date of the night and is generated in the output folder path specified in the config file. The configuration file also found in [./mf.toml](./mf.toml) is as follows:
+
+```
+[image]
+rows = 2048
+columns = 2048
+# New camera images (>= June 16 2022) have vignetting ring effect which we crop.
+# Array of crop regions. The last and first co-ordinate are joined to make an enclosing region
+crop_region = [
+    [[0, 448], [0, 0], [492, 0], [210, 181]],
+    [[0, 1600], [0, 2048], [480, 2048], [210, 1867]],
+    [[1400, 2048], [2048, 2048], [2048, 1500], [1834, 1830]],
+    [[1508, 0], [1852, 241], [2048, 521], [2048, 0]]
+]
+
+[input] = "F://Summer 2019/September 4, 2019"
+[output] = "C://Data Processing/Masterflat"
+```
+
+Unlike other commands, this command can only process one night at a time and is invoked as follows:
+
+```
+# Assuming you have mf.toml in your directory
+python -m m23 mf mf.toml
+```
+
 #### Using specific module
 
 If you want to do data processing or invoke any of the `m23` modules as part of your python program, you can import
