@@ -8,6 +8,7 @@ import toml
 from typing_extensions import NotRequired
 
 from m23.constants import INPUT_CALIBRATION_FOLDER_NAME, M23_RAW_IMAGES_FOLDER_NAME
+from m23.processor.generate_masterflat_config_loader import sanity_check_image
 from m23.utils import (
     get_darks,
     get_date_from_input_night_folder_name,
@@ -20,7 +21,7 @@ from m23.utils import (
 class ConfigImage(TypedDict):
     rows: int
     columns: int
-    crop_region: NotRequired[List[List[int]]]
+    crop_region: NotRequired[List[List[List[int]]]]
 
 
 class ConfigProcessing(TypedDict):
@@ -93,32 +94,21 @@ def create_processing_config(config_dict: Config) -> Config:
     return config_dict
 
 
+def prompt_to_continue(msg: str):
+    sys.stderr.write(msg + "\n")
+    response = input("Do you want to continue (y/yes to continue): ")
+    if response.upper() not in ["Y", "YES"]:
+        os._exit(1)
+
+
 def sanity_check(config_dict: Config) -> Config:
     """
     This method performs any sanity checks on the configuration file.
     """
-
-    def prompt_to_continue(msg: str):
-        sys.stderr.write(msg + "\n")
-        response = input("Do you want to continue (y/yes to continue): ")
-        if response.upper() not in ["Y", "YES"]:
-            os._exit(1)
-
     # Ensure sane values for rows/cols, etc.
-    SANE_ROWS = [1024, 2048]
-    SANE_COLS = [1024, 2048]
-    if config_dict["image"]["columns"] not in SANE_COLS:
-        prompt_to_continue(
-            f"Unusual values for no of columns provided in configuration file. Value: {config_dict['image']['columns']}"
-        )
-    if config_dict["image"]["rows"] not in SANE_ROWS:
-        prompt_to_continue(
-            f"Unusual values for no of rows provided in configuration file. Value: {config_dict['image']['rows']}"
-        )
-
-    # Make sure that we're using only processing old camera nights or new camera nights
-    # and that we're using corresponding settings like no.of.rows/cols etc.
-
+    for night in config_dict["input"]["nights"]:
+        night_date = get_date_from_input_night_folder_name(night["path"])
+        sanity_check_image(config_dict["image"], night_date)
     return config_dict
 
 

@@ -1,0 +1,14 @@
+[image]
+rows = 2048
+columns = 2048
+# New camera images (>= June 16 2022) have vignetting ring effect which we crop.
+# Array of crop regions. The last and first co-ordinate are joined to make an enclosing region
+crop_region = [
+    [[0, 448], [0, 0], [492, 0], [210, 181]], 
+    [[0, 1600], [0, 2048], [480, 2048], [210, 1867]],
+    [[1400, 2048], [2048, 2048], [2048, 1500], [1834, 1830]],
+    [[1508, 0], [1852, 241], [2048, 521], [2048, 0]]
+]
+
+[input] = "F://Summer 2019/September 4, 2019"
+[output] = "C://Data Processing/Masterflat" 

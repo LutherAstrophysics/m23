@@ -1,3 +1,5 @@
+from datetime import date
+
 ASSUMED_MAX_BRIGHTNESS = 65_000
 
 # Input folder/file name conventions
@@ -17,3 +19,12 @@ LOG_FILES_COMBINED_FOLDER_NAME = "Log Files Combined"
 FLUX_LOGS_COMBINED_FOLDER_NAME = "Flux Logs Combined"
 MASTER_DARK_NAME = "masterdark.fit"
 MASTER_FLAT_NAME = "masterflat.fit"
+
+# MISC
+CAMERA_CHANGE_2022_DATE = date(2022, 6, 16)
+TYPICAL_NEW_CAMERA_CROP_REGION = [
+    [[0, 448], [0, 0], [492, 0], [210, 181]],
+    [[0, 1600], [0, 2048], [480, 2048], [210, 1867]],
+    [[1400, 2048], [2048, 2048], [2048, 1500], [1834, 1830]],
+    [[1508, 0], [1852, 241], [2048, 521], [2048, 0]],
+]
