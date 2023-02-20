@@ -13,6 +13,9 @@ class FluxLogCombinedFile:
     """
     This class is instantiated with the string representing
     file path for the Flux Log Combined file that you want to analyze
+
+    This object could be useful for analyzing values like the attendance of a
+    star on a particular night, it's mean and median values on the night, etc.
     """
 
     # Class attributes
@@ -24,6 +27,7 @@ class FluxLogCombinedFile:
             path = Path(path)
         self.__path = path
         self.__data = None
+        self.__valid_data = None
         self.__read_data = False
         self.__attendance = None
 
@@ -34,26 +38,11 @@ class FluxLogCombinedFile:
         """
         return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_7.0-ref_revised_71_{star_no:04}_flux.txt"
 
-    @property
-    def path(self) -> Path:
-        return self.__path
-
-    @property
-    def attendance(self) -> float | None:
-        return self.__attendance
-
-    @property
-    def data(self) -> None | npt.ArrayLike:
-        """
-        The data property returns either None or a numpy one dimensional array
-        """
-        return self.__data
-
     def _validate_file(self):
-        if not self.path.exists():
-            raise FileNotFoundError(f"File not found {self.path}")
-        if not self.path.is_file():
-            raise ValueError("Directory provided, expected file f{self.path}")
+        if not self.path().exists():
+            raise FileNotFoundError(f"File not found {self.path()}")
+        if not self.path().is_file():
+            raise ValueError("Directory provided, expected file f{self.path()}")
 
     def _calculate_attendance(self) -> float:
         """
@@ -65,10 +54,8 @@ class FluxLogCombinedFile:
         Assumptions:
             `self.data` contains all data point albeit empty for a start for the night
         """
-        data_points = len(self.data)
-        positive_value_data_points = len(
-            [x for x in self.data if is_string_float(x) and float(x) > 0]
-        )
+        data_points = len(self.data())
+        positive_value_data_points = len(self.valid_data())
         return positive_value_data_points / data_points
 
     def read_file_data(self):
@@ -76,10 +63,13 @@ class FluxLogCombinedFile:
         Reads the file and sets the the data attribute and attendance attribute in the object
         """
         self._validate_file()
-        with self.path.open() as fd:
+        with self.path().open() as fd:
             lines = [line.strip() for line in fd.readlines()]
             lines = lines[self.header_rows :]  # Skip the header rows
             self.__data = np.array(lines, dtype="float")  # Save data as numpy array
+            self.__valid_data = np.array(
+                [x for x in self.__data if is_string_float(x) and float(x) > 0], dtype="float"
+            )
         self.__read_data = True  # Marks file as read
         self.__attendance = self._calculate_attendance()
 
@@ -105,6 +95,23 @@ class FluxLogCombinedFile:
         """
         return True
 
+    # Accessors
+
+    def path(self) -> Path:
+        return self.__path
+
+    def data(self) -> None | npt.ArrayLike:
+        """
+        The data property returns either None or a numpy one dimensional array
+        """
+        return self.__data
+
+    def valid_data(self) -> None | npt.ArrayLike:
+        """
+        Returns a sample of data for the star for the nights with only valid data points > 0 magnitudes
+        """
+        return self.__valid_data
+
     def attendance(self) -> float:
         """
         Returns the attendance % (between 0-1) for star for a night
@@ -112,28 +119,36 @@ class FluxLogCombinedFile:
         self._validate_file()
         if not self.__read_data:
             self.read_file_data()
-        return self.attendance
+        return self.__attendance
 
     def median(self) -> float:
         """
         Returns the median value for the star for the night
+        Note that this is the median of only valid data points (> 0 magnitudes)
+        This means that 0.00 values are automatically ignored.
         """
         self._validate_file()
         if not self.__read_data:
             self.read_file_data()
-        return np.median(self.data)
+        return np.median(
+            self.valid_data()
+        )  # Note to use only the valid data points to calculate median
 
     def mean(self) -> float:
         """
         Returns the mean value for the star for the night
+        Note that this is the median of only valid data points (> 0 magnitudes)
+        This means that 0.00 values are automatically ignored.
         """
         self._validate_file()
         if not self.__read_data:
             self.read_file_data()
-        return np.mean(self.data)
+        return np.mean(
+            self.valid_data()
+        )  # Note to use only the valid data points to calculate mean
 
     def __repr__(self) -> str:
         return self.__str__()
 
     def __str__(self) -> str:
-        return f"FluxLogCombinedFile {self.path}"
+        return f"FluxLogCombinedFile {self.path()}"
