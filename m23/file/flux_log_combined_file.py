@@ -58,6 +58,8 @@ class FluxLogCombinedFile:
         positive_value_data_points = len(self.valid_data())
         return positive_value_data_points / data_points
 
+    # Accessors
+
     def read_file_data(self):
         """
         Reads the file and sets the the data attribute and attendance attribute in the object
@@ -95,8 +97,6 @@ class FluxLogCombinedFile:
         Checks if the file format is valid
         """
         return True
-
-    # Accessors
 
     def path(self) -> Path:
         return self.__path
