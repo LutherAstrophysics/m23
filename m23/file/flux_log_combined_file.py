@@ -82,7 +82,7 @@ class FluxLogCombinedFile:
         of m23 data processing library. It returns the regex match pattern
         if the file name is valid.
         """
-        return self.file_name_re.match(self.path.name)
+        return self.file_name_re.match(self.path().name)
 
     def star_number(self) -> int | None:
         """
@@ -90,7 +90,7 @@ class FluxLogCombinedFile:
         """
         if self.is_valid_file_name():
             # The second capture group contains the star number
-            return int(self.file_name_re.match(self.path.name)[2])
+            return int(self.file_name_re.match(self.path().name)[2])
 
     def is_file_format_valid(self):
         """

@@ -18,6 +18,7 @@ OUTPUT_CALIBRATION_FOLDER_NAME = "Calibration Frames"
 ALIGNED_COMBINED_FOLDER_NAME = "Aligned Combined"
 LOG_FILES_COMBINED_FOLDER_NAME = "Log Files Combined"
 FLUX_LOGS_COMBINED_FOLDER_NAME = "Flux Logs Combined"
+COLOR_NORMALIZED_FOLDER_NAME = "Color Normalized"
 MASTER_DARK_NAME = "masterdark.fit"
 MASTER_FLAT_NAME = "masterflat.fit"
 

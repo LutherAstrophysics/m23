@@ -1,5 +1,20 @@
+import logging
+from collections import namedtuple
 from pathlib import Path
-from typing import List
+from typing import Dict, List
+
+import numpy as np
+
+from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
+from m23.file.color_normalized_file import ColorNormalizedFile
+from m23.file.flux_log_combined_file import FluxLogCombinedFile
+from m23.file.reference_log_file import ReferenceLogFile
+from m23.file.ri_color_file import RIColorFile
+from m23.utils import (
+    get_date_from_input_night_folder_name,
+    get_log_file_name,
+    get_radius_folder_name,
+)
 
 
 def internight_normalize(
@@ -52,4 +67,56 @@ def internight_normalize_auxiliary(
     See https://drive.google.com/file/d/1R1Xc9RhPEYXgF5jlmHvtmDqvrVWs6xfK/view?usp=sharing
     for explanation of this algorithm by Prof. Wilkerson.
     """
-    pass
+    # Setup logging
+    night_date = get_date_from_input_night_folder_name(night)
+    log_file_path = night / get_log_file_name(night_date)
+    logging.basicConfig(
+        filename=log_file_path,
+        format="%(asctime)s %(message)s",
+        level=logging.INFO,
+    )
+
+    logging.info(f"Running internight color normalization for {radius_of_extraction}")
+
+    # Flux logs for a particular radius for that night is our primary input to this algorithm
+    # We are essentially calculating median values of the flux logs combined for a star
+    # and multiplying it by a normalization factor. We do this for each star.
+    # How we calculate normalization factor is described later below.
+    FLUX_LOGS_COMBINED_FOLDER = (
+        night / FLUX_LOGS_COMBINED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)
+    )
+    flux_logs_files: List[FluxLogCombinedFile] = [
+        FluxLogCombinedFile(file) for file in FLUX_LOGS_COMBINED_FOLDER.glob("*")
+    ]
+    # Filter out the files that don't match conventional flux log combined file format
+    flux_logs_files = filter(lambda x: x.is_valid_file_name(), flux_logs_files)
+
+    # We store value for each star in a named tuple
+
+    color_data_file = RIColorFile(color_file)
+    reference_file = ReferenceLogFile(reference_file)
+
+    # This dictionary holds the data for each
+    # Star's median ADU, normalization factor and normalized ADU
+    data_dict: ColorNormalizedFile.Data_Dict_Type = {
+        log_file.star_number(): ColorNormalizedFile.StarData(
+            log_file.median(),  # Median flux value
+            np.nan,  # Normalized median
+            np.nan,  # Norm factor
+            color_data_file.get_star_color(log_file.star_number()),  # Star color in color ref file
+            np.nan,  # Actual color value used
+        )  # We'll populate values that are nan now after calculating normalization factor
+        for log_file in flux_logs_files
+    }
+
+    # Save data
+    OUTPUT_FOLDER = (
+        night / COLOR_NORMALIZED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)
+    )
+    output_file = OUTPUT_FOLDER / ColorNormalizedFile.get_file_name(
+        night_date, radius_of_extraction
+    )
+    ColorNormalizedFile(output_file.absolute()).save_data(data_dict, night_date)
+
+    # output_file = OUTPUT_FOLDER
+    logging.info(f"Completed internight color normalization for {radius_of_extraction}")
