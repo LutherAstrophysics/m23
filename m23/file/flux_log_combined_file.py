@@ -114,18 +114,19 @@ class FluxLogCombinedFile:
 
     def attendance(self) -> float:
         """
-        Returns the attendance % (between 0-1) for star for a night
+        Returns the attendance % (between 0-1) for star corresponding to the flux log combined file for the night
         """
         self._validate_file()
         if not self.__read_data:
             self.read_file_data()
         return self.__attendance
 
-    def median(self) -> float:
+    def median(self) -> float | np.nan:
         """
         Returns the median value for the star for the night
         Note that this is the median of only valid data points (> 0 magnitudes)
         This means that 0.00 values are automatically ignored.
+        Note that if the night doesn't contain any valid data, this returns nan
         """
         self._validate_file()
         if not self.__read_data:
@@ -134,11 +135,12 @@ class FluxLogCombinedFile:
             self.valid_data()
         )  # Note to use only the valid data points to calculate median
 
-    def mean(self) -> float:
+    def mean(self) -> float | np.nan:
         """
         Returns the mean value for the star for the night
         Note that this is the median of only valid data points (> 0 magnitudes)
         This means that 0.00 values are automatically ignored.
+        Note that if the night doesn't contain any valid data, this returns nan
         """
         self._validate_file()
         if not self.__read_data:
