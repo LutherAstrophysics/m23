@@ -1,5 +1,6 @@
 import os
 import sys
+from datetime import date
 from functools import reduce
 from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
@@ -7,8 +8,12 @@ from typing import Callable, Dict, List, TypedDict
 import toml
 from typing_extensions import NotRequired
 
-from m23.constants import INPUT_CALIBRATION_FOLDER_NAME, M23_RAW_IMAGES_FOLDER_NAME
-from m23.processor.generate_masterflat_config_loader import sanity_check_image
+from m23.constants import (
+    CAMERA_CHANGE_2022_DATE,
+    INPUT_CALIBRATION_FOLDER_NAME,
+    M23_RAW_IMAGES_FOLDER_NAME,
+    TYPICAL_NEW_CAMERA_CROP_REGION,
+)
 from m23.utils import (
     get_darks,
     get_date_from_input_night_folder_name,
@@ -99,6 +104,55 @@ def prompt_to_continue(msg: str):
     response = input("Do you want to continue (y/yes to continue): ")
     if response.upper() not in ["Y", "YES"]:
         os._exit(1)
+
+
+def sanity_check_image(config: ConfigImage, night_date: date):
+    """
+    Checks for abnormal values in configuration images
+    """
+    rows, cols = config["rows"], config["columns"]
+    crop_region = config["image"].get("crop_region")
+    old_camera = night_date < CAMERA_CHANGE_2022_DATE
+    if old_camera:
+        if rows != 1024:
+            prompt_to_continue(f"Detected non 1024 image row value for old camera date")
+        if cols != 1024:
+            prompt_to_continue(f"Detected non 1024 image column value for old camera date")
+        if crop_region and type(crop_region) == list and len(crop_region) > 0:
+            prompt_to_continue(f"Detected use of crop region for old camera.")
+    else:
+        if rows != 2048:
+            prompt_to_continue(f"Detected non 2048 image row value for new camera date")
+        if cols != 2048:
+            prompt_to_continue(f"Detected non 2048 image column value for new camera date")
+        if (
+            not crop_region
+            or crop_region
+            and type(crop_region) != list
+            or type(crop_region) == list
+            and len(crop_region) == 0
+        ):
+            prompt_to_continue(
+                f"We typically use crop images from new camera, you don't seem to define it"
+            )
+            try:
+                for crop_section_index, crop_section in enumerate(crop_region):
+                    for section_coordinate_index, section_coordinate in enumerate(crop_section):
+                        if (
+                            section_coordinate
+                            != TYPICAL_NEW_CAMERA_CROP_REGION[crop_section_index][
+                                section_coordinate_index
+                            ]
+                        ):
+                            prompt_to_continue(
+                                f"Mismatch between default crop region used in new camera and config file"
+                            )
+                            return  # Ignore further checking if already made the user aware of inconsistency once
+
+            except Exception as e:
+                prompt_to_continue(
+                    f"Error while checking crop region with standard crop region value. {e}"
+                )
 
 
 def sanity_check(config_dict: Config) -> Config:
