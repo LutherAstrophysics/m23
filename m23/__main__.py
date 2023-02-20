@@ -75,11 +75,11 @@ norm_parser.set_defaults(func=norm)
 
 # Masterflat generator parser
 mf_parser = subparsers.add_parser("mf", help="Generate masterflat for a night from its raw flats")
-norm_parser.add_argument(
+mf_parser.add_argument(
     "config_file", type=Path, help="Path to toml configuration file for renormalization"
 )  # positional argument
 # Adding a default value so we later know which subcommand was invoked
-norm_parser.set_defaults(func=mf)
+mf_parser.set_defaults(func=mf)
 
 args = parser.parse_args()
 if hasattr(args, "func"):

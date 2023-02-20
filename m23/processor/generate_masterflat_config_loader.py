@@ -30,6 +30,7 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
 
     # Verify that the Night folder name matches the naming convention
     if not is_night_name_valid(NIGHT_INPUT_PATH):
+        # No error message needed as the function `is_night_name_valid` write error if there's one
         return False
 
     # Verify that the CALIBRATION FOLDER exists
@@ -53,7 +54,10 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
         return False
 
     if not is_image_properties_valid(config["image"]):
+        # No error message needed as the function `is_image_properties_valid` write error if there's one
         return False
+
+    return True  # No errors detected
 
 
 def is_image_properties_valid(image_config: ConfigImage) -> bool:
@@ -70,15 +74,17 @@ def is_image_properties_valid(image_config: ConfigImage) -> bool:
             f"Rows and columns of image have to be > 0. Got  rows:{rows} cols:{cols}\n"
         )
         return False
-    # Ensure that if crop_region is present, it has to be list of list of ints
+    # Ensure that if crop_region is present, it has to be list of list of list of ints
     if crop_region := image_config.get("crop_region"):
         try:
             for i in crop_region:
                 for j in i:
-                    if type(j) != int or j <= 0:
+                    valid_values = all([type(x) == int and x >= 0 for x in j])
+                    if not valid_values:
                         sys.stderr.write(f"Invalid value detected in crop_region {j}.\n")
                         return False
         except Exception as e:
+            sys.stderr.write(f"Error in crop_region {j}.\n")
             return False
 
     return True  # No error detected
@@ -90,8 +96,8 @@ def create_enhanced_config(config: MasterflatGeneratorConfig) -> MasterflatGener
     that later require processing of the config file
     """
     # Covert folder str to path
-    config["input_calibration_folder"] = Path(config["input_calibration_folder"])
-    config["output_calibration_folder"] = Path(config["output_calibration_folder"])
+    config["input"] = Path(config["input"])
+    config["output"] = Path(config["output"])
     return config
 
 

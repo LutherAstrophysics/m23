@@ -95,7 +95,9 @@ def get_radius_folder_name(radius: int) -> str:
         return f"{radius} Pixel Radius"
 
 
-def get_date_from_input_night_folder_name(name: str) -> date:
+def get_date_from_input_night_folder_name(name: str | Path) -> date:
+    if issubclass(type(name), Path):
+        name = name.name
     return datetime.strptime(name, INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT).date()
 
 

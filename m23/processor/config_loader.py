@@ -111,7 +111,7 @@ def sanity_check_image(config: ConfigImage, night_date: date):
     Checks for abnormal values in configuration images
     """
     rows, cols = config["rows"], config["columns"]
-    crop_region = config["image"].get("crop_region")
+    crop_region = config.get("crop_region")
     old_camera = night_date < CAMERA_CHANGE_2022_DATE
     if old_camera:
         if rows != 1024:
@@ -135,6 +135,7 @@ def sanity_check_image(config: ConfigImage, night_date: date):
             prompt_to_continue(
                 f"We typically use crop images from new camera, you don't seem to define it"
             )
+        else:
             try:
                 for crop_section_index, crop_section in enumerate(crop_region):
                     for section_coordinate_index, section_coordinate in enumerate(crop_section):
@@ -145,7 +146,7 @@ def sanity_check_image(config: ConfigImage, night_date: date):
                             ]
                         ):
                             prompt_to_continue(
-                                f"Mismatch between default crop region used in new camera and config file"
+                                f"Mismatch between default crop region used in new camera and config file."
                             )
                             return  # Ignore further checking if already made the user aware of inconsistency once
 

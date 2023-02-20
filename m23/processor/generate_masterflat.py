@@ -1,10 +1,8 @@
 from pathlib import Path
 
 from m23.calibrate.master_calibrate import makeMasterDark
-from m23.constants import (
-    INPUT_CALIBRATION_FOLDER_NAME,
-    INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
-)
+from m23.constants import INPUT_CALIBRATION_FOLDER_NAME
+from m23.file.masterflat_file import MasterflatFile
 from m23.matrix import crop
 from m23.processor.generate_masterflat_config_loader import (
     MasterflatGeneratorConfig,
@@ -31,13 +29,13 @@ def generate_masterflat_auxiliary(config: MasterflatGeneratorConfig) -> None:
     night_date = get_date_from_input_night_folder_name(config["input"])
 
     # Crop images if crop region is defined
-    if crop_region > 0:
+    if len(crop_region) > 0:
         flats = [crop(matrix, rows, cols) for matrix in flats]
 
     # Make master dark
+    filename = MasterflatFile.generate_file_name(night_date)
     makeMasterDark(
-        saveAs=config["output"]
-        / f"{night_date.strftime(INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT)}-masterflat.fit",
+        saveAs=config["output"] / filename,
         headerToCopyFromName=next(
             get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)
         ).absolute(),  # Gets absolute path of first flat file
