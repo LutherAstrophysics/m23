@@ -18,6 +18,7 @@
     "FWHM",
     "getdata",
     "getfitsdata",
+    "internight",
     "linfit",
     "linspace",
     "logfile",
