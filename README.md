@@ -38,6 +38,8 @@ source ./.venv/bin/activate
 ```
 
 Generally, the following works for Windows. [See more here](https://docs.python.org/3/library/venv.html#how-venvs-work)
+If you get permissions error in windows, you might have to run the command `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+as suggested [here](https://docs.python.org/3/library/venv.html#how-venvs-work)
 
 ```
 ./.venv/Scripts/activate.bat
