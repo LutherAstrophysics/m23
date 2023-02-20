@@ -14,6 +14,9 @@ An ideal setup could be to create a directory where you keep the `toml` data pro
 configuration files (explained below) and install this library there so that you can
 easily run the data processing command right from where your configuration files are.
 
+To run the following commands, if you're in Linux/MacOS use `terminal` app and if you're
+on Windows, use the terminal that can be launched from VS Code or the Windows `powershell`.
+
 ```
 cd ~/Desktop
 mkdir data-processing; cd data-processing
