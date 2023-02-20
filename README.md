@@ -232,6 +232,20 @@ If you're making changes to this package, here are a few things to note.
 1. To publish the package to pypi, make sure you update the version number in [./pyproject.toml](./pyproject.toml) and then commit your changes. Then create a release from the this repos github homepage. This should trigger the github workflow that builds uploads the package to
    pypi.
 
+### If things go wrong
+
+If this `m23` data processing library starts producing results that don't seem correct, few things could go wrong.
+
+1. You might have provided a wrong reference file. Make sure that the R-I color reference file is exactly the one you want to use. Make sure that the contents of the reference log file aren't altered and is exactly the one you want to use. Also verify that the reference image based on which this library does alignment is exactly the one you're supposed to use.
+2. Bugs in source code. If you know that an earlier version of the library gave different result that the one you've, please remove the current version of `m23` and install the older version of the library using pip. So that would be :
+
+```
+python -m pip uninstall m23
+python -m pip install m23==x.y.z
+```
+
+where `x.y.z` is a valid version number. The list of all available version numbers can be viewed at <https://pypi.org/project/m23/#history>.
+
 ### Contributing
 
 This library has bugs, like most software and needs your valuable contribution.
