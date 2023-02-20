@@ -6,6 +6,7 @@ import numpy as np
 import numpy.typing as npt
 
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
+from m23.file.index import is_string_float
 
 
 class FluxLogCombinedFile:
@@ -65,7 +66,9 @@ class FluxLogCombinedFile:
             `self.data` contains all data point albeit empty for a start for the night
         """
         data_points = len(self.data)
-        positive_value_data_points = len([x for x in self.data if x > 0])
+        positive_value_data_points = len(
+            [x for x in self.data if is_string_float(x) and float(x) > 0]
+        )
         return positive_value_data_points / data_points
 
     def read_file_data(self):
