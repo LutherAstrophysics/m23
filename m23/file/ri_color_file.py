@@ -41,3 +41,9 @@ class RIColorFile:
 
     def path(self):
         return self.__path
+
+    def __repr__(self):
+        return self.__str__()
+
+    def __str__(self):
+        return f"R-I color file: {self.path()}"
