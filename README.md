@@ -65,6 +65,10 @@ night/nights, you must define a configuration file. The processor reads the
 data processing settings along with the path to input and output directories
 from the configuration file.
 
+### Reference files
+
+Most of the modules will ask for various reference files. For convenience we have included a sample of the kind of reference files used by this library [here](./m23/reference/). Note that it's the responsibility of the person processing data to provide a correct reference file for the task. The reference files listed in this repo are aren't to be used but for sample so that it will help you understand the kind of reference file you're supposed to provide. We don't like to hardcode these sample reference files in the code because if the reference files change or that you like to experiment with processing with different reference files, you have that power to change reference files by merely changing the configuration file. Use this power wisely.
+
 #### Process Command
 
 Examples for configuration file for process command provided here are named Brown
