@@ -168,6 +168,11 @@ in order to generate the masterflat, it uses the flats from the nights provided 
 provided as input. Additionally note that the provided folder name should match the naming convention of our raw image night folder.) The output is just a single masterflat file whose name is prepended with the date of the night and is generated in the output folder path specified in the config file. The configuration file also found in [./mf.toml](./mf.toml) is as follows:
 
 ```
+# Note that it's important to define input and output before image definition
+[input] = "F://Summer 2019/September 4, 2019"
+[output] = "C://Data Processing/Masterflat"
+
+
 [image]
 rows = 2048
 columns = 2048
@@ -180,8 +185,6 @@ crop_region = [
     [[1508, 0], [1852, 241], [2048, 521], [2048, 0]]
 ]
 
-[input] = "F://Summer 2019/September 4, 2019"
-[output] = "C://Data Processing/Masterflat"
 ```
 
 Unlike other commands, this command can only process one night at a time and is invoked as follows:
