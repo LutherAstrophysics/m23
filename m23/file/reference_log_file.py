@@ -39,9 +39,11 @@ class ReferenceLogFile:
         if not self.__is_read:
             self._read()
         column_number = self.column_numbers[col]
-        return self.__data[star_no - 1][
-            column_number
-        ]  # Note that -1 is necessary bc of 0 indexing
+        # Return None if star_no is out of bound
+        if star_no < 1 or star_no > len(self.__data):
+            return None
+        # Note that -1 is necessary bc of 0 indexing
+        return self.__data[star_no - 1][column_number]
 
     def get_star_xy(self, star_no: int) -> Tuple[float]:
         """
