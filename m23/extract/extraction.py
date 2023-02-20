@@ -63,7 +63,7 @@ def extract_stars(
         fd.write(f"Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n")
         fd.write(f"\tImage {image_name or ''}:\n")
         fd.write(f"\tTotal no of stars: {no_of_stars}\n")
-        fd.write(f"\tRadius of star diaphragm {', '.join(map(str, radii_of_extraction))}:\n")
+        fd.write(f"\tRadius of star diaphragm: {', '.join(map(str, radii_of_extraction))}\n")
         fd.write(f"\tSky annulus inner radius: \n")
         fd.write(f"\tSky annulus outer radius: \n")
         fd.write(f"\tThreshold factor: \n")
