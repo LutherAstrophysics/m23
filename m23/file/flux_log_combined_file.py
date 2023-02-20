@@ -68,7 +68,8 @@ class FluxLogCombinedFile:
             lines = lines[self.header_rows :]  # Skip the header rows
             self.__data = np.array(lines, dtype="float")  # Save data as numpy array
             self.__valid_data = np.array(
-                [x for x in self.__data if is_string_float(x) and float(x) > 0], dtype="float"
+                [float(x) for x in self.__data if is_string_float(x) and float(x) > 0],
+                dtype="float",
             )
         self.__read_data = True  # Marks file as read
         self.__attendance = self._calculate_attendance()
@@ -121,7 +122,7 @@ class FluxLogCombinedFile:
             self.read_file_data()
         return self.__attendance
 
-    def median(self) -> float | np.nan:
+    def median(self) -> float:
         """
         Returns the median value for the star for the night
         Note that this is the median of only valid data points (> 0 magnitudes)
@@ -135,7 +136,7 @@ class FluxLogCombinedFile:
             self.valid_data()
         )  # Note to use only the valid data points to calculate median
 
-    def mean(self) -> float | np.nan:
+    def mean(self) -> float:
         """
         Returns the mean value for the star for the night
         Note that this is the median of only valid data points (> 0 magnitudes)
