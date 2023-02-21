@@ -1,5 +1,6 @@
 import math
 from functools import cache
+from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -70,36 +71,34 @@ def newStarCenters(imageData, oldStarCenters):
 
 def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
     """
-    TODO
     We need to optimize this code to work more efficiently with the caller function i.e extract_stars
     """
-
     regionSize = 64
     pixelsPerStar = np.count_nonzero(circleMatrix(radius))
 
-    ###
-    # return
-    # an array of arrays of 64x64 matrices
     @cache
     def backgroundRegion():
+        """
+        Returns an array of arrays of 64x64 matrices
+        """
         row, col = image_data.shape
-        # block in third row first column can be accessed by [2, 0]
+        # Block in third row first column can be accessed by [2, 0]
         return blockRegions(image_data, (regionSize, regionSize)).reshape(
             row // regionSize, col // regionSize, regionSize, regionSize
         )
 
-    ###
-    # backgroundRegionTuple is (2, 0) if referring to region in
-    # third row, first column
     @cache
-    def backgroundAverage(backgroundRegionTuple):
+    def backgroundAverage(backgroundRegionTuple : Tuple[int]):
+        """
+        Returns the average background in a region. 
+        Example, `backgroundRegionTuple` (2, 0) means the third row first column region.
+        """
         row, column = backgroundRegionTuple
         region = backgroundRegion()[row][column]
-        # throw out the background of zeroes, since
-        # they might be at the edge
+        # Throw out the background of zeroes, since they might be at the edge
         sortedData = np.sort(region, axis=None)
         nonZeroIndices = np.nonzero(sortedData)
-        # ignore the zeros
+        # Ignore the zeros
         sortedData = sortedData[nonZeroIndices]
 
         centeredArray = sortedData[
@@ -109,23 +108,24 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
         ]
         return np.mean(centeredArray)
 
-    # starFlux
-    #
-    # return a three tuple
-    # Total star flux + star pixels
-    #   average background value for the star region
-    #   star flux value after background subtraction
-    def fluxSumForStar(position, radius):
+
+    def fluxSumForStar(position, radius) -> Tuple[int] :
+        """
+        This function returns the flux of of a star at specified `position` using
+        `radius` as radius of extraction. Note that this tuple a three-tuple where
+        the first, second, and third element correspond to total star flux, background flux
+        and star flux after background subtraction respectively
+        """
         x, y = position
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
         backgroundAverageInStarRegion = backgroundAverage((x // regionSize, y // regionSize))
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
-        ### Convert to zero, in case there's any nan... this ensures that
-        ### two log files correspond to same star number as they are
-        ### or after reading with something like getLinesWithNumbersFromFile
-        ###
-        ### This step makes our normalization code fast!
+
+        # Convert to zero, in case there's any nan. 
+        # This ensures that two log files correspond to same star number as they are
+        # or after reading with something like getLinesWithNumbersFromFile
+        # This step makes our normalization code faster than the reslife code written in IDL!
         return (
             np.nan_to_num(np.sum(starBox)),
             np.nan_to_num(backgroundAverageInStarRegion),
@@ -143,11 +143,7 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
 def starsPositionsInLogFile(fileName):
     linesWithNumbers = getLinesWithNumbersFromFile(fileName)
     # Assumes X and Y are the first two columns for the file
-    ### NP WARNING
-    ### IF dtype='float16' is specified, a number like '745.54' becomes 745.5
-    ### Which means it gets rounded down, which is a HUGE problem if you're trying
-    ### to match the output to IDL code
-    ### So, we're using dtype='float'!!!
+    # Note it's important to use dtype as 'float'.
     return [np.array(line.split()[:2], dtype="float") for line in linesWithNumbers]
 
 
