@@ -88,13 +88,12 @@ class FluxLogCombinedFile:
         self.__read_data = True  # Marks file as read
         self.__attendance = self._calculate_attendance()
 
-    def is_valid_file_name(self):
+    def is_valid_file_name(self) -> bool:
         """
         Checks if the file name is valid as per the file naming conventions
-        of m23 data processing library. It returns the regex match pattern
-        if the file name is valid.
+        of m23 data processing library.
         """
-        return self.file_name_re.match(self.path().name)
+        return bool(self.file_name_re.match(self.path().name))
 
     def night_date(self) -> date | None:
         """

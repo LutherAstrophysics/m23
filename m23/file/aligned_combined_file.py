@@ -5,12 +5,21 @@ import numpy.typing as npt
 from astropy.io import fits
 from astropy.io.fits.header import Header
 
+from m23.file.raw_image_file import RawImageFile
 
-class RawImageFile:
+
+class AlignedCombinedFile:
     # Class attributes
     file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
 
-    def __init__(self, file_path: str) -> None:
+    @classmethod
+    def generate_file_name(img_duration: float, img_number: int) -> str:
+        """
+        Generates filename based on the given `img_duration` and `img_number`
+        """
+        return f"m23_{img_duration}-{img_number:04}.fit"
+
+    def __init__(self, file_path) -> None:
         self.__path = Path(file_path)
         self.__is_read = False
         self.__data = None
@@ -65,8 +74,18 @@ class RawImageFile:
             self._read()
         return self.__header
 
-    def __repr__(self):
+    def path(self):
+        return self.__path
+
+    def create_file(self, data: npt.NDArray, copy_header_from: RawImageFile) -> None:
+        """
+        Create a fit file based on provided np array `data`.
+        It copies the header information from the `RawImageFile`
+        """
+        fits.writeto(self.path(), data, header=copy_header_from.header())
+
+    def __repr__(self) -> str:
         return self.__str__()
 
     def __str__(self) -> str:
-        return f"Raw Image {self.path().name}"
+        return f"Aligned combined file: {self.path()}"
