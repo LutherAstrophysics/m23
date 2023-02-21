@@ -23,12 +23,12 @@ from m23.constants import (
     MASTER_FLAT_NAME,
     OUTPUT_CALIBRATION_FOLDER_NAME,
 )
-from m23.extract.extraction import extract_stars
+from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
-from m23.norm.normalize import normalizeLogFiles
+from m23.norm import normalizeLogFiles
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
 from m23.utils import (
     fit_data_from_fit_images,
