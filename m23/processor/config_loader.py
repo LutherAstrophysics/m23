@@ -96,6 +96,10 @@ def create_processing_config(config_dict: Config) -> Config:
     if type(config_dict["reference"]["image"]) == str:
         config_dict["reference"]["image"] = Path(config_dict["reference"]["image"])
 
+    # Remove duplicates radii of extraction
+    radii = list(set(config_dict["processing"]["radii_of_extraction"]))
+    config_dict["processing"]["radii_of_extraction"] = radii
+
     return config_dict
 
 

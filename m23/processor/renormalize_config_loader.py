@@ -146,6 +146,10 @@ def create_enhanced_config(config: RenormalizeConfig):
             night["last_logfile_number"],
         )
 
+    # Remove duplicates in radii of extraction
+    radii = config["processing"]["radii_of_extraction"]
+    config["processing"]["radii_of_extraction"] = list(set(radii))
+
     return config
 
 
