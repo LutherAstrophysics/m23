@@ -24,14 +24,14 @@ class LogFileCombinedFile:
     LogFileCombinedDataType = Dict[int, StarLogfileCombinedData]
 
     @classmethod
-    def generate_file_name(cls, night_date: date, star_no: int, img_duration: float):
+    def generate_file_name(cls, night_date: date, img_no: int, img_duration: float):
         """
         Returns the file name to use for a given star night for the given night date
         param : night_date: Date for the night
-        param: star_no : Star number
+        param: img_no : Image number corresponding to the Aligned combined image
         param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}-ref_revised_71_{star_no:04}_flux.txt"
+        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}-ref_revised_71_{img_no:04}_flux.txt"
 
     def __init__(self, file_path: str) -> None:
         self.__path = Path(file_path)
@@ -88,7 +88,7 @@ class LogFileCombinedFile:
             self._read()
         return self.__data
 
-    def write(
+    def create_file(
         self,
         data: LogFileCombinedDataType,
         aligned_combined_file: AlignedCombinedFile,

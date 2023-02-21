@@ -25,6 +25,7 @@ from m23.constants import (
 )
 from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
+from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
@@ -212,12 +213,14 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logging.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
+        log_file_combined_file_name = LogFileCombinedFile.generate_file_name(night_date, aligned_combined_image_number, image_duration)
+        log_file_combined_file = LogFileCombinedFile(LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name)
         extract_stars(
             combined_images_data,
             ref_file_path,
-            save_as=LOG_FILES_COMBINED_OUTPUT_FOLDER
-            / f"{night_date.strftime(LOG_FILE_COMBINED_FILENAME_DATE_FORMAT)}_m23_7.0-{(to_index // 10):03}.txt",
             radii_of_extraction=radii_of_extraction,
+            log_file_combined=log_file_combined_file,
+            aligned_combined_file=aligned_combined_file
         )
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
 
