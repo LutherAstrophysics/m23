@@ -31,7 +31,7 @@ python3 -m venv .venv
 ```
 
 Then we activate the virtual environment. This is OS and your shell specific, so
-if the following command doesn't work for your just google how to activate
+if the following command doesn't work for you just google how to activate
 python virtual environment using `venv` package in Windows/Ubuntu/etc.
 
 Generally, the following works for UNIX
