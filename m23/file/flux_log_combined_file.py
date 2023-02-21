@@ -1,6 +1,7 @@
 import re
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
+from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -8,6 +9,7 @@ import numpy.typing as npt
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
 from m23.file.index import is_string_float
 from m23.file.normfactor_file import NormfactorFile
+from m23.file.reference_log_file import ReferenceLogFile
 
 
 # Note that FluxLogCombined is the one that we have for multiple
@@ -25,7 +27,9 @@ class FluxLogCombinedFile:
 
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
-    file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_7.0-ref_revised_71_(\d{4})_flux.txt")
+    file_name_re = re.compile(
+        "(\d{2}-\d{2}-\d{2})_m23_(\d+\.?\d*)-ref_revised_71_(\d{3, 4})_flux.txt"
+    )
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:
@@ -37,11 +41,14 @@ class FluxLogCombinedFile:
         self.__attendance = None
 
     @classmethod
-    def generate_file_name(cls, night_date: date, star_no: int):
+    def generate_file_name(cls, night_date: date, star_no: int, img_duration: float):
         """
         Returns the file name to use for a given star night for the given night date
+        param : night_date: Date for the night
+        param: star_no : Star number
+        param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_7.0-ref_revised_71_{star_no:04}_flux.txt"
+        return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_{img_duration}-ref_revised_71_{star_no:04}_flux.txt"
 
     def _validate_file(self):
         if not self.path().exists():
@@ -89,13 +96,32 @@ class FluxLogCombinedFile:
         """
         return self.file_name_re.match(self.path().name)
 
+    def night_date(self) -> date | None:
+        """
+        Returns the night date that can be inferred from the file name
+        """
+        if self.is_valid_file_name():
+            # The first capture group contains the night date
+            return datetime.strptime(
+                self.file_name_re.match(self.path().name)[2],
+                FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT,
+            ).date()
+
+    def img_duration(self) -> float | None:
+        """
+        Returns the image duration that can be inferred from the file name
+        """
+        if self.is_valid_file_name():
+            # The second capture group contains the image duration
+            return float(self.file_name_re.match(self.path().name)[2])
+
     def star_number(self) -> int | None:
         """
         Returns the star number associated to the filename if the file name is valid
         """
         if self.is_valid_file_name():
-            # The second capture group contains the star number
-            return int(self.file_name_re.match(self.path().name)[2])
+            # The third capture group contains the star number
+            return int(self.file_name_re.match(self.path().name)[3])
 
     def is_file_format_valid(self):
         """
@@ -191,6 +217,39 @@ class FluxLogCombinedFile:
         return np.mean(
             self.valid_data()
         )  # Note to use only the valid data points to calculate mean
+
+    def save(
+        self,
+        data: npt.ArrayLike,
+        start_img: int,
+        end_img: int,
+        location: Tuple[float],
+        reference_logfile: ReferenceLogFile,
+    ):
+        """
+        Creates/Updates Flux Log Combined file
+
+        param: data: The flux values for the star
+        param: start_image: The first aligned combined image number used
+        param: end_image: The last aligned combined image number used
+        param: location: The x and y coordinates of the star in the image aligned combined image
+        param: reference_logfile: The reference logfile used
+        """
+        if not self.is_valid_file_name():
+            raise ValueError(f"File name is invalid {self.path()}")
+        x, y = location
+        with self.path().open("w") as fd:
+            fd.write(f"Program:\n")
+            fd.write(f"Started with image\t{start_img}\n")
+            fd.write(f"Ended with image\t{end_img}\n")
+            fd.write(f"Reference log file used: {reference_logfile}\n")
+            fd.write(f"X location:\t{x:.3f}\n")
+            fd.write(f"Y location:\t{y:.3f}\n")
+            np.savetxt(
+                fd,
+                np.array(data),
+                fmt="%10.2f",
+            )
 
     def __repr__(self) -> str:
         return self.__str__()
