@@ -138,7 +138,7 @@ python -m m23 process 1.toml
 #### Norm Command
 
 `norm` is another command (a subcommand, technically) available in `m23` CLI. This is a command to renormalize LOG_FILES_COMBINED for one or more nights.
-The way our data processing works is that we first do a full data processing (full meaning involving Calibration, Combination, Alignment, Extraction, and Normalization) and then re-normalize the data. To re-normalize, we look at the normfactors and see what section of night of has non-erratic data. The `norm` subcommand take a configuration file that describes what section of the night to use to generate LOG_FILES_COMBINED. The section of the night is described by two numbers `fist_logfile_number`, and `last_logfile_number` that describe the the range of logfiles to use. The file [./renormalize.toml](./renormalize.toml) contains an example of re-normalization configuration file.
+The way our data processing works is that we first do a full data processing (full meaning involving Calibration, Combination, Alignment, Extraction, and Normalization) and then re-normalize the data. To re-normalize, we look at the normfactors and see what section of night of has non-erratic data. The `norm` subcommand takes a configuration file that describes what section of the night to use to generate LOG_FILES_COMBINED. The section of the night is described by two numbers `fist_logfile_number`, and `last_logfile_number` that describe the the range of logfiles to use. The file [./renormalize.toml](./renormalize.toml) contains an example of re-normalization configuration file.
 
 ```
 [processing]
