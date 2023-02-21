@@ -4,13 +4,13 @@ from datetime import date
 from pathlib import Path
 from typing import List
 
+import numpy as np
 import toml
 from astropy.io.fits import getdata
 
-from m23.align.alignment import imageAlignment
+from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
 from m23.calibrate.master_calibrate import makeMasterDark
-from m23.combine.combination import imageCombination
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
     CONFIG_FILE_NAME,
@@ -24,6 +24,7 @@ from m23.constants import (
     OUTPUT_CALIBRATION_FOLDER_NAME,
 )
 from m23.extract.extraction import extract_stars
+from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
@@ -165,7 +166,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         from_index = i * no_of_images_to_combine
         to_index = (i + 1) * no_of_images_to_combine
 
-        images_data = fit_data_from_fit_images(raw_images[from_index:to_index])
+        images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
         if len(crop_region) > 0:
             images_data = [crop(matrix, rows, cols) for matrix in images_data]
 
@@ -186,8 +187,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         aligned_images_data = []
         for index, image_data in enumerate(images_data):
             try:
-                aligned_images_data.append(imageAlignment(image_data, ref_image_path))
-            except Exception as e:
+                aligned_data, _ = image_alignment(image_data, ref_image_path)
+                aligned_images_data.append(aligned_data)
+            except Exception:
                 logging.error(f"Could not align image {raw_images[from_index + index]}")
                 logging.error(f"Skipping combination {from_index}-{to_index}")
                 break
@@ -200,17 +202,18 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             continue
 
         # Combination
-        combined_image_data = imageCombination(
-            aligned_images_data,
-            ALIGNED_COMBINED_OUTPUT_FOLDER
-            / f"m23_7.0-{(to_index // no_of_images_to_combine):03}.fit",
-            raw_images[from_index],  # Copy header from the first image in combination
-        )
+        combined_images_data = np.sum(aligned_images_data, axis=0)
+        sample_raw_image_file = raw_images[from_index]
+        image_duration = sample_raw_image_file.image_duration()
+        aligned_combined_image_number = to_index // no_of_images_to_combine
+        aligned_combined_file_name = AlignedCombinedFile.generate_file_name(image_duration, aligned_combined_image_number)
+        aligned_combined_file = AlignedCombinedFile(ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name)
+        aligned_combined_file.create_file(combined_images_data, sample_raw_image_file)
         logging.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
         extract_stars(
-            combined_image_data,
+            combined_images_data,
             ref_file_path,
             save_as=LOG_FILES_COMBINED_OUTPUT_FOLDER
             / f"{night_date.strftime(LOG_FILE_COMBINED_FILENAME_DATE_FORMAT)}_m23_7.0-{(to_index // 10):03}.txt",

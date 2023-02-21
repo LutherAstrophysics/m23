@@ -13,7 +13,7 @@ class AlignedCombinedFile:
     file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
 
     @classmethod
-    def generate_file_name(img_duration: float, img_number: int) -> str:
+    def generate_file_name(cls, img_duration: float, img_number: int) -> str:
         """
         Generates filename based on the given `img_duration` and `img_number`
         """
