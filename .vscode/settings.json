@@ -26,11 +26,13 @@
     "logfiles",
     "masterdark",
     "masterflat",
+    "matplotlib",
     "normfactor",
     "normfactors",
     "numpy",
     "opencv",
     "pypi",
+    "pyplot",
     "Rapti",
     "renorm",
     "Renormalize",
@@ -40,8 +42,10 @@
     "venv",
     "writeto",
     "XFWHM",
+    "xlabel",
     "yaspin",
-    "YFWHM"
+    "YFWHM",
+    "ylabel"
   ],
   "files.associations": {
     "**/**/*.toml": "plaintext"

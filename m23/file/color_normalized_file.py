@@ -15,6 +15,8 @@ class ColorNormalizedFile:
             "norm_factor",  # Norm factor used
             "measured_mean_r_i",  # The R-I value defined in reference file
             "used_mean_r_i",  # R-I actually used to calculate norm factor
+            "attendance",  # Attendance of that star for the night
+            "reference_log_adu",  # Star ADU in the reference file
         ],
     )
     Data_Dict_Type = Dict[int, StarData]
