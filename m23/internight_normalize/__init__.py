@@ -1,8 +1,8 @@
 import logging
-from collections import namedtuple
 from pathlib import Path
 from typing import Dict, List
 
+import matplotlib.pyplot as plt
 import numpy as np
 
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
@@ -94,20 +94,46 @@ def internight_normalize_auxiliary(
     # We store value for each star in a named tuple
 
     color_data_file = RIColorFile(color_file)
-    reference_file = ReferenceLogFile(reference_file)
+    reference_file_data = ReferenceLogFile(reference_file)
 
     # This dictionary holds the data for each
     # Star's median ADU, normalization factor and normalized ADU
     data_dict: ColorNormalizedFile.Data_Dict_Type = {
         log_file.star_number(): ColorNormalizedFile.StarData(
-            log_file.median(),  # Median flux value
+            log_file.specialized_median_for_internight_normalization(),  # Median flux value
             np.nan,  # Normalized median
             np.nan,  # Norm factor
             color_data_file.get_star_color(log_file.star_number()),  # Star color in color ref file
             np.nan,  # Actual color value used
+            log_file.attendance(),  # Attendance of the star for the night
+            reference_file_data.get_star_adu(log_file.star_number()) or np.nan,
         )  # We'll populate values that are nan now after calculating normalization factor
         for log_file in flux_logs_files
     }
+
+    # We calculate the ratio of signal in reference file data and the special median
+    # signal for a star for the night. We do this for each stars with >50% attendance.
+    stars_signal_ratio: Dict[int, float] = {}
+    for star_no in range(1, 2508 + 1):  # Note +1 because of python the way range works
+        star_data = data_dict[star_no]
+        # Only calculate the ratio for stars with >= 50% attendance for the night
+        if star_data.attendance >= 0.5:
+            ratio = star_data.reference_log_adu / star_data.median_flux
+            stars_signal_ratio[star_no] = ratio
+
+    # We now make a plot of the ratio (calculated) vs R-I for the particular star
+    values_to_plot = [
+        (
+            color_data_file.get_star_color(star_no),  # X value is the R-I value for a star
+            stars_signal_ratio[star_no],  # Y Value is the star signal ratio calculated above
+        )
+        for star_no in stars_signal_ratio
+    ]
+    x, y = zip(*values_to_plot)  # Unpack a list of pairs into two tuples
+    plt.plot(x, y, "b+")
+    plt.xlabel("R-I")
+    plt.ylabel("Signal ratio")
+    plt.show()
 
     # Now we calculate normalization factor for the star for the night
 
