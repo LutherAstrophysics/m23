@@ -14,40 +14,31 @@ An ideal setup could be to create a directory where you keep the `toml` data pro
 configuration files (explained below) and install this library there so that you can
 easily run the data processing command right from where your configuration files are.
 
-To run the following commands, if you're in Linux/MacOS use `terminal` app and if you're
-on Windows, use the terminal that can be launched from VS Code or the Windows `powershell`.
+To run the following commands, if you're in Linux/MacOS use `terminal` app and if you're on Windows, make sure that you've `git` and `git bash` shell installed then use the `git bash` shell terminal that can be launched from VS Code or the `Git bash` shell. Workflow using VS code is described below. Create a folder where you'd like to store data processing configuration files and open this folder in VS-Code. Then launch the terminal in VS Code (Ctrl + J in Windows and Cmd + J in Mac). We'll now install `m23` in a virtual environment. If you don't have python >= 3.10 installed, make sure you have that installed first.
 
-```
-cd ~/Desktop
-mkdir data-processing; cd data-processing
-```
+For all command below, instead of typing
+`python` you might have to type `py3` or `python3` or `python3.10` or sth else
+depending on what is configured on your system. We first create a folder in the current folder called `.venv` where our virtual environment is going to be stored.
 
-After this use python >= 3.10 to create virtual environment. Instead of typing
-`python3.10` you might have to type `py3` or `python` or `python3` or sth else
-depending on what is configured on your system.
-
-```
-python3 -m venv .venv
+```bash
+python -m venv .venv
 ```
 
-Then we activate the virtual environment. This is OS and your shell specific, so
-if the following command doesn't work for you just google how to activate
-python virtual environment using `venv` package in Windows/Ubuntu/etc.
+In order to activate the virtual environment (which you have to do every time you open folder in VS Code and want to start doing dat processing, you can do the following:
 
-Generally, the following works for UNIX
+**For UNIX like OS**
 
 ```
 source ./.venv/bin/activate
 ```
 
-Generally, the following works for Windows. [See more here](https://docs.python.org/3/library/venv.html#how-venvs-work)
-If you get permissions error in windows, you might have to run the command `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
-as suggested [here](https://docs.python.org/3/library/venv.html#how-venvs-work)
+**For Windows**\
+Make sure that you've selected `Git bash` as your terminal
 
 ```
-./.venv/Scripts/activate.bat
-# OR
-./.venv/Scripts/Activate.ps1
+cd .venv/Scripts
+. activate
+cd -
 ```
 
 Now, we can install the `m23` library
