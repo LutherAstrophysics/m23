@@ -10,6 +10,10 @@ from m23.file.index import is_string_float
 from m23.file.normfactor_file import NormfactorFile
 
 
+# Note that FluxLogCombined is the one that we have for multiple
+# radius of extraction. This is generated after intra-night (*not* inter-night)
+# normalization. Don't confuse this file with LogFileCombined that
+# is generated after extraction step.
 class FluxLogCombinedFile:
     """
     This class is instantiated with the string representing
