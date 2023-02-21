@@ -109,6 +109,8 @@ def internight_normalize_auxiliary(
         for log_file in flux_logs_files
     }
 
+    # Now we calculate normalization factor for the star for the night
+
     # Save data
     OUTPUT_FOLDER = (
         night / COLOR_NORMALIZED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)

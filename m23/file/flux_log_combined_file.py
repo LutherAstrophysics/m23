@@ -7,6 +7,7 @@ import numpy.typing as npt
 
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
 from m23.file.index import is_string_float
+from m23.file.normfactor_file import NormfactorFile
 
 
 class FluxLogCombinedFile:
@@ -105,12 +106,16 @@ class FluxLogCombinedFile:
         """
         The data property returns either None or a numpy one dimensional array
         """
+        if not self.__read_data:
+            self.read_file_data()
         return self.__data
 
     def valid_data(self) -> None | npt.ArrayLike:
         """
         Returns a sample of data for the star for the nights with only valid data points > 0 magnitudes
         """
+        if not self.__read_data:
+            self.read_file_data()
         return self.__valid_data
 
     def attendance(self) -> float:
@@ -135,6 +140,39 @@ class FluxLogCombinedFile:
         return np.median(
             self.valid_data()
         )  # Note to use only the valid data points to calculate median
+
+    def specialized_median_for_internight_normalization(self) -> float:
+        """
+        Returns specialized median flux for the night to be used by internight normalization code.
+        This is special in that the median is only calculated for images that got applied
+        internight normalization factor within a certain range. Additionally (as always) we ignore
+        data points that are zero values when calculating median
+        This is just an implementation of the way things are/were done in the IDL code.
+        """
+        min_tolerable_intranight_normfactor = 0.85
+        max_tolerable_intranight_normfactor = 1.15
+
+        # Get the *intra* night norm factors file from the same directory as this file is in
+        parent_dir = self.path().parent
+        normfactor_files = list(parent_dir.glob("*normfactor*"))
+        if len(normfactor_files) == 0:
+            raise ValueError("Normfactor file not found in {parent_dir}")
+        if len(normfactor_files) > 1:
+            raise ValueError("Multiple Normfactor files found in {parent_dir}")
+        normfactor_file = NormfactorFile(normfactor_files[0].absolute())
+
+        data_to_use = []
+        for index, data in enumerate(self.data()):
+            # Add the value only if it's > 0 and the normfactor for the image is within specified range
+            if (
+                data > 0
+                and min_tolerable_intranight_normfactor
+                <= normfactor_file.data()[index]
+                <= max_tolerable_intranight_normfactor
+            ):
+                data_to_use.append(data)
+
+        return np.median(np.array(data_to_use))
 
     def mean(self) -> float:
         """
