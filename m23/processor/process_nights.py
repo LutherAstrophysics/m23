@@ -24,6 +24,7 @@ from m23.constants import (
     OUTPUT_CALIBRATION_FOLDER_NAME,
 )
 from m23.extract.extraction import extract_stars
+from m23.file.raw_image_file import RawImageFile
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.norm.normalize import normalizeLogFiles
@@ -150,7 +151,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logging.info(f"Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
-    raw_images: List[Path] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
+    raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
     logging.info(f"Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
     logging.info(f"Using no of images to combine: {no_of_images_to_combine}")

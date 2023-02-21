@@ -12,6 +12,7 @@ from m23.constants import (
     INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
     OUTPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
 )
+from m23.file.raw_image_file import RawImageFile
 
 # local imports
 from .rename import rename
@@ -65,13 +66,17 @@ def get_all_fit_files(folder: Path) -> Iterable[PosixPath]:
     return folder.glob("*.fit")
 
 
-def get_raw_images(folder: Path) -> Iterable[PosixPath]:
+def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
     """
-    Return a list of all fit files sorted by asc. by image number present in filename
-    For what defines the image number, see the definition of `get_image_number_in_fit_file`
-    function. Note that files without digit are displayed at the top
+    Return a list `RawImageFile` files in `folder` provided sorted asc. by image number 
+    Note that only filenames matching the naming convention of RawImageFile are returned
     """
-    return sorted(folder.glob("*.fit"), key=get_image_number_in_fit_file)
+    all_files = [RawImageFile(file.absolute()) for file in folder.glob("*.fit")]
+    # Filter files whose filename don't match naming convention
+    all_files = filter(lambda raw_image_file : raw_image_file.is_valid_file_name(), all_files)
+    # Sort files by image number
+    return sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
+
 
 
 def get_radius_folder_name(radius: int) -> str:
