@@ -127,8 +127,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     # Darks
     darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER))
-    if len(crop_region) > 0:
-        darks = [crop(matrix, rows, cols) for matrix in darks]
+    # Ensure that image dimensions are as specified by rows and cols 
+    # If there's extra noise cols or rows, we crop them 
+    darks = [crop(matrix, rows, cols) for matrix in darks] 
     master_dark_data = makeMasterDark(
         saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_DARK_NAME,
         headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
@@ -143,8 +144,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logging.info(f"Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
-        if len(crop_region) > 0:
-            flats = [crop(matrix, rows, cols) for matrix in flats]
+        # Ensure that image dimensions are as specified by rows and cols 
+        # If there's extra noise cols or rows, we crop them 
+        flats = [crop(matrix, rows, cols) for matrix in flats]
 
         master_flat_data = makeMasterDark(
             saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_FLAT_NAME,
@@ -174,8 +176,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         to_index = (i + 1) * no_of_images_to_combine
 
         images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
-        if len(crop_region) > 0:
-            images_data = [crop(matrix, rows, cols) for matrix in images_data]
+        # Ensure that image dimensions are as specified by rows and cols 
+        # If there's extra noise cols or rows, we crop them 
+        images_data = [crop(matrix, rows, cols) for matrix in images_data]
 
         # Calibrate images
         images_data = calibrateImages(
