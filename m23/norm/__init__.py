@@ -2,45 +2,36 @@ import math
 import os
 from datetime import date
 from pathlib import Path
+from typing import List
 
 import numpy as np
 
 from m23.file import getLinesWithNumbersFromFile
+from m23.file.flux_log_combined_file import FluxLogCombinedFile
+from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.file.normfactor_file import NormfactorFile
+from m23.file.reference_log_file import ReferenceLogFile
 
 
-###
-### Function: normalizeLogFiles
-###
-### Takes in reference file name, log files names to normalize
-### and folder path to save the new files in
-###
-### Produces a normalization.txt file and Flux Logs combined folder
-### with normalized files in the saveFolder
-###
-### BIG ASSUMPTION!!!!
-### We assume that noOfStars in all log files is the same as no of stars in
-### reference file. This is the case if the log files were produced using extraction
-### module in this library. However, in case of log files produced by previous IDL code
-### this was't true. This is also one of the reasons, this normalization code might be
-### faster than the IDL version.
-###
-###
-### TODO: Mask out stars with center pixel not matching + crop the outlier stars
-###  using linfit
-def normalizeLogFiles(
-    referenceFileName,
-    logFilesNamesToNormalize,
-    logfile_adu_column,
-    saveFolder: Path,
-    date_of_night: date,
-    startImageUsed="",
-    endImageUsed="",
+# TODO: Mask out stars with center pixel not matching + crop the outlier stars using linfit
+def normalize_log_files(
+    # referenceFileName,
+    reference_log_file: ReferenceLogFile,
+    log_files_to_normalize: List[LogFileCombinedFile],
+    output_folder : Path,
+    radius: int,
+    img_duration: float,
+    night_date: date
 ):
     """
     This function normalizes the images provided.
     Note that the normalization isn't done with respect to the data in the reference image
     but with respect to some sample images take throughout the night.
+
+    Note that this code assumes that the all stars in the log files are available in
+    reference log file and no more or less.
     """
+
     # Wrapper around the function so we don't
     # have to keep passing the saveFolder as argument
     saveFileInFolder = lambda *args, **kwargs: saveFileInFolder(saveFolder, *args, **kwargs)
@@ -90,7 +81,7 @@ def normalizeLogFiles(
     normalized_star_data = np.zeros((noOfFiles, len(referenceData)))
 
     # Find normalization factor for each file
-    allNormFactors = []
+    all_norm_factors = []
     for file_index in range(noOfFiles):
         # Normalization factor is the median of the scaleFactors of all stars for scaleFactors < 5
         # where scaleFactor for a star for that image is the ratio of that star's adu in
@@ -117,47 +108,29 @@ def normalizeLogFiles(
         good_scale_factors = scale_factors_for_stars[
             np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))
         ]
-        normFactor = np.median(good_scale_factors) if len(good_scale_factors) else 0
+        norm_factor = np.median(good_scale_factors) if len(good_scale_factors) else 0
 
-        allNormFactors.append(normFactor)
-        normalized_star_data[file_index] = normFactor * np.array(
+        all_norm_factors.append(norm_factor)
+        normalized_star_data[file_index] = norm_factor * np.array(
             aduInLogData(logFilesData[file_index])
         )
 
-    # Save the norm factor dot txt
-    np.savetxt(
-        saveFolder
-        / f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_normfactors.txt",
-        np.array(allNormFactors),
-        fmt="%3.5f",
-    )
+    # Save normfactors
+    normfactors_file_name = NormfactorFile.generate_file_name(night_date, img_duration)
+    normfactor_file = NormfactorFile(output_folder / normfactors_file_name)
+    normfactor_file.create_file(all_norm_factors)
 
     # Save the normalized data for each star
     noOfStars = len(normalized_star_data[0])
     for star_index in range(noOfStars):
+
         star_data = [
             normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)
         ]
         # Turn all star_data that's negative to 0
         star_data = [currentData if currentData > 0 else 0 for currentData in star_data]
 
-        # Add header information to the file
-        # To make the layout consistent with output from IDL version
-        with open(
-            os.path.join(
-                saveFolder,
-                f"{date_of_night.strftime('%m-%d-%y')}_m23_7.0-ref_revised_71_{(star_index+1):04}_flux.txt",
-            ),
-            "w",
-        ) as f:
-            f.write(f"Program:\n")
-            f.write(f"Started with image\t{startImageUsed}\n")
-            f.write(f"Ended with image\t{endImageUsed}\n")
-            f.write(f"Aligned with image {Path(referenceFileName).name}\n")
-            f.write(f"X location:\t{''}\n")
-            f.write(f"Y location:\t{''}\n")
-            np.savetxt(
-                f,
-                np.array(star_data),
-                fmt="%10.2f",
-            )
+        # Create flux log combined file
+        flux_log_combined_file_name = FluxLogCombinedFile.generate_file_name(night_date, star_index + 1, img_duration)
+        flux_log_combined_file = output_folder / flux_log_combined_file_name
+        flux_log_combined_file.create_file(star_data, "", "", ("", ""), reference_log_file)

@@ -7,7 +7,7 @@ import numpy as np
 import numpy.typing as npt
 
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
-from m23.file.index import is_string_float
+from m23.file import is_string_float
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
 
@@ -217,9 +217,9 @@ class FluxLogCombinedFile:
             self.valid_data()
         )  # Note to use only the valid data points to calculate mean
 
-    def save(
+    def create_file(
         self,
-        data: npt.ArrayLike,
+        data: npt.NDArray,
         start_img: int,
         end_img: int,
         location: Tuple[float],

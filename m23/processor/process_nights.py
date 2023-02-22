@@ -24,11 +24,13 @@ from m23.constants import (
 )
 from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
+from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
+from m23.file.reference_log_file import ReferenceLogFile
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
-from m23.norm import normalizeLogFiles
+from m23.norm import normalize_log_files
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
 from m23.utils import (
     fit_data_from_fit_images,
@@ -45,27 +47,24 @@ from m23.utils import (
 def normalization_helper(
     radii_of_extraction: List[int],
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER: Path,
-    ref_file_path: Path,
-    log_files_to_use: List[Path],
-    night_date: date,
+    reference_log_file: ReferenceLogFile,
+    log_files_to_use: List[LogFileCombinedFile],
 ):
     """
     This is a normalization helper function extracted so that it can be reused by the renormalization script
     """
-    for index, radius in enumerate(radii_of_extraction):
+    for radius in radii_of_extraction:
         logging.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
         RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
         for file in RADIUS_FOLDER.glob("*"):
             if file.is_file():
                 file.unlink()  # Remove each file in the folder
-        logfile_adu_column = 6 + index  # 6th column is the first column with Star ADU
-        normalizeLogFiles(
-            ref_file_path,
+        normalize_log_files(
+            reference_log_file,
             log_files_to_use,
-            logfile_adu_column,
             RADIUS_FOLDER,
-            night_date,
+            radius
         )
 
 
@@ -162,6 +161,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Note the subtle typing difference between no_of_combined_images and no_of_images_to_combine
     no_of_combined_images = len(raw_images) // no_of_images_to_combine
 
+    log_files_to_normalize : List[LogFileCombinedFile] = []
+
     for i in range(no_of_combined_images):
         from_index = i * no_of_images_to_combine
         to_index = (i + 1) * no_of_images_to_combine
@@ -221,6 +222,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             log_file_combined=log_file_combined_file,
             aligned_combined_file=aligned_combined_file
         )
+        log_files_to_normalize.append(log_file_combined_file)
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
 
     # Normalization
@@ -228,11 +230,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         radii_of_extraction,
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
         ref_file_path,
-        [
-            i
-            for i in LOG_FILES_COMBINED_OUTPUT_FOLDER.glob("*")
-            if i.is_file() and i.suffix == ".txt"
-        ],
+        log_files_to_normalize,
         night_date,
     )
 

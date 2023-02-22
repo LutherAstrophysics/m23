@@ -4,7 +4,7 @@ from typing import Dict, Tuple
 import numpy as np
 import numpy.typing as npt
 
-from m23.file.index import line_str_contains_numbers_and_non_alphabets
+from m23.file import line_str_contains_numbers_and_non_alphabets
 
 
 class ReferenceLogFile:
