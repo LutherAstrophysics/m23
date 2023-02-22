@@ -83,7 +83,7 @@ class LogFileCombinedFile:
         if self.is_valid_file_name():
             # The first capture group contains the night date
             return datetime.strptime(
-                self.file_name_re.match(self.path().name)[2],
+                self.file_name_re.match(self.path().name)[1],
                 self.date_format,
             ).date()
     
