@@ -21,8 +21,8 @@ def normalize_log_files(
     night_date: date
 ):
     """
-    This function normalizes the images provided.
-    Note that the normalization isn't done with respect to the data in the reference image
+    This function normalizes (intra night *not* inter night) the LogFilesCombined files provided.
+    Note that the normalization **isn't** done with respect to the data in the reference image
     but with respect to some sample images take throughout the night.
 
     Note that this code assumes that the all stars in the log files are available in
