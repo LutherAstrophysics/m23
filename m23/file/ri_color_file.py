@@ -2,7 +2,7 @@ from pathlib import Path
 
 import numpy as np
 
-from m23.file.index import is_string_float
+from m23.file import is_string_float
 
 
 class RIColorFile:
