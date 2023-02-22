@@ -28,6 +28,7 @@ class FluxLogCombinedFile:
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
     file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt')
+    file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt')
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:
