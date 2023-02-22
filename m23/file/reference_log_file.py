@@ -51,7 +51,7 @@ class ReferenceLogFile:
         The first row of the array is the x position of star 1, 200th row for star 200, 
         and the like
         """
-        return self.data()[self.column_numbers["x"]]
+        return self.data()[:, self.column_numbers["x"]]
 
     def get_y_position_column(self) -> npt.NDArray:
         """
@@ -59,7 +59,7 @@ class ReferenceLogFile:
         The first row of the array is the y position of star 1, 200th row for star 200, 
         and the like
         """
-        return self.data()[self.column_numbers["y"]]
+        return self.data()[:, self.column_numbers["y"]]
 
     def get_star_xy(self, star_no: int) -> Tuple[float]:
         """

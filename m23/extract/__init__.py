@@ -45,7 +45,7 @@ def extract_stars(
 def newStarCenters(imageData, reference_log_file : ReferenceLogFile):
     
     stars_x_positions_in_ref_file = reference_log_file.get_x_position_column()
-    stars_y_positions_in_ref_file = ReferenceLogFile.get_y_position_column()
+    stars_y_positions_in_ref_file = reference_log_file.get_y_position_column()
 
     def centerFinder(position):
         x, y = position
@@ -69,7 +69,7 @@ def newStarCenters(imageData, reference_log_file : ReferenceLogFile):
 
         return yWght, xWght
 
-    return [centerFinder(stars_y_positions_in_ref_file[i], stars_y_positions_in_ref_file[i]) for i in range(len(stars_x_positions_in_ref_file))]
+    return [centerFinder([stars_x_positions_in_ref_file[i], stars_y_positions_in_ref_file[i]]) for i in range(len(stars_x_positions_in_ref_file))]
 
 def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
     """

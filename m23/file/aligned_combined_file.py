@@ -62,7 +62,7 @@ class AlignedCombinedFile:
         """
         if not self.is_valid_file_name():
             raise ValueError(f"{self.path().name} doesn't match naming conventions")
-        return float(self.file_name_re.match(self.path().name)[2])
+        return int(self.file_name_re.match(self.path().name)[2])
 
     def data(self) -> npt.NDArray:
         if not self.__is_read:
