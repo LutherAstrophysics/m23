@@ -122,9 +122,10 @@ class LogFileCombinedFile:
         """
         return self.data()[:, self.y_column]
     
-    def get_star_data(self, star_no : int):
+    def get_star_data(self, star_no : int) -> StarLogfileCombinedData:
         """
         Returns the details related to a particular `star_no`
+        Returns a named tuple `StarLogfileCombinedData`
         """
         star_data = self.data()[star_no - 1]
         titles = self._title_row()
@@ -143,12 +144,12 @@ class LogFileCombinedFile:
             # The second capture group contains the image duration
             return float(self.file_name_re.match(self.path().name)[2])
 
-    def star_number(self) -> int | None:
+    def img_number(self) -> int | None:
         """
-        Returns the star number associated to the filename if the file name is valid
+        Returns the image number associated to the filename if the file name is valid
         """
         if self.is_valid_file_name():
-            # The third capture group contains the star number
+            # The third capture group contains the image number
             return int(self.file_name_re.match(self.path().name)[3])
     
     def is_file_format_valid(self):

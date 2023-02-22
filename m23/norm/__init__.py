@@ -1,12 +1,10 @@
 import math
-import os
 from datetime import date
 from pathlib import Path
 from typing import List
 
 import numpy as np
 
-from m23.file import getLinesWithNumbersFromFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
@@ -15,7 +13,6 @@ from m23.file.reference_log_file import ReferenceLogFile
 
 # TODO: Mask out stars with center pixel not matching + crop the outlier stars using linfit
 def normalize_log_files(
-    # referenceFileName,
     reference_log_file: ReferenceLogFile,
     log_files_to_normalize: List[LogFileCombinedFile],
     output_folder : Path,
@@ -32,74 +29,46 @@ def normalize_log_files(
     reference log file and no more or less.
     """
 
-    # Wrapper around the function so we don't
-    # have to keep passing the saveFolder as argument
-    saveFileInFolder = lambda *args, **kwargs: saveFileInFolder(saveFolder, *args, **kwargs)
+    no_of_files = len(log_files_to_normalize)
 
-    # COLUMN_NUMBERS (0 means first column)
-    ref_positions_xy = (0, 1)
-    logfile_positions_xy = (0, 1)
-
-    def aduInLogData(logData):
-        return [float(line.split()[logfile_adu_column]) for line in logData]
-
-    def starPositionsInLogData(logData):
-        return [
-            np.array(
-                (line.split()[logfile_positions_xy[0] : logfile_positions_xy[1] + 1]),
-                dtype="float",
-            )
-            for line in logData
-        ]
-
-    referenceData = getLinesWithNumbersFromFile(referenceFileName)
-    logFilesData = [
-        getLinesWithNumbersFromFile(logFileName) for logFileName in logFilesNamesToNormalize
-    ]
-
-    # At this point, if we want to look at 300-th star in our first image
-    # we would do logFilesData[0][299] (beware of python index starting from 0)
-    noOfFiles = len(logFilesData)
-
-    # Normalization is done with reference to images 20%, 40%, 60% and 80% through night
+    # Normalization is done with reference to images 20%, 40%, 60% and 80% throughout night
     # The indices here are the index of the images from the night to which to normalize.
     # Note, we aren't normalizing with reference to the ref file
-    indicesToNormalizeTo = np.linspace(0, noOfFiles, 6, dtype="int")[1:-1]
-    adus_in_data_to_normalize_to = np.array(logFilesData, dtype="object")[indicesToNormalizeTo]
+    indices_to_normalize_to = np.linspace(0, no_of_files, 6, dtype="int")[1:-1]
+    log_files_to_which_all_other_logfiles_are_normalized_to  = np.array(log_files_to_normalize, dtype="object")[indices_to_normalize_to]
 
-    # Get the ADU column in the logfiles
+    # Get the ADUs of the logfiles based on which normalization is to be done
     adus_in_data_to_normalize_to = np.array(
-        [aduInLogData(data) for data in adus_in_data_to_normalize_to]
+        [logfile.get_adu(radius) for logfile in log_files_to_which_all_other_logfiles_are_normalized_to]
     )
 
-    referenceFileStarPositions = [
-        np.array(line.split()[ref_positions_xy[0] : ref_positions_xy[1] + 1], dtype="float")
-        for line in referenceData
-    ]
-
     # Matrix of image by star so 4th star in 100th image will be normalized_star_data[99][3]
-    normalized_star_data = np.zeros((noOfFiles, len(referenceData)))
+    normalized_star_data = np.zeros((no_of_files, len(reference_log_file)))
 
-    # Find normalization factor for each file
+    # This holds the normalization factor for each log_file to use
     all_norm_factors = []
-    for file_index in range(noOfFiles):
-        # Normalization factor is the median of the scaleFactors of all stars for scaleFactors < 5
-        # where scaleFactor for a star for that image is the ratio of that star's adu in
-        # sum of data_to_normalize_to / 4 * adu in current image
 
-        adu_of_current_log_file = np.array(aduInLogData(logFilesData[file_index]), dtype="float")
+    for file_index, log_file in enumerate(log_files_to_normalize):
 
-        starPositions = starPositionsInLogData(logFilesData[file_index])
+        adu_of_current_log_file = log_files_to_normalize[file_index].get_adu(radius)
 
         # Mask out stars with center more than 1 pixel away from those in the ref file
         # also mask if the star is outside the 12px box around the image
-        for star_index in range(len(adu_of_current_log_file)):
-            starX, starY = starPositions[star_index]
-            refX, refY = referenceFileStarPositions[star_index]
-            if math.sqrt((refX - starX) ** 2 + (refY - starY) ** 2) > 1:
+        for star_index in range(len(log_file)):
+            # Note not to be confused between logfile and reference file here we call logfile 
+            # combined that's to be normalized as logfile and the reference file that we use 
+            # to look up the standard positions of star as reference file
+            star_no = star_index + 1
+            star_data_in_log_file = log_file.get_star_data(star_no)
+            star_x_logfile, star_y_logfile = star_data_in_log_file.x, star_data_in_log_file.y
+            star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
+            if math.sqrt((star_x_reffile - star_x_logfile) ** 2 + (star_y_reffile - star_y_logfile) ** 2) > 1:
                 adu_of_current_log_file[star_index] = 0
 
-        # Find normalization factor
+        # Normalization factor is the median of the scale_factors of all stars for scale_factors < 5
+        # where scale_factor for a star for that image is 
+        # star's adu in sum of data_to_normalize_to divided by 4 * adu in current image
+        # Note that use are finding normalization factors for all stars at once using numpy's array division
         scale_factors_for_stars = np.sum(adus_in_data_to_normalize_to, axis=0) / (
             4 * adu_of_current_log_file
         )
@@ -108,12 +77,11 @@ def normalize_log_files(
         good_scale_factors = scale_factors_for_stars[
             np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))
         ]
-        norm_factor = np.median(good_scale_factors) if len(good_scale_factors) else 0
-
+        # Now the norm factor for the image is the median of norm factors for all the stars in that image
+        norm_factor = np.median(good_scale_factors) if len(good_scale_factors) > 0 else 0
         all_norm_factors.append(norm_factor)
-        normalized_star_data[file_index] = norm_factor * np.array(
-            aduInLogData(logFilesData[file_index])
-        )
+        # We now apply the normalization for all stars in the image and save it in our multidimensional array
+        normalized_star_data[file_index] = norm_factor * adu_of_current_log_file
 
     # Save normfactors
     normfactors_file_name = NormfactorFile.generate_file_name(night_date, img_duration)
@@ -123,14 +91,22 @@ def normalize_log_files(
     # Save the normalized data for each star
     noOfStars = len(normalized_star_data[0])
     for star_index in range(noOfStars):
-
+        star_no = star_index + 1
         star_data = [
-            normalized_star_data[file_index][star_index] for file_index in range(noOfFiles)
+            normalized_star_data[file_index][star_index] for file_index in range(no_of_files)
         ]
         # Turn all star_data that's negative to 0
-        star_data = [currentData if currentData > 0 else 0 for currentData in star_data]
+        star_data = [current_data if current_data > 0 else 0 for current_data in star_data]
 
-        # Create flux log combined file
-        flux_log_combined_file_name = FluxLogCombinedFile.generate_file_name(night_date, star_index + 1, img_duration)
+        # We now create flux log combined file
+        flux_log_combined_file_name = FluxLogCombinedFile.generate_file_name(night_date, star_no, img_duration)
         flux_log_combined_file = output_folder / flux_log_combined_file_name
-        flux_log_combined_file.create_file(star_data, "", "", ("", ""), reference_log_file)
+
+        fist_log_file_number = log_files_to_normalize[0].img_number()
+        last_log_file_number = log_files_to_normalize[-1].img_number()
+
+        # To write x,y position, we use the position from the first log file
+        x_position = log_files_to_normalize[0].get_star_data(star_no).x
+        y_position = log_files_to_normalize[0].get_star_data(star_no).y
+
+        flux_log_combined_file.create_file(star_data, fist_log_file_number, last_log_file_number, (x_position, y_position), reference_log_file)

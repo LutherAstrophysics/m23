@@ -49,6 +49,8 @@ def normalization_helper(
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER: Path,
     reference_log_file: ReferenceLogFile,
     log_files_to_use: List[LogFileCombinedFile],
+    img_duration: float,
+    night_date: date,
 ):
     """
     This is a normalization helper function extracted so that it can be reused by the renormalization script
@@ -64,7 +66,9 @@ def normalization_helper(
             reference_log_file,
             log_files_to_use,
             RADIUS_FOLDER,
-            radius
+            radius,
+            img_duration,
+            night_date,
         )
 
 
@@ -152,6 +156,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         del flats  # Deleting to free memory as we don't use flats anymore
 
     raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
+    image_duration = raw_images[0].image_duration()
     logging.info(f"Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
     logging.info(f"Using no of images to combine: {no_of_images_to_combine}")
@@ -205,7 +210,6 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         # Combination
         combined_images_data = np.sum(aligned_images_data, axis=0)
         sample_raw_image_file = raw_images[from_index]
-        image_duration = sample_raw_image_file.image_duration()
         aligned_combined_image_number = to_index // no_of_images_to_combine
         aligned_combined_file_name = AlignedCombinedFile.generate_file_name(image_duration, aligned_combined_image_number)
         aligned_combined_file = AlignedCombinedFile(ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name)
@@ -231,6 +235,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
         ref_file_path,
         log_files_to_normalize,
+        image_duration,
         night_date,
     )
 

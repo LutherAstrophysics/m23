@@ -2,6 +2,8 @@ import logging
 from pathlib import Path
 
 from m23.constants import FLUX_LOGS_COMBINED_FOLDER_NAME
+from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.file.reference_log_file import ReferenceLogFile
 from m23.processor.process_nights import normalization_helper
 from m23.utils import get_date_from_input_night_folder_name, get_log_file_name
 
@@ -24,15 +26,25 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         )
         logging.info(f"Running renormalization for radii {radii_of_extraction}")
 
-        LOG_FILES_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
+        FLUX_LOGS_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
         # Create log files combined folder if it doesn't yet exist
-        LOG_FILES_COMBINED_FOLDER.mkdir(exist_ok=True)
+        FLUX_LOGS_COMBINED_FOLDER.mkdir(exist_ok=True)
+
+        reference_log_file = ReferenceLogFile(
+            renormalize_dict["reference"]["file"],
+        )
+
+        log_files_to_use = [
+            LogFileCombinedFile(file) for file in night["files_to_use"]
+        ]
+        img_duration = log_files_to_use[0].img_duration()
 
         normalization_helper(
             radii_of_extraction,
-            LOG_FILES_COMBINED_FOLDER,
-            renormalize_dict["reference"]["file"],
-            night["files_to_use"],
+            FLUX_LOGS_COMBINED_FOLDER,
+            reference_log_file,
+            log_files_to_use,
+            img_duration,
             night_date,
         )
 

@@ -44,6 +44,22 @@ class ReferenceLogFile:
             return None
         # Note that -1 is necessary bc of 0 indexing
         return self.__data[star_no - 1][column_number]
+    
+    def get_x_position_column(self) -> npt.NDArray:
+        """
+        Returns an ordered array of stars x positions. 
+        The first row of the array is the x position of star 1, 200th row for star 200, 
+        and the like
+        """
+        return self.data()[self.column_numbers["x"]]
+
+    def get_y_position_column(self) -> npt.NDArray:
+        """
+        Returns an ordered array of stars y positions. 
+        The first row of the array is the y position of star 1, 200th row for star 200, 
+        and the like
+        """
+        return self.data()[self.column_numbers["y"]]
 
     def get_star_xy(self, star_no: int) -> Tuple[float]:
         """
@@ -70,6 +86,12 @@ class ReferenceLogFile:
         if not self.__is_read:
             self._read()
         return self.__data
+
+    def __len__(self):
+        """
+        Returns the number of stars data present in the reference file
+        """
+        return len(self.data())
 
     def __repr__(self):
         return self.__str__()
