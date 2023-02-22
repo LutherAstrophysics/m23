@@ -58,7 +58,6 @@ def applyCalibration(
     imageData,
     masterDarkData,
     masterFlatData,
-    masterBiasData,
     averageFlatData,
     hotPixelsInMasterDark,
 ):
@@ -72,7 +71,7 @@ def applyCalibration(
     subtractedRaw = imageData - masterDarkData
     flatRatio = np.array(averageFlatData / masterFlatData)
     ### dtype is set to float32 for our image viewing software Astromagic, since it does not support float64
-    ### We think we are not losing any significant precision with this downcasting
+    ### We think we are not losing any significant precision with this down casting
 
     calibratedImage = np.multiply(flatRatio, subtractedRaw, dtype="float32")
 
@@ -94,7 +93,7 @@ def applyCalibration(
 
     ### This calibration formula converts low background values to very high values,
     ### sometimes up to millions, whereas the maximum signal of stars is less than
-    ### one hudnred thousand
+    ### one hundred thousand
     ### This will affect our alignment star-finding algorithm,
     ### so we want to set these values to 0
 
@@ -107,13 +106,13 @@ def applyCalibration(
 def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue):
 
     ### For all hot pixel positions that aren't at edges (in the master dark)
-    ### Check if the pixel value in calibrated( or RAW ??? TOFIX) img is abnormally
+    ### Check if the pixel value in calibrated( or RAW ??? TO FIX) img is abnormally
     ###   high + one of the surrounding pixels is abnormally high too,
     ###   then we fit a gaussian of surrounding 10X10 pixel box
-    ###   and assign the gaussian's value at postion [5,5] (because that's the center
+    ###   and assign the gaussian's value at position [5,5] (because that's the center
     ###   pixel we started with) to that pixel value.
     ###  ELSE: In other words:
-    ###  If the pixel value is not abnormally high, or if it's abnomrally high but none of
+    ###  If the pixel value is not abnormally high, or if it's abnormally high but none of
     ###    its surrounding pixels is abnormally high:
     ###    create a 3X3 box with our pixel at center, and take the average of 8 pixels around it
 
@@ -130,7 +129,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
             calibratedImageData[row, col + 1],
         ]
 
-    def needsGausian():
+    def needsGaussian():
         ### isHigh
         isHigh = calibratedImageData[row][col].all() > highValue and any(
             [value > highValue for value in surroundingValues()]
@@ -154,11 +153,11 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
     def takeAverage():
         surroundingMatrix = calibratedImageData[row - 1 : row + 2, col - 1 : col + 2]
-        surroudingSum = np.sum(surroundingMatrix)
-        surroundingMatrixAverageWithoutCenter = (surroudingSum - calibratedImageData[row][col]) / 8
+        surroundingSum = np.sum(surroundingMatrix)
+        surroundingMatrixAverageWithoutCenter = (surroundingSum - calibratedImageData[row][col]) / 8
         calibratedImageData[row][col] = surroundingMatrixAverageWithoutCenter
 
-    doGaussian() if needsGausian() else takeAverage()
+    doGaussian() if needsGaussian() else takeAverage()
 
 
 ### A word of caution:
@@ -174,7 +173,7 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
 ### purpose:
 ###   takes a list of image data to calibrate
-###   returns arrray of calibrated image data,
+###   returns array of calibrated image data,
 
 
 def calibrateImages(masterDarkData, masterFlatData, listOfImagesData, masterBiasData=np.array([])):
@@ -192,7 +191,7 @@ def calibrateImages(masterDarkData, masterFlatData, listOfImagesData, masterBias
     ### We define the edges as the outermost 5 (or 10???) pixels????
     edgeSize = 5
 
-    ### noOfRows and colums in masterdarkData
+    ### noOfRows and columns in masterdarkData
     totalRows, totalColumns = masterDarkData.shape[0], masterDarkData.shape[1]
 
     ### Filter out the edges
