@@ -28,6 +28,10 @@ def normalize_log_files(
     Note that this code assumes that the all stars in the log files are available in
     reference log file and no more or less.
     """
+    # We are sorting the log files so that we know what's the first logfile 
+    # we are using and what's the last. This data is needed written in header
+    # of all flux log combined files that we create
+    log_files_to_normalize.sort(key=lambda log_file : log_file.img_number())
 
     no_of_files = len(log_files_to_normalize)
 
@@ -100,7 +104,7 @@ def normalize_log_files(
 
         # We now create flux log combined file
         flux_log_combined_file_name = FluxLogCombinedFile.generate_file_name(night_date, star_no, img_duration)
-        flux_log_combined_file = output_folder / flux_log_combined_file_name
+        flux_log_combined_file = FluxLogCombinedFile(output_folder / flux_log_combined_file_name)
 
         fist_log_file_number = log_files_to_normalize[0].img_number()
         last_log_file_number = log_files_to_normalize[-1].img_number()

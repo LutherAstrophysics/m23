@@ -21,9 +21,7 @@ class LogFileCombinedFile:
     sky_adu_column = 5
     x_column = 0
     y_column = 1
-    file_name_re = re.compile(
-        "(\d{2}-\d{2}-\d{2})_m23_(\d+\.?\d*)-ref_revised_71_(\d{3, 4})_flux.txt"
-    )
+    file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{3})\.txt')
     star_adu_radius_re = re.compile("Star ADU (\d+)")
 
     StarLogfileCombinedData = namedtuple(
@@ -39,7 +37,7 @@ class LogFileCombinedFile:
         param: img_no : Image number corresponding to the Aligned combined image
         param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}-ref_revised_71_{img_no:04}_flux.txt"
+        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}-{img_no:03}.txt"
 
     def __init__(self, file_path: str) -> None:
         self.__path = Path(file_path)
@@ -159,7 +157,7 @@ class LogFileCombinedFile:
         return True
 
     def path(self):
-        self.__path
+        return self.__path
 
     def data(self):
         if not self.__is_read:
@@ -183,7 +181,7 @@ class LogFileCombinedFile:
         if len(data) == 0:
             radii = []
         else:
-            radii = data[data.keys()[0]].radii_adu.keys()
+            radii = data[list(data.keys())[0]].radii_adu.keys()
 
         stars = sorted(data.keys())
         no_of_stars = len(stars)
@@ -192,7 +190,7 @@ class LogFileCombinedFile:
             fd.write(
                 f"Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n"
             )
-            fd.write(f"\tImage {aligned_combined_file}:\n")
+            fd.write(f"\tImage {aligned_combined_file.path().name}\n")
             fd.write(f"\tTotal no of stars: {no_of_stars}\n")
             fd.write(f"\tRadius of star diaphragm: {', '.join(map(str, radii))}\n")
             fd.write(f"\tSky annulus inner radius: \n")
@@ -217,7 +215,7 @@ class LogFileCombinedFile:
                     f"{star_data.x:>16.2f}{star_data.y:>16.2f}{star_data.xFWHM:>16.4f}{star_data.yFWHM:>16.4f}{star_data.avgFWHM:>16.4f}{star_data.sky_adu:>16.2f}"
                 )
                 for radius in radii:
-                    fd.write(f"{star_data.radii_adu[radius]}")
+                    fd.write(f"{star_data.radii_adu[radius]:16.2f}")
                 fd.write("\n")
     
     def __len__(self):

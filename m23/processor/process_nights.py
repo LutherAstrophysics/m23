@@ -100,6 +100,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
+    reference_log_file = ReferenceLogFile(ref_file_path)
 
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]
@@ -222,9 +223,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         extract_stars(
             combined_images_data,
             ref_file_path,
-            radii_of_extraction=radii_of_extraction,
-            log_file_combined=log_file_combined_file,
-            aligned_combined_file=aligned_combined_file
+            radii_of_extraction,
+            log_file_combined_file,
+            aligned_combined_file
         )
         log_files_to_normalize.append(log_file_combined_file)
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
@@ -233,7 +234,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     normalization_helper(
         radii_of_extraction,
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
-        ref_file_path,
+        reference_log_file,
         log_files_to_normalize,
         image_duration,
         night_date,

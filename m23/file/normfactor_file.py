@@ -12,7 +12,7 @@ class NormfactorFile:
 
     @classmethod
     def generate_file_name(cls, night_date : date, img_duration : float):
-        return f"{night_date.strftime(cls.date_format)}-m23_{img_duration}_normfactors.txt"
+        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}_normfactors.txt"
 
     def __init__(self, file_path: str) -> None:
         self.__path = Path(file_path)
@@ -33,7 +33,8 @@ class NormfactorFile:
 
     def is_valid_file_name(self):
         if self.__path.is_dir() or self.__path.suffix != ".txt":
-            raise ValueError("Invalid txt file {self.__path}")
+            return False
+        return True
 
     def exists(self):
         return self.__path.exists()
