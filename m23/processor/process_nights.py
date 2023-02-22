@@ -11,6 +11,7 @@ from astropy.io.fits import getdata
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
 from m23.calibrate.master_calibrate import makeMasterDark
+from m23.charts import draw_normfactors_chart
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
     CONFIG_FILE_NAME,
@@ -70,6 +71,7 @@ def normalization_helper(
             img_duration,
             night_date,
         )
+    draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
 
 
 def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):
@@ -242,6 +244,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         image_duration,
         night_date,
     )
+
 
 
 def start_data_processing_auxiliary(config: Config):

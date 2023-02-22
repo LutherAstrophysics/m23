@@ -19,6 +19,7 @@ ALIGNED_COMBINED_FOLDER_NAME = "Aligned Combined"
 LOG_FILES_COMBINED_FOLDER_NAME = "Log Files Combined"
 FLUX_LOGS_COMBINED_FOLDER_NAME = "Flux Logs Combined"
 COLOR_NORMALIZED_FOLDER_NAME = "Color Normalized"
+CHARTS_FOLDER_NAME = "Charts"
 MASTER_DARK_NAME = "masterdark.fit"
 MASTER_FLAT_NAME = "masterflat.fit"
 

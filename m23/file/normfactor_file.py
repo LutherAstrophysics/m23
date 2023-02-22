@@ -20,7 +20,7 @@ class NormfactorFile:
         self.__is_read = False
 
     def _read(self):
-        self.is_valid_file()
+        self.is_valid_file_name()
         if not self.exists():
             raise FileNotFoundError(f"File not found {self.__path}")
         with self.__path.open() as fd:
