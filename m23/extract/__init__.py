@@ -5,22 +5,20 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
-from m23.file import getLinesWithNumbersFromFile
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.file.reference_log_file import ReferenceLogFile
 from m23.matrix import blockRegions
 
 
 def extract_stars(
     image_data : npt.NDArray, 
-    reference_log_file_name, 
+    reference_log_file: ReferenceLogFile, 
     radii_of_extraction,
     log_file_combined_file: LogFileCombinedFile, 
     aligned_combined_file=AlignedCombinedFile
 ):
-    stars_positions_in_ref_file = starsPositionsInLogFile(reference_log_file_name)
-    stars_centers_in_new_image = newStarCenters(image_data, stars_positions_in_ref_file)
-
+    stars_centers_in_new_image = newStarCenters(image_data, reference_log_file)
     star_fluxes = {
         radius: flux_log_for_radius(radius, stars_centers_in_new_image, image_data)
         for radius in radii_of_extraction
@@ -44,7 +42,11 @@ def extract_stars(
         )
     log_file_combined_file.create_file(log_file_combined_data, aligned_combined_file)
 
-def newStarCenters(imageData, oldStarCenters):
+def newStarCenters(imageData, reference_log_file : ReferenceLogFile):
+    
+    stars_x_positions_in_ref_file = reference_log_file.get_x_position_column()
+    stars_y_positions_in_ref_file = ReferenceLogFile.get_y_position_column()
+
     def centerFinder(position):
         x, y = position
 
@@ -67,7 +69,7 @@ def newStarCenters(imageData, oldStarCenters):
 
         return yWght, xWght
 
-    return [centerFinder(position) for position in oldStarCenters]
+    return [centerFinder(stars_y_positions_in_ref_file[i], stars_y_positions_in_ref_file[i]) for i in range(len(stars_x_positions_in_ref_file))]
 
 def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
     """
@@ -137,14 +139,6 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
         for position in stars_center_in_new_image
     ]
     return stars_fluxes
-
-
-@cache
-def starsPositionsInLogFile(fileName):
-    linesWithNumbers = getLinesWithNumbersFromFile(fileName)
-    # Assumes X and Y are the first two columns for the file
-    # Note it's important to use dtype as 'float'.
-    return [np.array(line.split()[:2], dtype="float") for line in linesWithNumbers]
 
 
 @cache

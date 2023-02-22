@@ -222,7 +222,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_file_combined_file = LogFileCombinedFile(LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name)
         extract_stars(
             combined_images_data,
-            ref_file_path,
+            reference_log_file,
             radii_of_extraction,
             log_file_combined_file,
             aligned_combined_file
