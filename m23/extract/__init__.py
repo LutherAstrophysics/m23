@@ -40,7 +40,7 @@ def extract_stars(
             # Also note that we only write sky ADU for one of the radius of extraction
             # This is the usually just the first radius of extraction  
             sky_adu=star_fluxes[radii_of_extraction[0]][star_no - 1][1], # Sky ADU from first of extraction
-            radii_adu=tuple([star_fluxes[radius][star_no - 1][2] for radius in radii_of_extraction]) 
+            radii_adu=({radius : star_fluxes[radius][star_no - 1][2] for radius in radii_of_extraction}) 
         )
     log_file_combined_file.create_file(log_file_combined_data, aligned_combined_file)
 

@@ -27,9 +27,7 @@ class FluxLogCombinedFile:
 
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
-    file_name_re = re.compile(
-        "(\d{2}-\d{2}-\d{2})_m23_(\d+\.?\d*)-ref_revised_71_(\d{3, 4})_flux.txt"
-    )
+    file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt')
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:
@@ -48,7 +46,7 @@ class FluxLogCombinedFile:
         param: star_no : Star number
         param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_{img_duration}-ref_revised_71_{star_no:04}_flux.txt"
+        return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_{img_duration}-{star_no}_flux.txt"
 
     def _validate_file(self):
         if not self.path().exists():

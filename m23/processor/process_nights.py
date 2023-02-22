@@ -222,9 +222,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         extract_stars(
             combined_images_data,
             ref_file_path,
-            radii_of_extraction=radii_of_extraction,
-            log_file_combined=log_file_combined_file,
-            aligned_combined_file=aligned_combined_file
+            radii_of_extraction,
+            log_file_combined_file,
+            aligned_combined_file
         )
         log_files_to_normalize.append(log_file_combined_file)
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
