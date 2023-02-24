@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 
+from .get_line import get_star_to_ignore_bit_vector
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
@@ -56,6 +57,11 @@ def normalize_log_files(
 
         adu_of_current_log_file = log_files_to_normalize[file_index].get_adu(radius)
 
+        # Perform linear fits, cropping in 12 pixels from stars closest to the four corners
+        # creating a quadrilateral region, and excluding stars outside of this area
+        # Returns the updated list of star coordinates
+        stars_to_ignore_bit_vector = get_star_to_ignore_bit_vector(log_file)
+
         # Mask out stars with center more than 1 pixel away from those in the ref file
         # also mask if the star is outside the 12px box around the image
         for star_index in range(len(log_file)):
@@ -63,24 +69,39 @@ def normalize_log_files(
             # combined that's to be normalized as logfile and the reference file that we use 
             # to look up the standard positions of star as reference file
             star_no = star_index + 1
-            star_data_in_log_file = log_file.get_star_data(star_no)
-            star_x_logfile, star_y_logfile = star_data_in_log_file.x, star_data_in_log_file.y
-            star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
-            if math.sqrt((star_x_reffile - star_x_logfile) ** 2 + (star_y_reffile - star_y_logfile) ** 2) > 1:
+            
+            # Mark the adu of the star as 0 if that's to be ignored
+            if stars_to_ignore_bit_vector[star_index] == 0: 
                 adu_of_current_log_file[star_index] = 0
+                continue # We go to the next star in the for loop as we already know ADU for this star for this image
 
-        # Normalization factor is the median of the scale_factors of all stars for scale_factors < 5
+            star_data_in_log_file = log_file.get_star_data(star_no)
+            star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
+            star_x_position, star_y_position = star_data_in_log_file.x, star_data_in_log_file.y
+            
+            if math.sqrt((star_x_reffile - star_x_position) ** 2 + (star_y_reffile - star_y_position) ** 2) > 1:
+                adu_of_current_log_file[star_index] = 0
+            
+
+        # Normalization factor is the median of the scale_factors of all stars for scale_factors <= 5
         # where scale_factor for a star for that image is 
         # star's adu in sum of data_to_normalize_to divided by 4 * adu in current image
         # Note that use are finding normalization factors for all stars at once using numpy's array division
-        scale_factors_for_stars = np.sum(adus_in_data_to_normalize_to, axis=0) / (
+        # Note that we're multiplying the sum by the bit vector to that we ignore all the stars that are to ignored
+        sum_of_adus_in_data_to_normalize_to = np.sum(adus_in_data_to_normalize_to, axis=0) * stars_to_ignore_bit_vector
+        scale_factors_for_stars = sum_of_adus_in_data_to_normalize_to / (
             4 * adu_of_current_log_file
         )
         # Only get the median value for scale factors between 0 and 5, since some values are -inf or nan
         # We get the upper threshold 5 from the IDL code
+        # good_scale_factors = scale_factors_for_stars[
+        #     np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))
+        # ]
         good_scale_factors = scale_factors_for_stars[
-            np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))
+            np.where((scale_factors_for_stars > 0) & (scale_factors_for_stars <= 5))
         ]
+        breakpoint()
+
         # Now the norm factor for the image is the median of norm factors for all the stars in that image
         norm_factor = np.median(good_scale_factors) if len(good_scale_factors) > 0 else 0
         all_norm_factors.append(norm_factor)
