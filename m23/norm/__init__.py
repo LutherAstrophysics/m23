@@ -60,7 +60,7 @@ def normalize_log_files(
         # Perform linear fits, cropping in 12 pixels from stars closest to the four corners
         # creating a quadrilateral region, and excluding stars outside of this area
         # Returns the updated list of star coordinates
-        stars_to_ignore_bit_vector = get_star_to_ignore_bit_vector(log_file)
+        stars_to_ignore_bit_vector = get_star_to_ignore_bit_vector(log_file, radius)
 
         # Mask out stars with center more than 1 pixel away from those in the ref file
         # also mask if the star is outside the 12px box around the image
@@ -74,6 +74,8 @@ def normalize_log_files(
             if stars_to_ignore_bit_vector[star_index] == 0: 
                 adu_of_current_log_file[star_index] = 0
                 continue # We go to the next star in the for loop as we already know ADU for this star for this image
+            
+            ignored_stars = [i + 1 for i in range(2508) if stars_to_ignore_bit_vector[i] == 0]
 
             star_data_in_log_file = log_file.get_star_data(star_no)
             star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
@@ -100,8 +102,7 @@ def normalize_log_files(
         good_scale_factors = scale_factors_for_stars[
             np.where((scale_factors_for_stars > 0) & (scale_factors_for_stars <= 5))
         ]
-        breakpoint()
-
+        
         # Now the norm factor for the image is the median of norm factors for all the stars in that image
         norm_factor = np.median(good_scale_factors) if len(good_scale_factors) > 0 else 0
         all_norm_factors.append(norm_factor)
