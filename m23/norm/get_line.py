@@ -1,7 +1,9 @@
-import numpy as np 
 from typing import Iterable
 
+import numpy as np
+
 from m23.file.log_file_combined_file import LogFileCombinedFile
+
 
 def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, radius: int) -> Iterable[int]:
     """
@@ -21,7 +23,7 @@ def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, r
     for index, adu in enumerate(log_file_combined_file.get_adu(radius)):
         if not (adu > 0): # Note that some may be nan values
             # Set a bogus value on the star's x and y coordinate 
-            # so that it won't affect corner star calcualtion
+            # so that it won't affect corner star calculation
             bogus = 512
             x_coordinates[index] = bogus
             y_coordinates[index] = bogus

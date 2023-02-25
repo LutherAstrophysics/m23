@@ -5,11 +5,12 @@ from typing import List
 
 import numpy as np
 
-from .get_line import get_star_to_ignore_bit_vector
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
+
+from .get_line import get_star_to_ignore_bit_vector
 
 
 # TODO: Mask out stars with center pixel not matching + crop the outlier stars using linfit

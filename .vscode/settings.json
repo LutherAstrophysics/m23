@@ -11,6 +11,7 @@
   "cSpell.words": [
     "adus",
     "ainbow",
+    "argmin",
     "astroalign",
     "Astromagic",
     "astropy",
@@ -33,6 +34,7 @@
     "normfactors",
     "numpy",
     "opencv",
+    "polyfit",
     "pypi",
     "pyplot",
     "Rapti",
