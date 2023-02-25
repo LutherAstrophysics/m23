@@ -77,6 +77,13 @@ def normalize_log_files(
             
             ignored_stars = [i + 1 for i in range(2508) if stars_to_ignore_bit_vector[i] == 0]
 
+            # If the ADU for the star in any of the 4 sample logfiles for the night have vale <=0 
+            # then we ignore that star from calculating the normfactor for the image
+            star_adu_in_in_sample_logfiles = [logfile[star_index] for logfile in adus_in_data_to_normalize_to]
+            if not all([value > 0 for value in star_adu_in_in_sample_logfiles]):
+                adu_of_current_log_file[star_index] = 0 # Ignore this star for normfactor calc of this logfile
+                continue
+
             star_data_in_log_file = log_file.get_star_data(star_no)
             star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
             star_x_position, star_y_position = star_data_in_log_file.x, star_data_in_log_file.y
@@ -96,13 +103,9 @@ def normalize_log_files(
         )
         # Only get the median value for scale factors between 0 and 5, since some values are -inf or nan
         # We get the upper threshold 5 from the IDL code
-        # good_scale_factors = scale_factors_for_stars[
-        #     np.where((scale_factors_for_stars < 5) & (scale_factors_for_stars > 0))
-        # ]
         good_scale_factors = scale_factors_for_stars[
             np.where((scale_factors_for_stars > 0) & (scale_factors_for_stars <= 5))
         ]
-        
         # Now the norm factor for the image is the median of norm factors for all the stars in that image
         norm_factor = np.median(good_scale_factors) if len(good_scale_factors) > 0 else 0
         all_norm_factors.append(norm_factor)
