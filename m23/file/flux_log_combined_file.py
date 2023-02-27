@@ -172,7 +172,7 @@ class FluxLogCombinedFile:
     def specialized_median_for_internight_normalization(self) -> float:
         """
         Returns specialized median flux for the night to be used by internight normalization code.
-        This is special in that the median is only calculated for images that got applied
+        This is special in that the median is only calculated from images that got applied
         internight normalization factor within a certain range. Additionally (as always) we ignore
         data points that are zero values when calculating median
         This is just an implementation of the way things are/were done in the IDL code.
