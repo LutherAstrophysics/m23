@@ -118,22 +118,99 @@ def internight_normalize_auxiliary(
         star_data = data_dict[star_no]
         # Only calculate the ratio for stars with >= 50% attendance for the night
         if star_data.attendance >= 0.5:
-            ratio = star_data.reference_log_adu / star_data.median_flux
-            stars_signal_ratio[star_no] = ratio
+            # Only include this star if it has a non-zero median flux
+            if star_data.median_flux > 0.001:
+                ratio = star_data.reference_log_adu / star_data.median_flux
+                stars_signal_ratio[star_no] = ratio
 
-    # We now make a plot of the ratio (calculated) vs R-I for the particular star
-    values_to_plot = [
-        (
-            color_data_file.get_star_color(star_no),  # X value is the R-I value for a star
-            stars_signal_ratio[star_no],  # Y Value is the star signal ratio calculated above
-        )
-        for star_no in stars_signal_ratio
-    ]
-    x, y = zip(*values_to_plot)  # Unpack a list of pairs into two tuples
-    plt.plot(x, y, "b+")
-    plt.xlabel("R-I")
-    plt.ylabel("Signal ratio")
-    plt.show()
+    # Now we try to find correction factors (aka. normalization factor) for stars with mean r-i
+    # data. How we deal with stars without mean r-i data is described later.
+    # For those that have mean r-i color data,  we sort these stars into 3
+    # populations based on mean r-i,as they appear different on a histogram of
+    # mean r-i and graphs of mean r-i vs.  ref/night.  Potentially, they could
+    # be disk stars in the luster, disk stars in the field, and bulge stars in
+    # the field. That remains to be looked into. 
+    # Next, we remove outliers using an initial polynomial curve fit. Then we
+    # fit a final curve to each section. At the end of this program, we use the
+    # curve fits to normalize these stars with color data.
+
+    # The following dictionary holds the information for which one of the three
+    # regions (described above) do stars that have mean r-i values as well as
+    # are more than 50% attendant on the night fall into. So we look at the stars
+    # from color dict and ensure that it's also in the dictionary
+    # stars_signal_ratio)
+    stars_population_number : Dict[int, int] = {} # Map from star number to population number (either 1 or 2 or 3)
+    for star_no in stars_signal_ratio:
+        star_color_value  = data_dict[star_no].measured_mean_r_i
+        if star_color_value <= -0.0001 or star_color_value >= 0.0001:
+            # Include the star if the its color value falls in a certain range
+            if star_color_value > 0.135 and star_color_value <= 0.455:
+                stars_population_number[star_no] = 1
+            elif star_color_value > 0.455 and star_color_value <= 1.063:
+                stars_population_number[star_no] = 2
+            elif star_color_value > 1.063 and star_color_value <= 7:
+                stars_population_number[star_no] = 3
+            # Otherwise we don't include the star in the population number
+
+    # We now remove outliers points from signal-ratio vs r-i graph.
+    # Essentially, this program works by taking a 3rd degree polynomial curve
+    # fit for each of the 3 intervals. Then, it calculates how far each point is
+    # from its predicted point on the curve, the point - point on the curve.  It
+    # bins and creates a histogram for these differences, and fits a Gaussian to
+    # it (this is statistically useful in limiting the sway of outliers on the
+    # mean and standard deviation). Then, any point more than 2.5 standard
+    # deviations from the curve fit is removed as an outlier.
+
+    # Here we loop over each section of the polynomial fit
+    for section_number in range(1, 4):
+
+        stars_to_include = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number]
+        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
+        y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
+
+        # These lines of code check to make sure the first or last data point in the signal value isn't an outlier. 
+        # First or last data points tend to greatly affect the polynomial fit, so if the data points are
+        # 2 standard deviations away from the next closest point, they are replaced with the mean of the 
+        # next two closest points.
+        modified_y_value = [y for y in y_values] # Note that we don't want to alter the original y_values list
+        std_signals = np.std(y_values)
+        if abs(y_values[0] - y_values[1])/std_signals > 2:
+            modified_y_value[0] = np.mean(modified_y_value[1:3])
+        if abs(y_values[-1] - y_values[-2])/std_signals > 2:
+            modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
+
+        polynomial_fit_fn = get_polynomial_fit_for_populations(x_values, y_values)
+
+        # This list stores the difference between actual signal value and the value given by fitted curve 
+        y_differences = [y_values[index] - polynomial_fit_fn[x] for index, x in enumerate(x_values)]
+        y_diff_mean = np.mean(y_differences)
+        y_diff_std = np.std(y_differences)
+        y_diff_min = np.min(y_differences) - 5 * y_diff_std
+        y_diff_max = np.max(y_differences) - 5 * y_diff_std
+        y_no_of_bins = 11 # We want to use 11 bins
+        bin_frequencies, bins = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
+        # gauss_fit = 
+
+
+
+        # y = polynomial_fit_fn(1.1)
+
+    
+
+
+    # # We now make a plot of the ratio (calculated) vs R-I for the particular star
+    # values_to_plot = [
+    #     (
+    #         color_data_file.get_star_color(star_no),  # X value is the R-I value for a star
+    #         stars_signal_ratio[star_no],  # Y Value is the star signal ratio calculated above
+    #     )
+    #     for star_no in stars_signal_ratio
+    # ]
+    # x, y = zip(*values_to_plot)  # Unpack a list of pairs into two tuples
+    # plt.plot(x, y, "b+")
+    # plt.xlabel("R-I")
+    # plt.ylabel("Signal ratio")
+    # plt.show()
 
     # Now we calculate normalization factor for the star for the night
 
