@@ -323,9 +323,9 @@ def internight_normalize_auxiliary(
             if not special_star_value: # Do this only if this wasn't one of the special stars
                 if star_no in region_1_stars: 
                     norm_factor = region_1_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
-                elif star_no in region_2_x:
+                elif star_no in region_2_stars:
                     norm_factor = region_2_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
-                elif star_no in region_3_x:
+                elif star_no in region_3_stars:
                     norm_factor = region_3_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
                 else:
                     norm_factor = None
@@ -343,6 +343,15 @@ def internight_normalize_auxiliary(
                     normalized_median_flux=star_data.median_flux * norm_factor,
                     used_mean_r_i=color
                     )
+
+        # Replace normalized flux with zeros if the night doesn't have median flux
+        # Or if the star is <50% attendant on the night
+        if np.isnan(star_data.median_flux) or star_data.attendance < 0.5:
+            data_dict[star_no] = star_data._replace(
+                normalized_median_flux=0,
+                norm_factor=0,
+                used_mean_r_i=star_data.measured_mean_r_i
+                )
 
     
         
