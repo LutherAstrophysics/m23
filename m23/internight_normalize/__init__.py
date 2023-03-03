@@ -4,6 +4,7 @@ from typing import Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.stats import norm
 
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.color_normalized_file import ColorNormalizedFile
@@ -162,7 +163,9 @@ def internight_normalize_auxiliary(
     # deviations from the curve fit is removed as an outlier.
 
     # Here we loop over each section of the polynomial fit
-    for section_number in range(1, 4):
+    section_data = {} # This dict holds data for each section that we use outside the loop
+    sections = [1, 2, 3]
+    for section_number in sections:
 
         stars_to_include = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number]
         x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
@@ -179,23 +182,79 @@ def internight_normalize_auxiliary(
         if abs(y_values[-1] - y_values[-2])/std_signals > 2:
             modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
 
-        polynomial_fit_fn = get_polynomial_fit_for_populations(x_values, y_values)
+        coeffs = np.polyfit(x_values, y_values, 3) # Third degree fit
+        polynomial_fit_fn = lambda x : coeffs[0] * x ** 3 + coeffs[1] * x ** 2 + coeffs[2] * x + coeffs[3] # ax^3 + bx^2 + cx + d
 
         # This list stores the difference between actual signal value and the value given by fitted curve 
         y_differences = [y_values[index] - polynomial_fit_fn[x] for index, x in enumerate(x_values)]
-        y_diff_mean = np.mean(y_differences)
-        y_diff_std = np.std(y_differences)
-        y_diff_min = np.min(y_differences) - 5 * y_diff_std
-        y_diff_max = np.max(y_differences) - 5 * y_diff_std
-        y_no_of_bins = 11 # We want to use 11 bins
-        bin_frequencies, bins = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
-        # gauss_fit = 
+
+        # We store the data of each section to later in a dictionary indexed by the section number
+        section_data[section_number] = {
+            'stars_to_include': stars_to_include,
+            'x_values': x_values,
+            'y_values': y_values,
+            'y_differences': y_differences # This is the difference of actual y to fitted y
+        }
 
 
+    y_differences = [ ]  # This holds the y_differences for three sections calculated in the loop above
+    for section_number in sections:
+        y_differences += section_data[section_number]['y_differences']
 
-        # y = polynomial_fit_fn(1.1)
+    y_diff_std = np.std(y_differences)
+    y_diff_min = np.min(y_differences) - 5 * y_diff_std
+    y_diff_max = np.max(y_differences) - 5 * y_diff_std
+    y_no_of_bins = 11 # We want to use 11 bins
+    bin_frequencies, bins = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
+    mean, sigma = norm.fit(np.repeat(bins, bin_frequencies))
 
-    
+    # Now we find stars for which y_difference is more than 2std away from mean
+    top_threshold = mean + 2 * sigma
+    bottom_threshold = mean - 2 * sigma
+
+    # We now create a list of stars that are outside the specified threshold
+    stars_outside_threshold = []
+    for section_number in sections:
+        section_y_differences = section_data[section_number]['y_differences']
+        section_stars = section_data[section_number]['stars_to_include']
+        for index, y_diff in enumerate(section_y_differences):
+            if y_diff < bottom_threshold or y_diff > top_threshold:
+                star_no = section_stars[index]
+                stars_outside_threshold.append(star_no)
+
+    stars_fitted_signal_ratios = {} # This dictionary holds the fitted signal ratios for the stars
+    # Now we do a second degree polynomial fit for the stars in sections that aren't in `stars_outside_threshold`
+    # Note that we have to fit individual curves for each section like we did above
+    for section_number in sections:
+
+        # Note that we're excluding stars in `stars_outside_threshold` list
+        stars_to_include = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number and star_no not in stars_outside_threshold]
+        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
+        y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
+
+        # These lines of code check to make sure the first or last data point in the signal value isn't an outlier. 
+        # First or last data points tend to greatly affect the polynomial fit, so if the data points are
+        # 2 standard deviations away from the next closest point, they are replaced with the mean of the 
+        # next two closest points.
+        modified_y_value = [y for y in y_values] # Note that we don't want to alter the original y_values list
+        std_signals = np.std(y_values)
+        if abs(y_values[0] - y_values[1])/std_signals > 2:
+            modified_y_value[0] = np.mean(modified_y_value[1:3])
+        if abs(y_values[-1] - y_values[-2])/std_signals > 2:
+            modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
+
+        coeffs = np.polyfit(x_values, y_values, 2) # Second degree fit
+        polynomial_fit_fn = lambda x : coeffs[0] * x ** 2 + coeffs[1] * x  + coeffs[2] # ax^2 + bx + c
+
+        for index, star in enumerate(stars_to_include):
+            x_value = x_values[index]
+            fitted_y_value = polynomial_fit_fn[x_value] # This is the normfactor for the star
+            stars_fitted_signal_ratios[star] = fitted_y_value
+            data_dict[star].norm_factor = fitted_y_value # Set the normfactor 
+            data_dict[star].normalized_median_flux = data_dict[star].median_flux * fitted_y_value 
+
+    # At this point we've completed calculating normfactors for stars with good color data (i.e. R-I data)
+    # For other stars we do the following:
 
 
     # # We now make a plot of the ratio (calculated) vs R-I for the particular star
