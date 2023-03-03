@@ -1,6 +1,7 @@
 import logging
+import math
 from pathlib import Path
-from typing import Dict, List
+from typing import Callable, Dict, List
 
 import matplotlib.pyplot as plt
 import numpy as np
@@ -182,11 +183,11 @@ def internight_normalize_auxiliary(
         if abs(y_values[-1] - y_values[-2])/std_signals > 2:
             modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
 
-        coeffs = np.polyfit(x_values, y_values, 3) # Third degree fit
-        polynomial_fit_fn = lambda x : coeffs[0] * x ** 3 + coeffs[1] * x ** 2 + coeffs[2] * x + coeffs[3] # ax^3 + bx^2 + cx + d
+        coeffs_3_deg = np.polyfit(x_values, y_values, 3) # Third degree fit
+        polynomial_fit_fn = lambda x : coeffs_3_deg[0] * x ** 3 + coeffs_3_deg[1] * x ** 2 + coeffs_3_deg[2] * x + coeffs_3_deg[3] # ax^3 + bx^2 + cx + d
 
         # This list stores the difference between actual signal value and the value given by fitted curve 
-        y_differences = [y_values[index] - polynomial_fit_fn[x] for index, x in enumerate(x_values)]
+        y_differences = [polynomial_fit_fn(x) - y_values[index] for index, x in enumerate(x_values)]
 
         # We store the data of each section to later in a dictionary indexed by the section number
         section_data[section_number] = {
@@ -206,7 +207,11 @@ def internight_normalize_auxiliary(
     y_diff_max = np.max(y_differences) - 5 * y_diff_std
     y_no_of_bins = 11 # We want to use 11 bins
     bin_frequencies, bins = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
-    mean, sigma = norm.fit(np.repeat(bins, bin_frequencies))
+    bins_mid_values = []
+    for index, current_value in enumerate(bins[:-1]):
+        next_value = bins[index + 1]
+        bins_mid_values.append((current_value + next_value)/2)
+    mean, sigma = norm.fit(np.repeat(bins_mid_values, bin_frequencies))
 
     # Now we find stars for which y_difference is more than 2std away from mean
     top_threshold = mean + 2 * sigma
@@ -225,6 +230,7 @@ def internight_normalize_auxiliary(
     stars_fitted_signal_ratios = {} # This dictionary holds the fitted signal ratios for the stars
     # Now we do a second degree polynomial fit for the stars in sections that aren't in `stars_outside_threshold`
     # Note that we have to fit individual curves for each section like we did above
+    color_fit_functions = {} # This dictionary stores the color fit function
     for section_number in sections:
 
         # Note that we're excluding stars in `stars_outside_threshold` list
@@ -246,12 +252,100 @@ def internight_normalize_auxiliary(
         coeffs = np.polyfit(x_values, y_values, 2) # Second degree fit
         polynomial_fit_fn = lambda x : coeffs[0] * x ** 2 + coeffs[1] * x  + coeffs[2] # ax^2 + bx + c
 
+        color_fit_functions[section_number] = polynomial_fit_fn
+
         for index, star in enumerate(stars_to_include):
             x_value = x_values[index]
-            fitted_y_value = polynomial_fit_fn[x_value] # This is the normfactor for the star
-            stars_fitted_signal_ratios[star] = fitted_y_value
-            data_dict[star].norm_factor = fitted_y_value # Set the normfactor 
-            data_dict[star].normalized_median_flux = data_dict[star].median_flux * fitted_y_value 
+            norm_factor = polynomial_fit_fn(x_value) # This is the normfactor for the star
+            stars_fitted_signal_ratios[star] = norm_factor
+            star_data = data_dict[star]
+            # Replace is used because mutating a namedtuple directly isn't allowed 
+            data_dict[star] = star_data._replace(
+                norm_factor = norm_factor, 
+                normalized_median_flux=star_data.median_flux * norm_factor,
+                used_mean_r_i=star_data.measured_mean_r_i
+                )
+
+    stars_magnitudes = {
+        star : flux_to_magnitude(data_dict[star].median_flux, radius_of_extraction)
+        for star in stars_signal_ratio # We're only calculating magnitudes for stars with signal ratios
+    }
+    # We split stars based on their magnitudes to 3 sections, 1, 2, 3
+    sections = [1, 2, 3]
+    stars_magnitude_regions = {}
+    for star_no, star_magnitude in stars_magnitudes.items():
+        if star_magnitude < 11:
+            region = 1
+        elif 11 <= star_magnitude < 12.5:
+            region = 2
+        else:
+            region = 3
+        if stars_magnitude_regions.get(region):
+            stars_magnitude_regions[region].append(star_no)
+        else:
+            stars_magnitude_regions[region] = [star_no]
+    
+    # The people before has determined by looking at the graphs for multiple nights, and 
+    # fitted each regions differently, we will use their fits, the lines of codes are 
+    # 537-540 in intern_night_normalization_345_ref_5.pro
+
+    # Region 1
+    region_1_stars = stars_magnitude_regions[1]
+    region_1_x = [stars_magnitudes[star] for star in region_1_stars] # Magnitudes
+    region_1_y = [stars_signal_ratio[star] for star in region_1_stars] # Signal Ratio
+    coeffs_1 = np.polyfit(region_1_x, region_1_y, 1) # Linear fit
+    region_1_polyfit_fn = lambda x : coeffs_1[0] * x + coeffs_1[1] # ax + b
+
+    # Region 2
+    region_2_stars = stars_magnitude_regions[2]
+    region_2_x = [stars_magnitudes[star] for star in region_2_stars] # Magnitudes
+    region_2_y = [stars_signal_ratio[star] for star in region_2_stars] # Signal Ratio
+    coeffs_2 = np.polyfit(region_2_x, region_2_y, 2) # 2nd degree fit
+    region_2_polyfit_fn = lambda x : coeffs_2[0] * x ** 2 + coeffs_2[1] * x + coeffs_2[2] # ax^2 + bx + c
+
+    # Region 3
+    region_3_stars = stars_magnitude_regions[3]
+    region_3_x = [stars_magnitudes[star] for star in region_3_stars] # Magnitudes
+    region_3_y = [stars_signal_ratio[star] for star in region_3_stars] # Signal ratios
+    region_3_polyfit_fn = lambda x : np.median(region_3_y) # For region 3, we just return the median of y values
+
+    # Now for the stars that didn't have good R-I values which is (< 0.135 or >= 7)
+    # we calculate the normfactors based on the brightness fit
+    for star_no in sorted(data_dict.keys()):
+        star_data = data_dict[star_no]
+        color = star_data.measured_mean_r_i 
+        if color < 0.135 or color >= 7:
+
+            # If the star is a known LPV that doesn't have a color, we calculate the normfactor 
+            # for it by providing a custom calculated color value
+            special_star_value = get_normfactor_for_special_star(star_no, color_fit_functions[3])
+
+            if not special_star_value: # Do this only if this wasn't one of the special stars
+                if star_no in region_1_stars: 
+                    norm_factor = region_1_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
+                elif star_no in region_2_x:
+                    norm_factor = region_2_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
+                elif star_no in region_3_x:
+                    norm_factor = region_3_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
+                else:
+                    norm_factor = None
+            else:
+                norm_factor, color = special_star_value # Note we're mutating color variable here
+            
+            if norm_factor and norm_factor < 0 :
+                breakpoint()
+
+            # Save the normfactor the star only if we have the normfactor for it
+            if norm_factor:
+                # Replace is used because mutating a namedtuple directly isn't allowed 
+                data_dict[star_no] = star_data._replace(
+                    norm_factor = norm_factor, 
+                    normalized_median_flux=star_data.median_flux * norm_factor,
+                    used_mean_r_i=color
+                    )
+
+    
+        
 
     # At this point we've completed calculating normfactors for stars with good color data (i.e. R-I data)
     # For other stars we do the following:
@@ -284,3 +378,44 @@ def internight_normalize_auxiliary(
 
     # output_file = OUTPUT_FOLDER
     logging.info(f"Completed internight color normalization for {radius_of_extraction}")
+
+def flux_to_magnitude(flux: float, radius : int ) -> float :
+    supported_radii = [3, 4, 5]
+    if radius not in supported_radii:
+        raise ValueError(f"No formula to convert for radius {radius}")
+    if radius == 5:
+        return 23.99 - 2.5665 * math.log10(flux)
+    elif radius == 4:
+        return 24.176 - 2.6148 * math.log10(flux)
+    elif radius == 3:
+        return 23.971 - 2.9507 * math.log10(flux)
+    
+
+def get_normfactor_for_special_star(star_no : int, fit_fn : Callable[[float], float]) -> float | None:
+    """
+    For of the special LPV stars that don't have a color value we calculate the
+    normfactor by providing color values manually. For how we got these color values
+    ask Prof. Wilkerson. Note that in the IDL code that this was implemented in python from
+    the fit_fn was the polynomial fit function from the first region of the Signal Ratio vs Color
+    fit. Note **not** brightness fit
+
+    param: star_no : Star number
+    param: fit_fn: a fit function that takes color values and returns the the fitted y
+
+    return : The a tuple of normfactor for the star if the star is one of the special stars and the color value used
+              Returns none if the star isn't a special star
+    """
+    stars_to_color_values = {
+        814 : 2.6137,
+        1223: 3.6242,
+        1654: 2.8866,
+        1702: 2.9175,
+        1716: 2.6137,
+        1843: 2.7849,
+        2437: 2.5545,
+        2509: 2.7816,
+        2510: 3.0923
+    }
+    if star_no in stars_to_color_values:
+        color = stars_to_color_values[star_no]
+        return fit_fn(color), color
