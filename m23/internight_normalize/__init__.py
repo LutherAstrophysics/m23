@@ -183,8 +183,8 @@ def internight_normalize_auxiliary(
         if abs(y_values[-1] - y_values[-2])/std_signals > 2:
             modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
 
-        coeffs_3_deg = np.polyfit(x_values, y_values, 3) # Third degree fit
-        polynomial_fit_fn = lambda x : coeffs_3_deg[0] * x ** 3 + coeffs_3_deg[1] * x ** 2 + coeffs_3_deg[2] * x + coeffs_3_deg[3] # ax^3 + bx^2 + cx + d
+        a, b, c, d = np.polyfit(x_values, y_values, 3) # Third degree fit
+        polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d # ax^3 + bx^2 + cx + d
 
         # This list stores the difference between actual signal value and the value given by fitted curve 
         y_differences = [polynomial_fit_fn(x) - y_values[index] for index, x in enumerate(x_values)]
@@ -227,14 +227,14 @@ def internight_normalize_auxiliary(
                 star_no = section_stars[index]
                 stars_outside_threshold.append(star_no)
 
-    stars_fitted_signal_ratios = {} # This dictionary holds the fitted signal ratios for the stars
     # Now we do a second degree polynomial fit for the stars in sections that aren't in `stars_outside_threshold`
     # Note that we have to fit individual curves for each section like we did above
     color_fit_functions = {} # This dictionary stores the color fit function
     for section_number in sections:
 
         # Note that we're excluding stars in `stars_outside_threshold` list
-        stars_to_include = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number and star_no not in stars_outside_threshold]
+        stars_in_section = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number]
+        stars_to_include = [star_no for star_no in stars_in_section if star_no not in stars_outside_threshold]
         x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
 
@@ -249,16 +249,16 @@ def internight_normalize_auxiliary(
         if abs(y_values[-1] - y_values[-2])/std_signals > 2:
             modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
 
-        coeffs = np.polyfit(x_values, y_values, 2) # Second degree fit
-        polynomial_fit_fn = lambda x : coeffs[0] * x ** 2 + coeffs[1] * x  + coeffs[2] # ax^2 + bx + c
+        a, b, c = np.polyfit(x_values, y_values, 2) # Second degree fit
+        # Note it was necessary to created nested lambda to create a, b, c  as local variables
+        polynomial_fit_fn = (lambda a, b, c : lambda x : a * x ** 2 + b * x  + c)(a, b, c) # ax^2 + bx + c
 
         color_fit_functions[section_number] = polynomial_fit_fn
 
-        for index, star in enumerate(stars_to_include):
-            x_value = x_values[index]
-            norm_factor = polynomial_fit_fn(x_value) # This is the normfactor for the star
-            stars_fitted_signal_ratios[star] = norm_factor
+        for index, star in enumerate(stars_in_section): # Note we're going over all stars in region including excluded by first fit
             star_data = data_dict[star]
+            x_value = star_data.measured_mean_r_i
+            norm_factor = polynomial_fit_fn(x_value) # This is the normfactor for the star
             # Replace is used because mutating a namedtuple directly isn't allowed 
             data_dict[star] = star_data._replace(
                 norm_factor = norm_factor, 
@@ -332,9 +332,6 @@ def internight_normalize_auxiliary(
             else:
                 norm_factor, color = special_star_value # Note we're mutating color variable here
             
-            if norm_factor and norm_factor < 0 :
-                breakpoint()
-
             # Save the normfactor the star only if we have the normfactor for it
             if norm_factor:
                 # Replace is used because mutating a namedtuple directly isn't allowed 
@@ -389,15 +386,14 @@ def internight_normalize_auxiliary(
     logging.info(f"Completed internight color normalization for {radius_of_extraction}")
 
 def flux_to_magnitude(flux: float, radius : int ) -> float :
-    supported_radii = [3, 4, 5]
-    if radius not in supported_radii:
-        raise ValueError(f"No formula to convert for radius {radius}")
     if radius == 5:
         return 23.99 - 2.5665 * math.log10(flux)
     elif radius == 4:
         return 24.176 - 2.6148 * math.log10(flux)
     elif radius == 3:
         return 23.971 - 2.9507 * math.log10(flux)
+    else:
+        raise ValueError(f"No formula to convert for radius {radius}")
     
 
 def get_normfactor_for_special_star(star_no : int, fit_fn : Callable[[float], float]) -> float | None:
