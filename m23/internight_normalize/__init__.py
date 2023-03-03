@@ -3,7 +3,6 @@ import math
 from pathlib import Path
 from typing import Callable, Dict, List
 
-import matplotlib.pyplot as plt
 import numpy as np
 from scipy.stats import norm
 
@@ -349,29 +348,6 @@ def internight_normalize_auxiliary(
                 norm_factor=0,
                 used_mean_r_i=star_data.measured_mean_r_i
                 )
-
-    
-        
-
-    # At this point we've completed calculating normfactors for stars with good color data (i.e. R-I data)
-    # For other stars we do the following:
-
-
-    # # We now make a plot of the ratio (calculated) vs R-I for the particular star
-    # values_to_plot = [
-    #     (
-    #         color_data_file.get_star_color(star_no),  # X value is the R-I value for a star
-    #         stars_signal_ratio[star_no],  # Y Value is the star signal ratio calculated above
-    #     )
-    #     for star_no in stars_signal_ratio
-    # ]
-    # x, y = zip(*values_to_plot)  # Unpack a list of pairs into two tuples
-    # plt.plot(x, y, "b+")
-    # plt.xlabel("R-I")
-    # plt.ylabel("Signal ratio")
-    # plt.show()
-
-    # Now we calculate normalization factor for the star for the night
 
     # Save data
     OUTPUT_FOLDER = (
