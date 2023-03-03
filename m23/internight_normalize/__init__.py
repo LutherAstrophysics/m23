@@ -205,7 +205,7 @@ def internight_normalize_auxiliary(
     y_diff_std = np.std(y_differences)
     y_diff_min = np.min(y_differences) - 5 * y_diff_std
     y_diff_max = np.max(y_differences) - 5 * y_diff_std
-    y_no_of_bins = 11 # We want to use 11 bins
+    y_no_of_bins = 10 # We want to use 10 bins
     bin_frequencies, bins = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
     bins_mid_values = []
     for index, current_value in enumerate(bins[:-1]):
