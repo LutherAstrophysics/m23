@@ -203,7 +203,7 @@ def internight_normalize_auxiliary(
 
     y_diff_std = np.std(y_differences)
     y_diff_min = np.min(y_differences) - 5 * y_diff_std
-    y_diff_max = np.max(y_differences) - 5 * y_diff_std
+    y_diff_max = np.max(y_differences) + 5 * y_diff_std
     y_no_of_bins = 10 # We want to use 10 bins
     bin_frequencies, bins = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
     bins_mid_values = []
@@ -232,7 +232,7 @@ def internight_normalize_auxiliary(
     for section_number in sections:
 
         # Note that we're excluding stars in `stars_outside_threshold` list
-        stars_in_section = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number]
+        stars_in_section = section_data[section_number]['stars_to_include']
         stars_to_include = [star_no for star_no in stars_in_section if star_no not in stars_outside_threshold]
         x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
