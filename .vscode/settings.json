@@ -23,6 +23,7 @@
     "FWHM",
     "getdata",
     "getfitsdata",
+    "IDL's",
     "internight",
     "intranight",
     "linfit",

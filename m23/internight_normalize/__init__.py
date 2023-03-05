@@ -17,6 +17,9 @@ from m23.utils import (
     get_radius_folder_name,
 )
 
+# Note that this code is implemented based on the internight normalization in IDL
+# https://github.com/LutherAstrophysics/idl-files/blob/39dfa1c0c6d03d64020c42583bbcaa94655d69cc/inter_night_normalization_345.pro
+
 
 def internight_normalize(
     night: Path, reference_file: Path, color_file: Path, radii_of_extraction: List[int]
@@ -175,15 +178,22 @@ def internight_normalize_auxiliary(
         # First or last data points tend to greatly affect the polynomial fit, so if the data points are
         # 2 standard deviations away from the next closest point, they are replaced with the mean of the 
         # next two closest points.
-        modified_y_value = [y for y in y_values] # Note that we don't want to alter the original y_values list
         std_signals = np.std(y_values)
-        if abs(y_values[0] - y_values[1])/std_signals > 2:
-            modified_y_value[0] = np.mean(modified_y_value[1:3])
-        if abs(y_values[-1] - y_values[-2])/std_signals > 2:
-            modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
-
-        a, b, c, d = np.polyfit(x_values, y_values, 3) # Third degree fit
-        polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d # ax^3 + bx^2 + cx + d
+        beginning_diff = abs(y_values[0] - y_values[1]) / std_signals
+        ending_diff = abs(y_values[0] - y_values[1]) / std_signals
+        if beginning_diff > 2 or ending_diff > 2:
+            modified_y_value = y_values.copy() # Note making copy is important
+            if beginning_diff > 2:
+                # Note python slicing excludes last element, IDL's includes
+                modified_y_value[0] = np.mean(modified_y_value[1:4]) 
+            if ending_diff > 2:
+                # Note python slicing excludes last element, IDL's includes
+                modified_y_value[-1] = np.mean(modified_y_value[-4:-1])
+            a, b, c, d = np.polyfit(x_values, modified_y_value, 3) # Third degree fit
+            polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d # ax^3 + bx^2 + cx + d
+        else:
+            a, b, c, d = np.polyfit(x_values, y_values, 3) # Third degree fit
+            polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d # ax^3 + bx^2 + cx + d
 
         # This list stores the difference between actual signal value and the value given by fitted curve 
         y_differences = [polynomial_fit_fn(x) - y_values[index] for index, x in enumerate(x_values)]
@@ -248,17 +258,18 @@ def internight_normalize_auxiliary(
         if abs(y_values[-1] - y_values[-2])/std_signals > 2:
             modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
 
-        a, b, c = np.polyfit(x_values, y_values, 2) # Second degree fit
+        a, b, c = np.polyfit(x_values, modified_y_value, 2) # Second degree fit
         # Note it was necessary to created nested lambda to create a, b, c  as local variables
         polynomial_fit_fn = (lambda a, b, c : lambda x : a * x ** 2 + b * x  + c)(a, b, c) # ax^2 + bx + c
 
         color_fit_functions[section_number] = polynomial_fit_fn
 
-        for index, star in enumerate(stars_in_section): # Note we're going over all stars in region including excluded by first fit
+        # Note we're going over all stars in region including excluded by first fit
+        for index, star in enumerate(stars_in_section): 
             star_data = data_dict[star]
             x_value = star_data.measured_mean_r_i
             norm_factor = polynomial_fit_fn(x_value) # This is the normfactor for the star
-            # Replace is used because mutating a namedtuple directly isn't allowed 
+            # _replace is used because mutating a namedtuple directly isn't allowed 
             data_dict[star] = star_data._replace(
                 norm_factor = norm_factor, 
                 normalized_median_flux=star_data.median_flux * norm_factor,
@@ -367,7 +378,7 @@ def flux_to_magnitude(flux: float, radius : int ) -> float :
     elif radius == 4:
         return 24.176 - 2.6148 * math.log10(flux)
     elif radius == 3:
-        return 23.971 - 2.9507 * math.log10(flux)
+        return 23.971 - 2.5907 * math.log10(flux)
     else:
         raise ValueError(f"No formula to convert for radius {radius}")
     
