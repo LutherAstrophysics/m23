@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Callable, Dict, List
 
 import numpy as np
-from scipy.stats import norm
+from scipy.optimize import curve_fit
 
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.color_normalized_file import ColorNormalizedFile
@@ -220,7 +220,8 @@ def internight_normalize_auxiliary(
     for index, current_value in enumerate(bins[:-1]):
         next_value = bins[index + 1]
         bins_mid_values.append((current_value + next_value)/2)
-    mean, sigma = norm.fit(np.repeat(bins_mid_values, bin_frequencies))
+    fit_coefficients, _ = curve_fit(n_term_3_gauss_fit, bins_mid_values, bin_frequencies)
+    mean, sigma = fit_coefficients[1], fit_coefficients[2]
 
     # Now we find stars for which y_difference is more than 2std away from mean
     top_threshold = mean + 2 * sigma
@@ -411,3 +412,8 @@ def get_normfactor_for_special_star(star_no : int, fit_fn : Callable[[float], fl
     if star_no in stars_to_color_values:
         color = stars_to_color_values[star_no]
         return fit_fn(color), color
+
+def n_term_3_gauss_fit(x, a0, a1, a2,):
+    z = (x - a1) / a2
+    y = a0 * np.exp(-z**2 / 2)
+    return y
