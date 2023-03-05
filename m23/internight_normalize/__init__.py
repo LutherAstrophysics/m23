@@ -121,23 +121,17 @@ def internight_normalize_auxiliary(
     stars_signal_ratio: Dict[int, float] = {}
     for star_no in range(1, last_star_no + 1):  # Note +1 because of python the way range works
         star_data = data_dict[star_no]
-
-        # TODO
-        # BUGGY
-
         # Only calculate the ratio for stars with >= 50% attendance for the night
-        # if star_data.attendance >= 0.5:
-        #     # Only include this star if it has a non-zero median flux
-        #     if star_data.median_flux > 0.001:
-        #         ratio = star_data.reference_log_adu / star_data.median_flux
-        #         stars_signal_ratio[star_no] = ratio
-
-        # Only include this star if it has a non-zero median flux
-        if  star_data.median_flux != 0 and not np.isnan(star_data.median_flux):
+        if star_data.attendance >= 0.5:
+            # Only include this star if it has a non-zero median flux
             ratio = star_data.reference_log_adu / star_data.median_flux
-            if ratio < -0.00001 or ratio > 0.00001:
-                stars_signal_ratio[star_no] = ratio
+            stars_signal_ratio[star_no] = ratio
 
+    all_ref_night = []
+    for star in range(1, last_star_no + 1):
+        all_ref_night.append(stars_signal_ratio.get(star, 0))
+
+    
 
     # Now we try to find correction factors (aka. normalization factor) for stars with mean r-i
     # data. How we deal with stars without mean r-i data is described later.
@@ -226,10 +220,14 @@ def internight_normalize_auxiliary(
         y_differences += section_data[section_number]['y_differences']
 
     y_diff_std = np.std(y_differences)
-    y_diff_min = np.min(y_differences) - 5 * y_diff_std
-    y_diff_max = np.max(y_differences) + 5 * y_diff_std
-    y_no_of_bins = 10 # We want to use 10 bins
-    bin_frequencies, bins_edges = np.histogram(y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins)
+    y_diff_mean = np.mean(y_differences)
+    y_diff_min = y_diff_mean - 5 * y_diff_std
+    y_diff_max = y_diff_mean + 5 * y_diff_std
+    # Note that since numpy histogram range is exclusive on upper bound 
+    # (not inclusive like IDL), this is an attempt to simulate IDL version
+    y_diff_idl_adjusted = y_diff_max + y_diff_std
+    y_no_of_bins = 11 # We want to use 11 bins, like IDL code
+    bin_frequencies, bins_edges = np.histogram(y_differences, range=[y_diff_min, y_diff_idl_adjusted], bins=y_no_of_bins)
     bins_mid_values = []
     for index, current_value in enumerate(bins_edges[:-1]):
         next_value = bins_edges[index + 1]
