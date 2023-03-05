@@ -114,18 +114,30 @@ def internight_normalize_auxiliary(
         )  # We'll populate values that are nan now after calculating normalization factor
         for log_file in flux_logs_files
     }
+    last_star_no = 2508 # Note not 2510 as 2509/10 don't have data in ref file
 
     # We calculate the ratio of signal in reference file data and the special median
     # signal for a star for the night. We do this for each stars with >50% attendance.
     stars_signal_ratio: Dict[int, float] = {}
-    for star_no in range(1, 2508 + 1):  # Note +1 because of python the way range works
+    for star_no in range(1, last_star_no + 1):  # Note +1 because of python the way range works
         star_data = data_dict[star_no]
+
+        # TODO
+        # BUGGY
+
         # Only calculate the ratio for stars with >= 50% attendance for the night
-        if star_data.attendance >= 0.5:
-            # Only include this star if it has a non-zero median flux
-            if star_data.median_flux > 0.001:
-                ratio = star_data.reference_log_adu / star_data.median_flux
+        # if star_data.attendance >= 0.5:
+        #     # Only include this star if it has a non-zero median flux
+        #     if star_data.median_flux > 0.001:
+        #         ratio = star_data.reference_log_adu / star_data.median_flux
+        #         stars_signal_ratio[star_no] = ratio
+
+        # Only include this star if it has a non-zero median flux
+        if  star_data.median_flux != 0 and not np.isnan(star_data.median_flux):
+            ratio = star_data.reference_log_adu / star_data.median_flux
+            if ratio < -0.00001 or ratio > 0.00001:
                 stars_signal_ratio[star_no] = ratio
+
 
     # Now we try to find correction factors (aka. normalization factor) for stars with mean r-i
     # data. How we deal with stars without mean r-i data is described later.
@@ -143,18 +155,18 @@ def internight_normalize_auxiliary(
     # are more than 50% attendant on the night fall into. So we look at the stars
     # from color dict and ensure that it's also in the dictionary
     # stars_signal_ratio)
-    stars_population_number : Dict[int, int] = {} # Map from star number to population number (either 1 or 2 or 3)
-    for star_no in stars_signal_ratio:
+
+    # Map from star number to color_section number (either 1 or 2 or 3)
+    stars_color_section_number : Dict[int, int] = {} 
+    for star_no in range(1, last_star_no + 1):
         star_color_value  = data_dict[star_no].measured_mean_r_i
-        if star_color_value <= -0.0001 or star_color_value >= 0.0001:
-            # Include the star if the its color value falls in a certain range
-            if star_color_value > 0.135 and star_color_value <= 0.455:
-                stars_population_number[star_no] = 1
-            elif star_color_value > 0.455 and star_color_value <= 1.063:
-                stars_population_number[star_no] = 2
-            elif star_color_value > 1.063 and star_color_value <= 7:
-                stars_population_number[star_no] = 3
-            # Otherwise we don't include the star in the population number
+        if star_color_value > 0.135 and star_color_value <= 0.455:
+            stars_color_section_number[star_no] = 1
+        elif star_color_value > 0.455 and star_color_value <= 1.063:
+            stars_color_section_number[star_no] = 2
+        elif star_color_value > 1.063 and star_color_value <= 7:
+            stars_color_section_number[star_no] = 3
+        # Otherwise we don't include the star in the color_section number
 
     # We now remove outliers points from signal-ratio vs r-i graph.
     # Essentially, this program works by taking a 3rd degree polynomial curve
@@ -169,8 +181,10 @@ def internight_normalize_auxiliary(
     section_data = {} # This dict holds data for each section that we use outside the loop
     sections = [1, 2, 3]
     for section_number in sections:
-
-        stars_to_include = [star_no for star_no in stars_population_number if stars_population_number[star_no] == section_number]
+        stars_to_include = []
+        for star_no in stars_color_section_number:
+            if stars_color_section_number[star_no] == section_number and star_no in stars_signal_ratio: 
+                stars_to_include.append(star_no)
         x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
 
@@ -224,18 +238,18 @@ def internight_normalize_auxiliary(
     mean, sigma = fit_coefficients[1], fit_coefficients[2]
 
     # Now we find stars for which y_difference is more than 2std away from mean
+    stars_outside_threshold = []
     top_threshold = mean + 2 * sigma
     bottom_threshold = mean - 2 * sigma
-
     # We now create a list of stars that are outside the specified threshold
-    stars_outside_threshold = []
     for section_number in sections:
         section_y_differences = section_data[section_number]['y_differences']
         section_stars = section_data[section_number]['stars_to_include']
         for index, y_diff in enumerate(section_y_differences):
-            if y_diff < bottom_threshold or y_diff > top_threshold:
-                star_no = section_stars[index]
-                stars_outside_threshold.append(star_no)
+            if sigma > 0: # Important bc/ our top/bottom would be swapped if sigma < 0
+                if y_diff < bottom_threshold or y_diff > top_threshold:
+                    star_no = section_stars[index]
+                    stars_outside_threshold.append(star_no)
 
     # Now we do a second degree polynomial fit for the stars in sections that aren't in `stars_outside_threshold`
     # Note that we have to fit individual curves for each section like we did above
@@ -248,118 +262,94 @@ def internight_normalize_auxiliary(
         x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
 
-        # These lines of code check to make sure the first or last data point in the signal value isn't an outlier. 
-        # First or last data points tend to greatly affect the polynomial fit, so if the data points are
-        # 2 standard deviations away from the next closest point, they are replaced with the mean of the 
-        # next two closest points.
-        modified_y_value = [y for y in y_values] # Note that we don't want to alter the original y_values list
-        std_signals = np.std(y_values)
-        if abs(y_values[0] - y_values[1])/std_signals > 2:
-            modified_y_value[0] = np.mean(modified_y_value[1:3])
-        if abs(y_values[-1] - y_values[-2])/std_signals > 2:
-            modified_y_value[-1] = np.mean(modified_y_value[-4:-2])
-
-        a, b, c = np.polyfit(x_values, modified_y_value, 2) # Second degree fit
-        # Note it was necessary to created nested lambda to create a, b, c  as local variables
+        a, b, c = np.polyfit(x_values, y_values, 2) # Second degree fit
+        # Note it was necessary to create nested lambda to create a, b, c  as local variables
         polynomial_fit_fn = (lambda a, b, c : lambda x : a * x ** 2 + b * x  + c)(a, b, c) # ax^2 + bx + c
-
         color_fit_functions[section_number] = polynomial_fit_fn
-
-        # Note we're going over all stars in region including excluded by first fit
-        for index, star in enumerate(stars_in_section): 
-            star_data = data_dict[star]
-            x_value = star_data.measured_mean_r_i
-            norm_factor = polynomial_fit_fn(x_value) # This is the normfactor for the star
-            # _replace is used because mutating a namedtuple directly isn't allowed 
-            data_dict[star] = star_data._replace(
-                norm_factor = norm_factor, 
-                normalized_median_flux=star_data.median_flux * norm_factor,
-                used_mean_r_i=star_data.measured_mean_r_i
-                )
 
     stars_magnitudes = {
         star : flux_to_magnitude(data_dict[star].median_flux, radius_of_extraction)
-        for star in stars_signal_ratio # We're only calculating magnitudes for stars with signal ratios
+        for star in range(1, last_star_no + 1)
     }
-    # We split stars based on their magnitudes to 3 sections, 1, 2, 3
-    sections = [1, 2, 3]
-    stars_magnitude_regions = {}
-    for star_no, star_magnitude in stars_magnitudes.items():
+    star_magnitudes_section = {} # Map from star no to star section no
+    for star, star_magnitude in stars_magnitudes.items():
         if star_magnitude < 11:
-            region = 1
+            star_magnitudes_section[star] = 1
         elif 11 <= star_magnitude < 12.5:
-            region = 2
+            star_magnitudes_section[star] = 2
         else:
-            region = 3
-        if stars_magnitude_regions.get(region):
-            stars_magnitude_regions[region].append(star_no)
+            star_magnitudes_section[star] = 3
+
+    # These regions are divided based on stars magnitudes for 
+    # stars that have valid magnitude (& attendance)
+    region_1_stars, region_2_stars, region_3_stars = [], [], []
+    for star in stars_signal_ratio:
+        star_magnitude = stars_magnitudes[star] 
+        if star_magnitude < 11:
+            region_1_stars.append(star)
+        elif 11 <= star_magnitude < 12.5:
+            region_2_stars.append(star)
         else:
-            stars_magnitude_regions[region] = [star_no]
-    
-    # The people before has determined by looking at the graphs for multiple nights, and 
-    # fitted each regions differently, we will use their fits, the lines of codes are 
-    # 537-540 in intern_night_normalization_345_ref_5.pro
+            region_3_stars.append(star)
+
+    # FROM IDL version of this code "by looking at the graphs for multiple
+    # nights, and fitted each regions differently...", we will use their fits
+    magnitude_fit_fn = {}
 
     # Region 1
-    region_1_stars = stars_magnitude_regions[1]
     region_1_x = [stars_magnitudes[star] for star in region_1_stars] # Magnitudes
     region_1_y = [stars_signal_ratio[star] for star in region_1_stars] # Signal Ratio
     coeffs_1 = np.polyfit(region_1_x, region_1_y, 1) # Linear fit
-    region_1_polyfit_fn = lambda x : coeffs_1[0] * x + coeffs_1[1] # ax + b
+    magnitude_fit_fn[1] = lambda x : coeffs_1[0] * x + coeffs_1[1] # ax + b
 
     # Region 2
-    region_2_stars = stars_magnitude_regions[2]
     region_2_x = [stars_magnitudes[star] for star in region_2_stars] # Magnitudes
     region_2_y = [stars_signal_ratio[star] for star in region_2_stars] # Signal Ratio
     coeffs_2 = np.polyfit(region_2_x, region_2_y, 2) # 2nd degree fit
-    region_2_polyfit_fn = lambda x : coeffs_2[0] * x ** 2 + coeffs_2[1] * x + coeffs_2[2] # ax^2 + bx + c
+    magnitude_fit_fn[2] = lambda x : coeffs_2[0] * x ** 2 + coeffs_2[1] * x + coeffs_2[2] # ax^2 + bx + c
 
     # Region 3
-    region_3_stars = stars_magnitude_regions[3]
-    region_3_x = [stars_magnitudes[star] for star in region_3_stars] # Magnitudes
     region_3_y = [stars_signal_ratio[star] for star in region_3_stars] # Signal ratios
-    region_3_polyfit_fn = lambda x : np.median(region_3_y) # For region 3, we just return the median of y values
+    magnitude_fit_fn[3] = lambda x : np.median(region_3_y) # For region 3, we just return the median of y values
 
-    # Now for the stars that didn't have good R-I values which is (< 0.135 or >= 7)
-    # we calculate the normfactors based on the brightness fit
+    # Write normfactors for all stars
     for star_no in sorted(data_dict.keys()):
         star_data = data_dict[star_no]
         color = star_data.measured_mean_r_i 
-        if color < 0.135 or color >= 7:
+        norm_factor = None
+
+        if 0.135 <= color < 7:
+            color_section_number = stars_color_section_number[star_no]
+            norm_factor = color_fit_functions[color_section_number](star_data.measured_mean_r_i)
+
+        # Now for the stars that didn't have good R-I values which is (< 0.135 or >= 7)
+        # we calculate the normfactors based on the brightness fit
+        else:
 
             # If the star is a known LPV that doesn't have a color, we calculate the normfactor 
             # for it by providing a custom calculated color value
             special_star_value = get_normfactor_for_special_star(star_no, color_fit_functions[3])
 
-            if not special_star_value: # Do this only if this wasn't one of the special stars
-                if star_no in region_1_stars: 
-                    norm_factor = region_1_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
-                elif star_no in region_2_stars:
-                    norm_factor = region_2_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
-                elif star_no in region_3_stars:
-                    norm_factor = region_3_polyfit_fn(stars_magnitudes[star_no]) # The fitted y is the normfactor
-                else:
-                    norm_factor = None
-            else:
+            if special_star_value:
                 norm_factor, color = special_star_value # Note we're mutating color variable here
+            else:
+                magnitude = stars_magnitudes[star_no]
+                magnitude_section_no = star_magnitudes_section[star_no]
+                norm_factor = magnitude_fit_fn[magnitude_section_no](magnitude)
             
-            # Save the normfactor the star only if we have the normfactor for it
-            if norm_factor:
-                # Replace is used because mutating a namedtuple directly isn't allowed 
-                data_dict[star_no] = star_data._replace(
-                    norm_factor = norm_factor, 
-                    normalized_median_flux=star_data.median_flux * norm_factor,
-                    used_mean_r_i=color
-                    )
+        # Save the normfactor the star only if we have the normfactor for it
+    
 
-        # Replace normalized flux with zeros if the night doesn't have median flux
-        # Or if the star is <50% attendant on the night
-        if np.isnan(star_data.median_flux) or star_data.attendance < 0.5:
-            data_dict[star_no] = star_data._replace(
-                normalized_median_flux=0,
-                norm_factor=0,
-                used_mean_r_i=star_data.measured_mean_r_i
-                )
+        if star_data.attendance < 0.5 or not star_data.median_flux > 0.001:
+            normalized_median_flux = 0
+        else:
+            normalized_median_flux = norm_factor * star_data.median_flux
+        # Replace is used because mutating a namedtuple directly isn't allowed 
+        data_dict[star_no] = star_data._replace(
+            norm_factor = norm_factor, 
+            normalized_median_flux=normalized_median_flux,
+            used_mean_r_i=color
+            )
 
     # Save data
     OUTPUT_FOLDER = (
@@ -374,6 +364,8 @@ def internight_normalize_auxiliary(
     logging.info(f"Completed internight color normalization for {radius_of_extraction}")
 
 def flux_to_magnitude(flux: float, radius : int ) -> float :
+    if not flux > 0:
+        return np.nan
     if radius == 5:
         return 23.99 - 2.5665 * math.log10(flux)
     elif radius == 4:
