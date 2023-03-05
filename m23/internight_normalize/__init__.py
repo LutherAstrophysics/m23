@@ -26,33 +26,39 @@ def internight_normalize(
 ) -> None:
     """
     This function normalizes the Flux Logs Combined for a night with respect to
-    the data in the reference night. It also saves the result of inter-night normalization.
-    We typically the image 71 on Aug 4 2003 night as the reference.
-
-    Note that since the a night can have Flux Logs Combined for multiple radii of extraction,
-    this functions creates a color normalized output folder for as many radii of extraction
-    as specified. Note that for each specified radius of extraction specified, respective
-    Flux Logs Combined folder has to exist in `night` Path provided.
-
-    param: night: Night folder that contains Flux Logs Combined folder
-    param: reference_file: The path to the reference file to use.
-    param: color_file: The path to the the mean R-I file to use.
+    the data in the reference night. It also saves the result of inter-night
+    normalization.  We typically the image 71 on Aug 4 2003 night as the
+    reference.
+    
+    Note that since the a night can have Flux Logs Combined for multiple radii
+    of extraction, this functions creates a color normalized output folder for
+    as many radii of extraction as specified. Note that for each specified
+    radius of extraction specified, respective Flux Logs Combined folder has to
+    exist in `night` Path provided.
+    
+    param: night: Night folder that contains Flux Logs Combined folder param:
+    reference_file: The path to the reference file to use.  param: color_file:
+    The path to the the mean R-I file to use.
 
     return: None
 
     Side effects:
 
     This function creates a 'Color Normalized' folder inside `night` Path and
-    folders for each radius specified in radii_of_extraction inside 'Color Normalized' folder
-    that contains a txt file of the inter-night normalized data for each star for that night.
-
-    This function also logs to the default log file in `night`. See `process_nights` inside `processor`
-    module for the details of the log file.
+    folders for each radius specified in radii_of_extraction inside 'Color
+    Normalized' folder that contains a txt file of the inter-night normalized
+    data for each star for that night.
+    
+    This function also logs to the default log file in `night`. See
+    `process_nights` inside `processor` module for the details of the log file.
 
 
     Preconditions:
-    `night` is a valid path containing Flux Logs Combined for all radius specified in `radii_of_extraction`
+    `night` is a valid path containing Flux Logs Combined for all radius
+    specified in `radii_of_extraction`
+
     `reference_file` is a valid file path in conventional reference file format
+
     `color_file` is a valid file path in conventional R-I color file format
     """
 
@@ -64,9 +70,10 @@ def internight_normalize_auxiliary(
     night: Path, reference_file: Path, color_file: Path, radius_of_extraction: List[int]
 ):
     """
-    This is an auxiliary function for internight_normalize that's different from the
-    `internight_normalize` because this function takes `radius_of_extraction` unlike
-    `internight_normalize` that takes `radii_of_extraction`.
+    This is an auxiliary function for internight_normalize that's different from
+    the `internight_normalize` because this function takes
+    `radius_of_extraction` unlike `internight_normalize` that takes
+    `radii_of_extraction`.
 
     See https://drive.google.com/file/d/1R1Xc9RhPEYXgF5jlmHvtmDqvrVWs6xfK/view?usp=sharing
     for explanation of this algorithm by Prof. Wilkerson.
@@ -82,10 +89,11 @@ def internight_normalize_auxiliary(
 
     logging.info(f"Running internight color normalization for {radius_of_extraction}")
 
-    # Flux logs for a particular radius for that night is our primary input to this algorithm
-    # We are essentially calculating median values of the flux logs combined for a star
-    # and multiplying it by a normalization factor. We do this for each star.
-    # How we calculate normalization factor is described later below.
+    # Flux logs for a particular radius for that night is our primary input to
+    # this algorithm We are essentially calculating median values of the flux
+    # logs combined for a star and multiplying it by a normalization factor. We
+    # do this for each star.  How we calculate normalization factor is described
+    # later below.
     FLUX_LOGS_COMBINED_FOLDER = (
         night / FLUX_LOGS_COMBINED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)
     )
@@ -95,8 +103,6 @@ def internight_normalize_auxiliary(
     # Filter out the files that don't match conventional flux log combined file format
     flux_logs_files = filter(lambda x: x.is_valid_file_name(), flux_logs_files)
 
-    # We store value for each star in a named tuple
-
     color_data_file = RIColorFile(color_file)
     reference_file_data = ReferenceLogFile(reference_file)
 
@@ -104,22 +110,26 @@ def internight_normalize_auxiliary(
     # Star's median ADU, normalization factor and normalized ADU
     data_dict: ColorNormalizedFile.Data_Dict_Type = {
         log_file.star_number(): ColorNormalizedFile.StarData(
-            log_file.specialized_median_for_internight_normalization(),  # Median flux value
+            # Median flux value
+            log_file.specialized_median_for_internight_normalization(), 
             np.nan,  # Normalized median
             np.nan,  # Norm factor
-            color_data_file.get_star_color(log_file.star_number()),  # Star color in color ref file
+            # Star color in color ref file
+            color_data_file.get_star_color(log_file.star_number()),  
             np.nan,  # Actual color value used
             log_file.attendance(),  # Attendance of the star for the night
             reference_file_data.get_star_adu(log_file.star_number()) or np.nan,
-        )  # We'll populate values that are nan now after calculating normalization factor
+        ) 
         for log_file in flux_logs_files
     }
     last_star_no = 2508 # Note not 2510 as 2509/10 don't have data in ref file
 
-    # We calculate the ratio of signal in reference file data and the special median
-    # signal for a star for the night. We do this for each stars with >50% attendance.
+    # We calculate the ratio of signal in reference file data and the special
+    # median signal for a star for the night. We do this for each stars with
+    # >50% attendance.
     stars_signal_ratio: Dict[int, float] = {}
-    for star_no in range(1, last_star_no + 1):  # Note +1 because of python the way range works
+    # Note +1 because of python the way range works
+    for star_no in range(1, last_star_no + 1): 
         star_data = data_dict[star_no]
         # Only calculate the ratio for stars with >= 50% attendance for the night
         if star_data.attendance >= 0.5:
@@ -133,21 +143,21 @@ def internight_normalize_auxiliary(
 
     
 
-    # Now we try to find correction factors (aka. normalization factor) for stars with mean r-i
-    # data. How we deal with stars without mean r-i data is described later.
-    # For those that have mean r-i color data,  we sort these stars into 3
-    # populations based on mean r-i,as they appear different on a histogram of
-    # mean r-i and graphs of mean r-i vs.  ref/night.  Potentially, they could
-    # be disk stars in the luster, disk stars in the field, and bulge stars in
-    # the field. That remains to be looked into. 
-    # Next, we remove outliers using an initial polynomial curve fit. Then we
-    # fit a final curve to each section. At the end of this program, we use the
-    # curve fits to normalize these stars with color data.
-
+    # Now we try to find correction factors (aka. normalization factor) for
+    # stars with mean r-i data. How we deal with stars without mean r-i data is
+    # described later.  For those that have mean r-i color data,  we sort these
+    # stars into 3 populations based on mean r-i,as they appear different on a
+    # histogram of mean r-i and graphs of mean r-i vs.  ref/night.  Potentially,
+    # they could be disk stars in the luster, disk stars in the field, and bulge
+    # stars in the field. That remains to be looked into.  Next, we remove
+    # outliers using an initial polynomial curve fit. Then we fit a final curve
+    # to each section. At the end of this program, we use the curve fits to
+    # normalize these stars with color data.
+    
     # The following dictionary holds the information for which one of the three
     # regions (described above) do stars that have mean r-i values as well as
-    # are more than 50% attendant on the night fall into. So we look at the stars
-    # from color dict and ensure that it's also in the dictionary
+    # are more than 50% attendant on the night fall into. So we look at the
+    # stars from color dict and ensure that it's also in the dictionary
     # stars_signal_ratio)
 
     # Map from star number to color_section number (either 1 or 2 or 3)
@@ -172,20 +182,25 @@ def internight_normalize_auxiliary(
     # deviations from the curve fit is removed as an outlier.
 
     # Here we loop over each section of the polynomial fit
-    section_data = {} # This dict holds data for each section that we use outside the loop
+    # This dict holds data for each section that we use outside the loop
+    section_data = {} 
     sections = [1, 2, 3]
     for section_number in sections:
         stars_to_include = []
         for star_no in stars_color_section_number:
             if stars_color_section_number[star_no] == section_number and star_no in stars_signal_ratio: 
                 stars_to_include.append(star_no)
-        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
-        y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
 
-        # These lines of code check to make sure the first or last data point in the signal value isn't an outlier. 
-        # First or last data points tend to greatly affect the polynomial fit, so if the data points are
-        # 2 standard deviations away from the next closest point, they are replaced with the mean of the 
-        # next two closest points.
+        # Colors
+        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] 
+        # Signal ratios
+        y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include]
+
+        # These lines of code check to make sure the first or last data point in
+        # the signal value isn't an outlier.  First or last data points tend to
+        # greatly affect the polynomial fit, so if the data points are 2
+        # standard deviations away from the next closest point, they are
+        # replaced with the mean of the next two closest points.
         std_signals = np.std(y_values)
         beginning_diff = abs(y_values[0] - y_values[1]) / std_signals
         ending_diff = abs(y_values[0] - y_values[1]) / std_signals
@@ -197,25 +212,30 @@ def internight_normalize_auxiliary(
             if ending_diff > 2:
                 # Note python slicing excludes last element, IDL's includes
                 modified_y_value[-1] = np.mean(modified_y_value[-4:-1])
-            a, b, c, d = np.polyfit(x_values, modified_y_value, 3) # Third degree fit
-            polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d # ax^3 + bx^2 + cx + d
+            a, b, c, d = np.polyfit(x_values, modified_y_value, 3) # Degree 3
+            # ax^3 + bx^2 + cx + d
+            polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d 
         else:
-            a, b, c, d = np.polyfit(x_values, y_values, 3) # Third degree fit
-            polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d # ax^3 + bx^2 + cx + d
+            a, b, c, d = np.polyfit(x_values, y_values, 3) # Degree 3
+            # ax^3 + bx^2 + cx + d
+            polynomial_fit_fn = lambda x : a * x ** 3 + b * x ** 2 + c * x + d
 
-        # This list stores the difference between actual signal value and the value given by fitted curve 
+        # This list stores the difference between actual signal value and the
+        # value given by fitted curve 
         y_differences = [polynomial_fit_fn(x) - y_values[index] for index, x in enumerate(x_values)]
 
-        # We store the data of each section to later in a dictionary indexed by the section number
+        # We store the data of each section to later in a dictionary indexed by
+        # the section number
         section_data[section_number] = {
             'stars_to_include': stars_to_include,
             'x_values': x_values,
             'y_values': y_values,
-            'y_differences': y_differences # This is the difference of actual y to fitted y
+            # This is the difference of actual y to fitted y
+            'y_differences': y_differences 
         }
 
-
-    y_differences = [ ]  # This holds the y_differences for three sections calculated in the loop above
+    # This holds the y_differences for three sections calculated in the loop above
+    y_differences = [ ]  
     for section_number in sections:
         y_differences += section_data[section_number]['y_differences']
 
@@ -223,16 +243,22 @@ def internight_normalize_auxiliary(
     y_diff_mean = np.mean(y_differences)
     y_diff_min = y_diff_mean - 5 * y_diff_std
     y_diff_max = y_diff_mean + 5 * y_diff_std
-    # Note that since numpy histogram range is exclusive on upper bound 
-    # (not inclusive like IDL), this is an attempt to simulate IDL version
+    # Note that since numpy histogram range is exclusive on upper bound (not
+    # inclusive like IDL), this is an attempt to simulate IDL version
     y_diff_idl_adjusted = y_diff_max + y_diff_std
     y_no_of_bins = 11 # We want to use 11 bins, like IDL code
-    bin_frequencies, bins_edges = np.histogram(y_differences, range=[y_diff_min, y_diff_idl_adjusted], bins=y_no_of_bins)
+    bin_frequencies, bins_edges = np.histogram(
+        y_differences, 
+        range=[y_diff_min, y_diff_idl_adjusted], bins=y_no_of_bins
+        )
     bins_mid_values = []
     for index, current_value in enumerate(bins_edges[:-1]):
         next_value = bins_edges[index + 1]
         bins_mid_values.append((current_value + next_value)/2)
-    fit_coefficients, _ = curve_fit(n_term_3_gauss_fit, bins_mid_values, bin_frequencies)
+    fit_coefficients, _ = curve_fit(
+        n_term_3_gauss_fit, 
+        bins_mid_values, 
+        bin_frequencies)
     mean, sigma = fit_coefficients[1], fit_coefficients[2]
 
     # Now we find stars for which y_difference is more than 2std away from mean
@@ -249,24 +275,36 @@ def internight_normalize_auxiliary(
                     star_no = section_stars[index]
                     stars_outside_threshold.append(star_no)
 
-    # Now we do a second degree polynomial fit for the stars in sections that aren't in `stars_outside_threshold`
-    # Note that we have to fit individual curves for each section like we did above
-    color_fit_functions = {} # This dictionary stores the color fit function
+    # Now we do a second degree polynomial fit for the stars in sections that
+    # aren't in `stars_outside_threshold` Note that we have to fit individual
+    # curves for each section like we did above
+    color_fit_functions = {} # Stores the color fit function for each section
     for section_number in sections:
 
         # Note that we're excluding stars in `stars_outside_threshold` list
         stars_in_section = section_data[section_number]['stars_to_include']
-        stars_to_include = [star_no for star_no in stars_in_section if star_no not in stars_outside_threshold]
-        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include] # Colors
-        y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include] # Signal ratios
+        stars_to_include = [
+            star_no for star_no in stars_in_section 
+            if star_no not in stars_outside_threshold
+            ]
+        x_values = [
+            data_dict[star_no].measured_mean_r_i for star_no in stars_to_include
+            ] # Colors
+        y_values = [
+            stars_signal_ratio[star_no] for star_no in stars_to_include
+            ] # Signal ratios
 
         a, b, c = np.polyfit(x_values, y_values, 2) # Second degree fit
-        # Note it was necessary to create nested lambda to create a, b, c  as local variables
-        polynomial_fit_fn = (lambda a, b, c : lambda x : a * x ** 2 + b * x  + c)(a, b, c) # ax^2 + bx + c
+        # Nested lambda necessary to create a, b, c as local variables
+        polynomial_fit_fn = (lambda a, b, c : 
+                             lambda x : a * x ** 2 + b * x  + c
+                             )(a, b, c) # ax^2 + bx + c
         color_fit_functions[section_number] = polynomial_fit_fn
 
     stars_magnitudes = {
-        star : flux_to_magnitude(data_dict[star].median_flux, radius_of_extraction)
+        star : flux_to_magnitude(
+        data_dict[star].median_flux, 
+        radius_of_extraction)
         for star in range(1, last_star_no + 1)
     }
     star_magnitudes_section = {} # Map from star no to star section no
@@ -295,20 +333,29 @@ def internight_normalize_auxiliary(
     magnitude_fit_fn = {}
 
     # Region 1
-    region_1_x = [stars_magnitudes[star] for star in region_1_stars] # Magnitudes
-    region_1_y = [stars_signal_ratio[star] for star in region_1_stars] # Signal Ratio
+    # Magnitudes
+    region_1_x = [stars_magnitudes[star] for star in region_1_stars] 
+    # Signal Ratio
+    region_1_y = [stars_signal_ratio[star] for star in region_1_stars]
     coeffs_1 = np.polyfit(region_1_x, region_1_y, 1) # Linear fit
-    magnitude_fit_fn[1] = lambda x : coeffs_1[0] * x + coeffs_1[1] # ax + b
+    # ax + b
+    magnitude_fit_fn[1] = lambda x : coeffs_1[0] * x + coeffs_1[1]
 
     # Region 2
-    region_2_x = [stars_magnitudes[star] for star in region_2_stars] # Magnitudes
-    region_2_y = [stars_signal_ratio[star] for star in region_2_stars] # Signal Ratio
+    # Magnitudes
+    region_2_x = [stars_magnitudes[star] for star in region_2_stars]
+    # Signal Ratio
+    region_2_y = [stars_signal_ratio[star] for star in region_2_stars]
     coeffs_2 = np.polyfit(region_2_x, region_2_y, 2) # 2nd degree fit
-    magnitude_fit_fn[2] = lambda x : coeffs_2[0] * x ** 2 + coeffs_2[1] * x + coeffs_2[2] # ax^2 + bx + c
+    magnitude_fit_fn[2] = lambda x : (
+        coeffs_2[0] * x ** 2 + coeffs_2[1] * x + coeffs_2[2]
+        ) # ax^2 + bx + c
 
     # Region 3
-    region_3_y = [stars_signal_ratio[star] for star in region_3_stars] # Signal ratios
-    magnitude_fit_fn[3] = lambda x : np.median(region_3_y) # For region 3, we just return the median of y values
+    # Signal ratios
+    region_3_y = [stars_signal_ratio[star] for star in region_3_stars] 
+    # For region 3, we just return the median of y values
+    magnitude_fit_fn[3] = lambda x : np.median(region_3_y) 
 
     # Write normfactors for all stars
     for star_no in sorted(data_dict.keys()):
@@ -320,16 +367,20 @@ def internight_normalize_auxiliary(
             color_section_number = stars_color_section_number[star_no]
             norm_factor = color_fit_functions[color_section_number](star_data.measured_mean_r_i)
 
-        # Now for the stars that didn't have good R-I values which is (< 0.135 or >= 7)
-        # we calculate the normfactors based on the brightness fit
+        # Now for the stars that didn't have good R-I values which is (< 0.135
+        # or >= 7) we calculate the normfactors based on the brightness fit
         else:
 
-            # If the star is a known LPV that doesn't have a color, we calculate the normfactor 
-            # for it by providing a custom calculated color value
-            special_star_value = get_normfactor_for_special_star(star_no, color_fit_functions[3])
+            # If the star is a known LPV that doesn't have a color, we calculate
+            # the normfactor for it by providing a custom calculated color value
+            special_star_value = get_normfactor_for_special_star(
+                star_no, 
+                color_fit_functions[3]
+                )
 
             if special_star_value:
-                norm_factor, color = special_star_value # Note we're mutating color variable here
+                # Note we're mutating color variable here
+                norm_factor, color = special_star_value 
             else:
                 magnitude = stars_magnitudes[star_no]
                 magnitude_section_no = star_magnitudes_section[star_no]
@@ -351,7 +402,9 @@ def internight_normalize_auxiliary(
 
     # Save data
     OUTPUT_FOLDER = (
-        night / COLOR_NORMALIZED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)
+        night / 
+        COLOR_NORMALIZED_FOLDER_NAME / 
+        get_radius_folder_name(radius_of_extraction)
     )
     output_file = OUTPUT_FOLDER / ColorNormalizedFile.get_file_name(
         night_date, radius_of_extraction
@@ -377,16 +430,19 @@ def flux_to_magnitude(flux: float, radius : int ) -> float :
 def get_normfactor_for_special_star(star_no : int, fit_fn : Callable[[float], float]) -> float | None:
     """
     For of the special LPV stars that don't have a color value we calculate the
-    normfactor by providing color values manually. For how we got these color values
-    ask Prof. Wilkerson. Note that in the IDL code that this was implemented in python from
-    the fit_fn was the polynomial fit function from the first region of the Signal Ratio vs Color
-    fit. Note **not** brightness fit
+    normfactor by providing color values manually. For how we got these color
+    values ask Prof. Wilkerson. Note that in the IDL code that this was
+    implemented in python from the fit_fn was the polynomial fit function from
+    the first region of the Signal Ratio vs Color fit. Note **not** brightness
+    fit
 
     param: star_no : Star number
-    param: fit_fn: a fit function that takes color values and returns the the fitted y
+    param: fit_fn: a fit function that takes color values and returns the the
+            fitted y
 
-    return : The a tuple of normfactor for the star if the star is one of the special stars and the color value used
-              Returns none if the star isn't a special star
+    return : The a tuple of normfactor for the star if the star is one of the
+            special stars and the color value used Returns none if the star isn't a
+            special star
     """
     stars_to_color_values = {
         814 : 2.6137,
