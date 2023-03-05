@@ -1,3 +1,4 @@
+from datetime import datetime
 from pathlib import Path
 from typing import Dict, Tuple
 
@@ -98,3 +99,17 @@ class ReferenceLogFile:
 
     def __str__(self):
         return f"Reference log file: {self.__path}"
+    
+    def create(self, output_path : Path):
+        lines = ['\n', 
+                 f'Copied from {self.__path}\n', 
+                 'Removed duplicates\n', 
+                 f'Produced on {datetime.now()}\n', 
+                 'Empty lines kept to match format\n'
+                 '\n\n\n'
+                 ]
+        with output_path.open('w') as fd:
+            fd.writelines(lines)
+            header = "%s\t\t%5s\t\t%9s\t\t%4s\t\t%5s\t\t%8s"%("X", "Y", "Sigma", "FWHM", "Sky ADU", "Star ADU")
+            data_fmt = "%4.2f\t\t%4.2f\t\t%2.2f\t\t%2.2f\t\t%4.1f\t\t%8.1f"
+            np.savetxt(fd, self.data(), fmt=data_fmt, header=header, comments='')
