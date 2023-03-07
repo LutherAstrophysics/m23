@@ -10,7 +10,6 @@ from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
 from m23.file import is_string_float
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
-from m23.utils import customMedian
 
 
 # Note that FluxLogCombined is the one that we have for multiple
