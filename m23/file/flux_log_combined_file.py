@@ -68,9 +68,6 @@ class FluxLogCombinedFile:
         """
         data_points = len(self.data())
         positive_value_data_points = len(self.valid_data())
-        # Using IDL like divide to calculate attendance
-        if positive_value_data_points % 2 == 1:
-            return (positive_value_data_points + 1) / data_points 
         return positive_value_data_points / data_points 
 
     # Accessors

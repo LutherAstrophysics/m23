@@ -243,13 +243,10 @@ def internight_normalize_auxiliary(
     y_diff_mean = np.mean(y_differences)
     y_diff_min = y_diff_mean - 5 * y_diff_std
     y_diff_max = y_diff_mean + 5 * y_diff_std
-    # Note that since numpy histogram range is exclusive on upper bound (not
-    # inclusive like IDL), this is an attempt to simulate IDL version
-    y_diff_idl_adjusted = y_diff_max + y_diff_std
     y_no_of_bins = 11 # We want to use 11 bins, like IDL code
     bin_frequencies, bins_edges = np.histogram(
         y_differences, 
-        range=[y_diff_min, y_diff_idl_adjusted], bins=y_no_of_bins
+        range=[y_diff_min, y_diff_max], bins=y_no_of_bins
         )
     bins_mid_values = []
     for index, current_value in enumerate(bins_edges[:-1]):
@@ -260,6 +257,7 @@ def internight_normalize_auxiliary(
         bins_mid_values, 
         bin_frequencies)
     mean, sigma = fit_coefficients[1], fit_coefficients[2]
+    sigma = abs(sigma) # Important since sigma given by our curve fit could be negative
 
     # Now we find stars for which y_difference is more than 2std away from mean
     stars_outside_threshold = []
@@ -270,10 +268,9 @@ def internight_normalize_auxiliary(
         section_y_differences = section_data[section_number]['y_differences']
         section_stars = section_data[section_number]['stars_to_include']
         for index, y_diff in enumerate(section_y_differences):
-            if sigma > 0: # Important bc/ our top/bottom would be swapped if sigma < 0
-                if y_diff < bottom_threshold or y_diff > top_threshold:
-                    star_no = section_stars[index]
-                    stars_outside_threshold.append(star_no)
+            if y_diff < bottom_threshold or y_diff > top_threshold:
+                star_no = section_stars[index]
+                stars_outside_threshold.append(star_no)
 
     # Now we do a second degree polynomial fit for the stars in sections that
     # aren't in `stars_outside_threshold` Note that we have to fit individual
@@ -284,14 +281,14 @@ def internight_normalize_auxiliary(
         # Note that we're excluding stars in `stars_outside_threshold` list
         stars_in_section = section_data[section_number]['stars_to_include']
         stars_to_include = [
-            star_no for star_no in stars_in_section 
-            if star_no not in stars_outside_threshold
+                star_no for star_no in stars_in_section 
+                if star_no not in stars_outside_threshold
             ]
         x_values = [
-            data_dict[star_no].measured_mean_r_i for star_no in stars_to_include
+                data_dict[star_no].measured_mean_r_i for star_no in stars_to_include
             ] # Colors
         y_values = [
-            stars_signal_ratio[star_no] for star_no in stars_to_include
+                stars_signal_ratio[star_no] for star_no in stars_to_include
             ] # Signal ratios
 
         a, b, c = np.polyfit(x_values, y_values, 2) # Second degree fit
