@@ -63,7 +63,8 @@ class FluxLogCombinedFile:
         Preconditions:
             The object should have valid `self.data`
         Assumptions:
-            `self.data` contains all data point albeit empty for a start for the night
+            `self.data` contains all data point albeit empty for a start for the
+            night
         """
         data_points = len(self.data())
         positive_value_data_points = len(self.valid_data())
@@ -73,7 +74,8 @@ class FluxLogCombinedFile:
 
     def read_file_data(self):
         """
-        Reads the file and sets the the data attribute and attendance attribute in the object
+        Reads the file and sets the the data attribute and attendance attribute
+        in the object
         """
         self._validate_file()
         with self.path().open() as fd:
@@ -140,7 +142,8 @@ class FluxLogCombinedFile:
 
     def valid_data(self) -> None | npt.ArrayLike:
         """
-        Returns a sample of data for the star for the nights with only valid data points > 0 magnitudes
+        Returns a sample of data for the star for the nights with only valid
+        data points > 0 magnitudes
         """
         if not self.__read_data:
             self.read_file_data()
@@ -148,7 +151,8 @@ class FluxLogCombinedFile:
 
     def attendance(self) -> float:
         """
-        Returns the attendance % (between 0-1) for star corresponding to the flux log combined file for the night
+        Returns the attendance % (between 0-1) for star corresponding to the
+        flux log combined file for the night
         """
         self._validate_file()
         if not self.__read_data:
@@ -171,11 +175,12 @@ class FluxLogCombinedFile:
 
     def specialized_median_for_internight_normalization(self) -> float:
         """
-        Returns specialized median flux for the night to be used by internight normalization code.
-        This is special in that the median is only calculated from images that got applied
-        internight normalization factor within a certain range. Additionally (as always) we ignore
-        data points that are zero values when calculating median
-        This is just an implementation of the way things are/were done in the IDL code.
+        Returns specialized median flux for the night to be used by internight
+        normalization code. This is special in that the median is only
+        calculated from images that got applied internight normalization factor
+        within a certain range. Additionally (as always) we ignore data points
+        that are zero values when calculating median This is just an
+        implementation of the way things are/were done in the IDL code.
         """
         min_tolerable_intranight_normfactor = 0.85
         max_tolerable_intranight_normfactor = 1.15
@@ -191,7 +196,8 @@ class FluxLogCombinedFile:
 
         data_to_use = []
         for index, data in enumerate(self.data()):
-            # Add the value only if it's > 0 and the normfactor for the image is within specified range
+            # Add the value only if it's > 0 and the normfactor for the image is
+            # within specified range
             if (
                 data > 0
                 and min_tolerable_intranight_normfactor
@@ -234,7 +240,8 @@ class FluxLogCombinedFile:
         param: data: The flux values for the star
         param: start_image: The first aligned combined image number used
         param: end_image: The last aligned combined image number used
-        param: location: The x and y coordinates of the star in the image aligned combined image
+        param: location: The x and y coordinates of the star in the image
+            aligned combined image
         param: reference_logfile: The reference logfile used
         """
         if not self.is_valid_file_name():
