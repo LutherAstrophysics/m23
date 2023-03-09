@@ -7,11 +7,12 @@ from m23.file.log_file_combined_file import LogFileCombinedFile
 
 def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, radius: int) -> Iterable[int]:
     """
-    Looks at the log_file_combined file and returns a bit vector representing whether that 
-    star should be ignored when calculating the norm factor for the night. We create this 
-    so that we can ignore stars at the edges which had a bright line at the edge after alignment 
-    step in old camera images. Note that in the bit vector, 0 means that star is to be 
-    avoided, 1 means the star is to be included.
+    Looks at the log_file_combined file and returns a bit vector representing
+    whether that star should be ignored when calculating the norm factor for the
+    night. We create this so that we can ignore stars at the edges which had a
+    bright line at the edge after alignment step in old camera images. Note that
+    in the bit vector, 0 means that star is to be avoided, 1 means the star is
+    to be included.
     """
     y_coordinates = log_file_combined_file.get_x_position_column()
     x_coordinates = log_file_combined_file.get_y_position_column()
@@ -74,8 +75,8 @@ def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, r
         is_between_top_and_bottom = top_line_get_y(x) + 12 < y and bottom_line_get_y(x) - 12 > y
         return is_between_left_and_right_lines and is_between_top_and_bottom
 
-    # breakpoint()
-    # We crop in 12 pixels from those four lines, and exclude stars that are outside of this region 
+    # We crop in 12 pixels from those four lines, and exclude stars that are
+    # outside of this region 
     x_and_y_coordinates = np.stack((x_coordinates, y_coordinates), axis = 1)
     for star_position in x_and_y_coordinates: 
         if should_include(star_position):

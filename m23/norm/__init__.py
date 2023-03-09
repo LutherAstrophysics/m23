@@ -22,12 +22,13 @@ def normalize_log_files(
     night_date: date
 ):
     """
-    This function normalizes (intra night *not* inter night) the LogFilesCombined files provided.
-    Note that the normalization **isn't** done with respect to the data in the reference image
-    but with respect to some sample images take throughout the night.
+    This function normalizes (intra night *not* inter night) the
+    LogFilesCombined files provided.  Note that the normalization **isn't** done
+    with respect to the data in the reference image but with respect to some
+    sample images take throughout the night.
 
-    Note that this code assumes that the all stars in the log files are available in
-    reference log file and no more or less.
+    Note that this code assumes that the all stars in the log files are
+    available in reference log file and no more or less.
     """
 
     # We are sorting the log files so that we know what's the first logfile 
@@ -36,13 +37,15 @@ def normalize_log_files(
     log_files_to_normalize.sort(key=lambda log_file : log_file.img_number())
     no_of_files = len(log_files_to_normalize)
 
-    # Normalization is done with reference to images 20%, 40%, 60% and 80% throughout night
-    # The indices here are the index of the images from the night to which to normalize.
-    # Note, we aren't normalizing with reference to the ref file
+    # Normalization is done with reference to images 20%, 40%, 60% and 80%
+    # throughout night The indices here are the index of the images from the
+    # night to which to normalize.  Note, we aren't normalizing with reference
+    # to the ref file
     indices_to_normalize_to = np.linspace(0, no_of_files, 6, dtype="int")[1:-1]
     all_log_files = [] # This is an array of arrays
 
-    # Matrix of image by star so 4th star in 100th image will be normalized_star_data[99][3]
+    # Matrix of image by star so 4th star in 100th image will be
+    # normalized_star_data[99][3]
     normalized_star_data = np.zeros((no_of_files, len(reference_log_file)))
 
     # This holds the normalization factor for each log_file to use
@@ -52,29 +55,31 @@ def normalize_log_files(
 
         adu_of_current_log_file = log_files_to_normalize[file_index].get_adu(radius)
 
-        # Perform linear fits, cropping in 12 pixels from stars closest to the four corners
-        # creating a quadrilateral region, and excluding stars outside of this area
+        # Perform linear fits, cropping in 12 pixels from stars closest to the
+        # four corners creating a quadrilateral region, and excluding stars
+        # outside of this area
         stars_to_ignore_bit_vector = get_star_to_ignore_bit_vector(log_file, radius)
 
-        # Mask out stars with center more than 1 pixel away from those in the ref file
-        # also mask if the star is outside the 12px box around the image
+        # Mask out stars with center more than 1 pixel away from those in the
+        # ref file also mask if the star is outside the 12px box around the
+        # image
         for star_index in range(len(log_file)):
-            # Note not to be confused between logfile and reference file here we call logfile 
-            # combined that's to be normalized as logfile and the reference file that we use 
-            # to look up the standard positions of star as reference file
+            # Note not to be confused between logfile and reference file here we
+            # call logfile combined that's to be normalized as logfile and the
+            # reference file that we use to look up the standard positions of
+            # star as reference file
             star_no = star_index + 1
 
             # Mark the adu of the star as 0 if that's to be ignored
             if stars_to_ignore_bit_vector[star_index] == 0: 
                 adu_of_current_log_file[star_index] = 0
-                continue # We go to the next star in the for loop as we already know ADU for this star for this image
+                # We go to the next star in the for loop as we already know ADU for this star for this image
+                continue 
 
             star_data_in_log_file = log_file.get_star_data(star_no)
             if not all([x > 0 for x in star_data_in_log_file.radii_adu.values()]) or star_data_in_log_file.sky_adu <= 0:
                 adu_of_current_log_file[star_index] = 0 # Ignore this star for normfactor calc of this logfile
                 continue
-
-
 
             star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
             star_x_position, star_y_position = star_data_in_log_file.x, star_data_in_log_file.y
@@ -87,7 +92,7 @@ def normalize_log_files(
     # Now for each log file we calculate its normfactor
     # For each logfile, its normfactor is the median of normfactors of the stars
     # in that image.
-    # For a star, it's normfactor in a lofile, is sum of adus in reference log file
+    # For a star, it's normfactor in a logfile, is sum of adus in reference log file
     # divided by 4 * its adu
     reference_log_files = []
     for index, log_file in enumerate(all_log_files):
