@@ -269,8 +269,9 @@ def internight_normalize_auxiliary(
         section_stars = section_data[section_number]['stars_to_include']
         for index, y_diff in enumerate(section_y_differences):
             if y_diff < bottom_threshold or y_diff > top_threshold:
-                star_no = section_stars[index]
-                stars_outside_threshold.append(star_no)
+                if sigma != 0: # Guard for when fit fails and sigma is 0 
+                    star_no = section_stars[index]
+                    stars_outside_threshold.append(star_no)
 
     # Now we do a second degree polynomial fit for the stars in sections that
     # aren't in `stars_outside_threshold` Note that we have to fit individual
