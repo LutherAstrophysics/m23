@@ -20,8 +20,10 @@ def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, r
     # any ADU value because we don't want to consider them as the stars in 
     # the corners
 
-    for index, adu in enumerate(log_file_combined_file.get_adu(radius)):
-        if not (adu > 0): # Note that some may be nan values
+    for index in range(len(log_file_combined_file.data())):
+        star_no = index + 1
+        star_data = log_file_combined_file.get_star_data(star_no)
+        if not (star_data.sky_adu > 0 and all([adu > 0 for adu in star_data.radii_adu.values()])): # Note that some may be nan values
             # Set a bogus value on the star's x and y coordinate 
             # so that it won't affect corner star calculation
             bogus = 512
@@ -89,5 +91,3 @@ def is_point_to_left_of_line(a, b, point):
     x, y = point
     x_prime = eqn_x(y)
     return x_prime > x
-
-    

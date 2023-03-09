@@ -29,23 +29,18 @@ def normalize_log_files(
     Note that this code assumes that the all stars in the log files are available in
     reference log file and no more or less.
     """
+
     # We are sorting the log files so that we know what's the first logfile 
     # we are using and what's the last. This data is needed written in header
     # of all flux log combined files that we create
     log_files_to_normalize.sort(key=lambda log_file : log_file.img_number())
-
     no_of_files = len(log_files_to_normalize)
 
     # Normalization is done with reference to images 20%, 40%, 60% and 80% throughout night
     # The indices here are the index of the images from the night to which to normalize.
     # Note, we aren't normalizing with reference to the ref file
     indices_to_normalize_to = np.linspace(0, no_of_files, 6, dtype="int")[1:-1]
-    log_files_to_which_all_other_logfiles_are_normalized_to  = np.array(log_files_to_normalize, dtype="object")[indices_to_normalize_to]
-
-    # Get the ADUs of the logfiles based on which normalization is to be done
-    adus_in_data_to_normalize_to = np.array(
-        [logfile.get_adu(radius) for logfile in log_files_to_which_all_other_logfiles_are_normalized_to]
-    )
+    all_log_files = [] # This is an array of arrays
 
     # Matrix of image by star so 4th star in 100th image will be normalized_star_data[99][3]
     normalized_star_data = np.zeros((no_of_files, len(reference_log_file)))
@@ -59,7 +54,6 @@ def normalize_log_files(
 
         # Perform linear fits, cropping in 12 pixels from stars closest to the four corners
         # creating a quadrilateral region, and excluding stars outside of this area
-        # Returns the updated list of star coordinates
         stars_to_ignore_bit_vector = get_star_to_ignore_bit_vector(log_file, radius)
 
         # Mask out stars with center more than 1 pixel away from those in the ref file
@@ -69,50 +63,55 @@ def normalize_log_files(
             # combined that's to be normalized as logfile and the reference file that we use 
             # to look up the standard positions of star as reference file
             star_no = star_index + 1
-            
+
             # Mark the adu of the star as 0 if that's to be ignored
             if stars_to_ignore_bit_vector[star_index] == 0: 
                 adu_of_current_log_file[star_index] = 0
                 continue # We go to the next star in the for loop as we already know ADU for this star for this image
-            
-            ignored_stars = [i + 1 for i in range(2508) if stars_to_ignore_bit_vector[i] == 0]
 
-            # If the ADU for the star in any of the 4 sample logfiles for the night have vale <=0 
-            # then we ignore that star from calculating the normfactor for the image
-            star_adu_in_in_sample_logfiles = [logfile[star_index] for logfile in adus_in_data_to_normalize_to]
-            if not all([value > 0 for value in star_adu_in_in_sample_logfiles]):
+            star_data_in_log_file = log_file.get_star_data(star_no)
+            if not all([x > 0 for x in star_data_in_log_file.radii_adu.values()]) or star_data_in_log_file.sky_adu <= 0:
                 adu_of_current_log_file[star_index] = 0 # Ignore this star for normfactor calc of this logfile
                 continue
 
-            star_data_in_log_file = log_file.get_star_data(star_no)
-            if not all(star_data_in_log_file.radii_adu.values()):
-                adu_of_current_log_file[star_index] = 0 # Ignore this star for normfactor calc of this logfile
+
 
             star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
             star_x_position, star_y_position = star_data_in_log_file.x, star_data_in_log_file.y
             
             if math.sqrt((star_x_reffile - star_x_position) ** 2 + (star_y_reffile - star_y_position) ** 2) > 1:
                 adu_of_current_log_file[star_index] = 0
-            
+        
+        all_log_files.append(adu_of_current_log_file)
+    
+    # Now for each log file we calculate its normfactor
+    # For each logfile, its normfactor is the median of normfactors of the stars
+    # in that image.
+    # For a star, it's normfactor in a lofile, is sum of adus in reference log file
+    # divided by 4 * its adu
+    reference_log_files = []
+    for index, log_file in enumerate(all_log_files):
+        if index in indices_to_normalize_to:
+            reference_log_files.append(log_file)
 
-        # Normalization factor is the median of the scale_factors of all stars for scale_factors <= 5
-        # where scale_factor for a star for that image is star's adu in sum of data_to_normalize_to divided by 4 * adu in current image
-        # Note that use are finding normalization factors for all stars at once using numpy's array division
-        sum_of_adus_in_data_to_normalize_to = np.sum(adus_in_data_to_normalize_to, axis=0)
-        scale_factors_for_stars = sum_of_adus_in_data_to_normalize_to / (
-            4 * adu_of_current_log_file
-        )
-        # We use the median value from scale factors between 0 and 5, since some values are -inf or nan
-        # We use 5 as the threshold 5 as IDL code did the same
-        good_scale_factors = scale_factors_for_stars[
-            np.where((scale_factors_for_stars > 0) & (scale_factors_for_stars <= 5))
-        ]
-        # breakpoint()
-        # Now the norm factor for the image is the median of norm factors for all the stars in that image
-        norm_factor = np.median(good_scale_factors) if len(good_scale_factors) > 0 else 0
-        all_norm_factors.append(norm_factor)
-        # We now apply the normalization for all stars in the image and save it in our multidimensional array
-        normalized_star_data[file_index] = norm_factor * adu_of_current_log_file
+    all_log_files = np.array(all_log_files) # Convert to numpy array
+    reference_log_files = np.array(reference_log_files) # Convert to numpy array
+    for file_index, log_file in enumerate(all_log_files):
+        no_of_stars = len(log_file)
+        norm_factor_for_stars = []
+        for star_index in range(no_of_stars):
+            star_adu_in_reference_log_files = []
+            for ref_log_file in reference_log_files:
+                star_adu_in_reference_log_files.append(ref_log_file[star_index])
+            star_adu = log_file[star_index]
+            if all([value > 0 for value in star_adu_in_reference_log_files]) and star_adu > 0 :
+                normfactor = sum(star_adu_in_reference_log_files) / (4 * star_adu)
+            else:
+                normfactor = 0    
+            norm_factor_for_stars.append(normfactor)
+        good_scale_factors = [x for x in norm_factor_for_stars if 0 < x <= 5]
+        norm_factor_for_logfile = np.median(good_scale_factors)
+        all_norm_factors.append(norm_factor_for_logfile)             
 
     # Save normfactors
     normfactors_file_name = NormfactorFile.generate_file_name(night_date, img_duration)
