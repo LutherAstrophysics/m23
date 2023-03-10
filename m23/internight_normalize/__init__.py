@@ -6,6 +6,7 @@ from typing import Callable, Dict, List
 import numpy as np
 from scipy.optimize import curve_fit
 
+from m23.charts import draw_internight_color_chart
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
@@ -67,7 +68,7 @@ def internight_normalize(
 
 
 def internight_normalize_auxiliary(
-    night: Path, reference_file: Path, color_file: Path, radius_of_extraction: List[int]
+    night: Path, reference_file: Path, color_file: Path, radius_of_extraction: int
 ):
     """
     This is an auxiliary function for internight_normalize that's different from
@@ -277,6 +278,9 @@ def internight_normalize_auxiliary(
     # aren't in `stars_outside_threshold` Note that we have to fit individual
     # curves for each section like we did above
     color_fit_functions = {} # Stores the color fit function for each section
+    # We save the x and the y so we can use this to make chart later
+    section_x_values = {} 
+    section_y_values = {}
     for section_number in sections:
 
         # Note that we're excluding stars in `stars_outside_threshold` list
@@ -291,6 +295,8 @@ def internight_normalize_auxiliary(
         y_values = [
                 stars_signal_ratio[star_no] for star_no in stars_to_include
             ] # Signal ratios
+        section_x_values[section_number] = x_values
+        section_y_values[section_number] = y_values
 
         a, b, c = np.polyfit(x_values, y_values, 2) # Second degree fit
         # Nested lambda necessary to create a, b, c as local variables
@@ -298,6 +304,15 @@ def internight_normalize_auxiliary(
                              lambda x : a * x ** 2 + b * x  + c
                              )(a, b, c) # ax^2 + bx + c
         color_fit_functions[section_number] = polynomial_fit_fn
+    # Create and save the color chart
+    draw_internight_color_chart(
+        night, 
+        radius_of_extraction,
+        section_x_values,
+        section_y_values,
+        color_fit_functions
+        )
+    
 
     stars_magnitudes = {
         star : flux_to_magnitude(

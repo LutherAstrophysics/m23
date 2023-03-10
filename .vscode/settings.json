@@ -20,12 +20,15 @@
     "Burnell",
     "coeffs",
     "dtype",
+    "facecolor",
     "FWHM",
     "getdata",
     "getfitsdata",
     "IDL's",
     "internight",
+    "interp",
     "intranight",
+    "linewidth",
     "linfit",
     "linspace",
     "logfile",
@@ -53,9 +56,11 @@
     "writeto",
     "XFWHM",
     "xlabel",
+    "xlim",
     "yaspin",
     "YFWHM",
-    "ylabel"
+    "ylabel",
+    "ylim"
   ],
   "files.associations": {
     "**/**/*.toml": "plaintext"

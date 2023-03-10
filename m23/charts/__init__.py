@@ -1,8 +1,11 @@
+import itertools
 import sys
 from pathlib import Path
-from typing import Iterable
+from typing import Callable, Dict, Iterable
 
+import numpy as np
 from matplotlib import pyplot as plt
+from scipy.interpolate import make_interp_spline
 
 from m23.constants import CHARTS_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
@@ -53,3 +56,38 @@ def draw_normfactors_chart(log_files_used : Iterable[LogFileCombinedFile], night
         plt.xlabel("Log file number")
         plt.ylabel("Normfactor")
         plt.savefig(chart_file_path)
+
+
+def draw_internight_color_chart(
+        night : Path,
+        radius: int, 
+        section_x_values: Dict[int, Iterable], 
+        section_y_values: Dict[int, Iterable], 
+        section_color_fit_fn: Dict[int, Callable[[float], float]], 
+        ) -> None:
+    """
+    Creates and saves color chart for a given night for a particular radius data
+    """
+    sections = sorted(section_x_values.keys())
+    all_x_values = list(itertools.chain.from_iterable([
+        section_x_values[section] for section in sections
+    ]))
+    all_y_values = list(itertools.chain.from_iterable([
+        section_y_values[section] for section in sections
+    ]))
+    # plt.figure(dpi=1200)
+    plt.rcParams['axes.facecolor'] = 'black'
+    plt.plot(all_x_values, all_y_values, 'wo', ms=0.5)
+    # Plot the curves for each of the three sections
+    section_line_colors = ['blue', 'green', 'red']
+    for index, section in enumerate(sections):
+        x = section_x_values[section]
+        x_min = np.min(x)
+        x_max = np.max(x)
+        x_new = np.linspace(x_min, x_max, 300)
+        y_new = [section_color_fit_fn[section](i) for i in x_new]
+        plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2.5)
+    ax = plt.gca()
+    ax.set_xlim([0, np.max(all_x_values) + 3*np.std(all_x_values)])
+    ax.set_ylim([0, np.max(all_y_values) + 3*np.std(all_y_values)])
+    plt.show()
