@@ -21,6 +21,7 @@
     "coeffs",
     "dtype",
     "facecolor",
+    "figsize",
     "FWHM",
     "getdata",
     "getfitsdata",

@@ -68,6 +68,9 @@ def draw_internight_color_chart(
     """
     Creates and saves color chart for a given night for a particular radius data
     """
+    chart_folder = night / CHARTS_FOLDER_NAME
+    chart_name = f"Color Curve Fit Radius {radius}_px.png"
+    chart_save_path = chart_folder / chart_name
     sections = sorted(section_x_values.keys())
     all_x_values = list(itertools.chain.from_iterable([
         section_x_values[section] for section in sections
@@ -75,7 +78,7 @@ def draw_internight_color_chart(
     all_y_values = list(itertools.chain.from_iterable([
         section_y_values[section] for section in sections
     ]))
-    # plt.figure(dpi=1200)
+    plt.figure(dpi=1000, figsize=(10, 6))
     plt.rcParams['axes.facecolor'] = 'black'
     plt.plot(all_x_values, all_y_values, 'wo', ms=0.5)
     # Plot the curves for each of the three sections
@@ -86,8 +89,10 @@ def draw_internight_color_chart(
         x_max = np.max(x)
         x_new = np.linspace(x_min, x_max, 300)
         y_new = [section_color_fit_fn[section](i) for i in x_new]
-        plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2.5)
+        plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2)
     ax = plt.gca()
     ax.set_xlim([0, np.max(all_x_values) + 3*np.std(all_x_values)])
     ax.set_ylim([0, np.max(all_y_values) + 3*np.std(all_y_values)])
-    plt.show()
+    plt.xlabel("Color")
+    plt.ylabel("Magnitude Ratio")
+    plt.savefig(chart_save_path)
