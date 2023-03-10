@@ -50,7 +50,7 @@ def draw_normfactors_chart(log_files_used : Iterable[LogFileCombinedFile], night
         chart_name = f"normfactors_chart_{first_img_number}-{last_img_number}_{radius_folder.name}.png" 
         chart_file_path = chart_folder / chart_name
         x, y = zip(*log_file_number_to_normfactor_map.items())  # Unpack a list of pairs into two tuples
-        plt.figure(dpi=1200)
+        plt.figure(dpi=300)
         plt.plot(x, y, "b+")
         plt.xlabel("Log file number")
         plt.ylabel("Normfactor")
@@ -77,7 +77,7 @@ def draw_internight_color_chart(
     all_y_values = list(itertools.chain.from_iterable([
         section_y_values[section] for section in sections
     ]))
-    plt.figure(dpi=1000, figsize=(10, 6))
+    plt.figure(dpi=300, figsize=(10, 6))
     plt.rcParams['axes.facecolor'] = 'black'
     plt.plot(all_x_values, all_y_values, 'wo', ms=0.5)
     # Plot the curves for each of the three sections
@@ -116,7 +116,7 @@ def draw_internight_brightness_chart(
     all_y_values = list(itertools.chain.from_iterable([
         section_y_values[section] for section in sections
     ]))
-    plt.figure(dpi=1000, figsize=(10, 6))
+    plt.figure(dpi=300, figsize=(10, 6))
     plt.rcParams['axes.facecolor'] = 'black'
     plt.plot(all_x_values, all_y_values, 'wo', ms=0.5)
     # Plot the curves for each of the three sections
