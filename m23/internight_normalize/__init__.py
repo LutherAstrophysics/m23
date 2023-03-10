@@ -1,12 +1,11 @@
 import logging
-import math
 from pathlib import Path
 from typing import Callable, Dict, List
 
 import numpy as np
 from scipy.optimize import curve_fit
 
-from m23.charts import draw_internight_color_chart
+from m23.charts import draw_internight_brightness_chart, draw_internight_color_chart
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
@@ -17,6 +16,7 @@ from m23.utils import (
     get_log_file_name,
     get_radius_folder_name,
 )
+from m23.utils.flux_to_magnitude import flux_to_magnitude
 
 # Note that this code is implemented based on the internight normalization in IDL
 # https://github.com/LutherAstrophysics/idl-files/blob/39dfa1c0c6d03d64020c42583bbcaa94655d69cc/inter_night_normalization_345.pro
@@ -366,9 +366,20 @@ def internight_normalize_auxiliary(
 
     # Region 3
     # Signal ratios
+    region_3_x = [stars_magnitudes[star] for star in region_3_stars] 
     region_3_y = [stars_signal_ratio[star] for star in region_3_stars] 
     # For region 3, we just return the median of y values
     magnitude_fit_fn[3] = lambda x : np.median(region_3_y) 
+    # Create and save the brightness chart
+    draw_internight_brightness_chart(
+        night, 
+        radius_of_extraction,
+        {1: region_1_x, 2: region_2_x, 3:region_3_x},
+        {1: region_1_y, 2: region_2_y, 3:region_3_y},
+        magnitude_fit_fn
+        )
+    
+
 
     # Write normfactors for all stars
     for star_no in sorted(data_dict.keys()):
@@ -427,17 +438,6 @@ def internight_normalize_auxiliary(
     # output_file = OUTPUT_FOLDER
     logging.info(f"Completed internight color normalization for {radius_of_extraction}")
 
-def flux_to_magnitude(flux: float, radius : int ) -> float :
-    if not flux > 0:
-        return np.nan
-    if radius == 5:
-        return 23.99 - 2.5665 * math.log10(flux)
-    elif radius == 4:
-        return 24.176 - 2.6148 * math.log10(flux)
-    elif radius == 3:
-        return 23.971 - 2.5907 * math.log10(flux)
-    else:
-        raise ValueError(f"No formula to convert for radius {radius}")
     
 
 def get_normfactor_for_special_star(star_no : int, fit_fn : Callable[[float], float]) -> float | None:

@@ -5,7 +5,6 @@ from typing import Callable, Dict, Iterable
 
 import numpy as np
 from matplotlib import pyplot as plt
-from scipy.interpolate import make_interp_spline
 
 from m23.constants import CHARTS_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
@@ -94,5 +93,42 @@ def draw_internight_color_chart(
     ax.set_xlim([0, np.max(all_x_values) + 3*np.std(all_x_values)])
     ax.set_ylim([0, np.max(all_y_values) + 3*np.std(all_y_values)])
     plt.xlabel("Color")
-    plt.ylabel("Magnitude Ratio")
+    plt.ylabel("Flux Ratio")
+    plt.savefig(chart_save_path)
+
+def draw_internight_brightness_chart(
+        night : Path,
+        radius: int, 
+        section_x_values: Dict[int, Iterable], 
+        section_y_values: Dict[int, Iterable], 
+        section_fit_fn: Dict[int, Callable[[float], float]], 
+        ) -> None:
+    """
+    Creates and saves brightness chart for a given night for a particular radius data
+    """
+    chart_folder = night / CHARTS_FOLDER_NAME
+    chart_name = f"Brightness Curve Fit Radius {radius}_px.png"
+    chart_save_path = chart_folder / chart_name
+    sections = sorted(section_x_values.keys())
+    all_x_values = list(itertools.chain.from_iterable([
+        section_x_values[section] for section in sections
+    ]))
+    all_y_values = list(itertools.chain.from_iterable([
+        section_y_values[section] for section in sections
+    ]))
+    plt.figure(dpi=1000, figsize=(10, 6))
+    plt.rcParams['axes.facecolor'] = 'black'
+    plt.plot(all_x_values, all_y_values, 'wo', ms=0.5)
+    # Plot the curves for each of the three sections
+    section_line_colors = ["blue", "green", "red"]
+    for index, section in enumerate(sections):
+        x = section_x_values[section]
+        x_min = np.min(x)
+        x_max = np.max(x)
+        x_new = np.linspace(x_min, x_max, 300)
+        y_new = [section_fit_fn[section](i) for i in x_new]
+        plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2)
+
+    plt.xlabel("Magnitudes")
+    plt.ylabel("Flux Ratio")
     plt.savefig(chart_save_path)
