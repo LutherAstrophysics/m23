@@ -44,10 +44,6 @@ def normalize_log_files(
     indices_to_normalize_to = np.linspace(0, no_of_files, 6, dtype="int")[1:-1]
     all_log_files = [] # This is an array of arrays
 
-    # Matrix of image by star so 4th star in 100th image will be
-    # normalized_star_data[99][3]
-    normalized_star_data = np.zeros((no_of_files, len(reference_log_file)))
-
     # This holds the normalization factor for each log_file to use
     all_norm_factors = []
 
@@ -86,7 +82,7 @@ def normalize_log_files(
             
             if math.sqrt((star_x_reffile - star_x_position) ** 2 + (star_y_reffile - star_y_position) ** 2) > 1:
                 adu_of_current_log_file[star_index] = 0
-        
+            
         all_log_files.append(adu_of_current_log_file)
     
     # Now for each log file we calculate its normfactor
@@ -116,7 +112,8 @@ def normalize_log_files(
             norm_factor_for_stars.append(normfactor)
         good_scale_factors = [x for x in norm_factor_for_stars if 0 < x <= 5]
         norm_factor_for_logfile = np.median(good_scale_factors)
-        all_norm_factors.append(norm_factor_for_logfile)             
+        all_norm_factors.append(norm_factor_for_logfile)
+        all_log_files[file_index] = norm_factor_for_logfile * all_log_files[file_index]
 
     # Save normfactors
     normfactors_file_name = NormfactorFile.generate_file_name(night_date, img_duration)
@@ -124,11 +121,11 @@ def normalize_log_files(
     normfactor_file.create_file(all_norm_factors)
 
     # Save the normalized data for each star
-    noOfStars = len(normalized_star_data[0])
+    noOfStars = len(all_log_files[0])
     for star_index in range(noOfStars):
         star_no = star_index + 1
         star_data = [
-            normalized_star_data[file_index][star_index] for file_index in range(no_of_files)
+            all_log_files[file_index][star_index] for file_index in range(no_of_files)
         ]
         # Turn all star_data that's negative to 0
         star_data = [current_data if current_data > 0 else 0 for current_data in star_data]
