@@ -119,7 +119,7 @@ def validate_generate_masterflat_config_file(
     configuration file
     """
 
-    if not file_path.exists() or not file_path.exists():
+    if not file_path.exists():
         raise FileNotFoundError("Cannot find configuration file")
     match toml.load(file_path):
         case {
