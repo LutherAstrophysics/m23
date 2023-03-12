@@ -208,7 +208,12 @@ def validate_night(night: ConfigInputNight) -> bool:
     We check whether the input folders follow the required conventions,
     whether the right files are present and more.
     """
-    NIGHT_INPUT_PATH = Path(night["path"])
+    try:
+        NIGHT_INPUT_PATH = Path(night["path"])
+    except:
+        sys.stderr.write(f"Invalid night {night} in config file.\nCheck path spell\n")
+        return False
+
     # Check if the night input path exists
     if not NIGHT_INPUT_PATH.exists():
         sys.stderr.write(f"Images path for {night} doesn't exist\n")

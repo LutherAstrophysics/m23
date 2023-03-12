@@ -218,10 +218,9 @@ def calibrateImages(masterDarkData, masterFlatData, listOfImagesData, masterBias
     return [
         applyCalibration(
             imageData,
-            masterDarkData=masterDarkData,
-            masterFlatData=masterFlatData,
-            masterBiasData=masterBiasData,
-            averageFlatData=averageFlat,
+            masterDarkData,
+            masterFlatData,
+            averageFlat,
             hotPixelsInMasterDark=filteredHotPixelPositions,
         )
         for imageData in listOfImagesData
