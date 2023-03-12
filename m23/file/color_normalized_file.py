@@ -4,8 +4,6 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Dict
 
-import numpy as np
-
 from m23.constants import COLOR_NORMALIZED_FILENAME_DATE_FORMAT
 from m23.utils import get_radius_folder_name
 
