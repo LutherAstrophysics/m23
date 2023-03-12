@@ -28,7 +28,6 @@ class FluxLogCombinedFile:
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
     file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt')
-    file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt')
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:
@@ -103,7 +102,7 @@ class FluxLogCombinedFile:
         if self.is_valid_file_name():
             # The first capture group contains the night date
             return datetime.strptime(
-                self.file_name_re.match(self.path().name)[2],
+                self.file_name_re.match(self.path().name)[1],
                 FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT,
             ).date()
 

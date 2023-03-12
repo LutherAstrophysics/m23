@@ -1,8 +1,12 @@
+import re
 from collections import namedtuple
-from datetime import date
+from datetime import date, datetime
 from pathlib import Path
 from typing import Dict
 
+import numpy as np
+
+from m23.constants import COLOR_NORMALIZED_FILENAME_DATE_FORMAT
 from m23.utils import get_radius_folder_name
 
 
@@ -21,12 +25,17 @@ class ColorNormalizedFile:
     )
     Data_Dict_Type = Dict[int, StarData]
 
+    # Class attributes
+    header_rows = 6  # Specifies the first x rows that don't contain header information
+    file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_Normalized_(.*)\.txt')
+
     @classmethod
     def get_file_name(cls, night_date: date, radius_of_extraction: int) -> str:
         return f"{night_date.strftime('%Y-%m-%d')}_Normalized_{get_radius_folder_name(radius_of_extraction)}.txt"
 
     def __init__(self, file_path: Path) -> None:
         self.__path = file_path
+        self.__read_data = False
 
     def save_data(self, data_dict: Data_Dict_Type, night_date: date):
         if self.__path.is_dir() or self.__path.suffix != ".txt":
@@ -55,3 +64,46 @@ class ColorNormalizedFile:
                 fd.write(
                     f"{star_no:>8d}{star_data.normalized_median_flux:>32.7f}{star_data.norm_factor:>24.7f}{star_data.measured_mean_r_i:>32.7f}{star_data.used_mean_r_i:>32.7f}\n"
                 )
+
+    def _read(self):
+        self.__read_data = True
+        with self.path().open() as fd:
+            lines = [line.strip() for line in fd.readlines()]
+            lines = lines[self.header_rows :]  # Skip the header rows
+            self.__data = []
+            for line in lines:
+                star_data = line.split()
+                star_no = int(star_data[0])
+                normalized_median_flux = float(star_data[1])
+                normfactor = float(star_data[2])
+                measured_mean_ri = float(star_data[3])
+                used_mean_ri = float(star_data[4])
+                lines.append(self.StarData(
+                    star_no=star_no, 
+                    normalized_median_flux=normalized_median_flux, 
+                    norm_factor=normfactor, 
+                    measured_mean_r_i=measured_mean_ri, used_mean_r_i=used_mean_ri))
+        self.__read_data = True  # Marks file as read
+
+
+    def is_valid_file_name(self):
+        return bool(self.file_name_re.match(self.path().name))
+
+    def path(self):
+        return self.__path
+
+    def night_date(self) -> date | None:
+        """
+        Returns the night date that can be inferred from the file name
+        """
+        if self.is_valid_file_name():
+            # The first capture group contains the night date
+            return datetime.strptime(
+                self.file_name_re.match(self.path().name)[1],
+                COLOR_NORMALIZED_FILENAME_DATE_FORMAT,
+            ).date()
+
+    def data(self):
+        if not self.__read_data:
+            self._read()
+        return self.__data
