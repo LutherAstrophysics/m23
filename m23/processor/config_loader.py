@@ -179,11 +179,17 @@ def verify_optional_image_options(options: Dict) -> bool:
         return False
     crop_region: List[List[int]] = options.get("crop_region", [])
     # Ensure that all values in crop_region are non-negative integers
-    values: List[int] = reduce(lambda prev, curr: prev + curr, crop_region, [])
-    is_valid = all([type(i) == i and i >= 0 for i in values])
-    if not is_valid:
-        sys.stderr.write.write("Crop region must be an array of array of integers >= 0\n")
-    return is_valid
+    try:
+        for i in crop_region:
+            for j in i:
+                valid_values = all([type(x) == int and x >= 0 for x in j])
+                if not valid_values:
+                    sys.stderr.write(f"Invalid value detected in crop_region {j}.\n")
+                    return False
+    except Exception as e:
+        sys.stderr.write(f"Error in crop_region {j}.\n")
+        return False
+    return True  # Valid
 
 
 def is_night_name_valid(NIGHT_INPUT_PATH: Path):
