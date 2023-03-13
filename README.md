@@ -64,7 +64,7 @@ file = "C://Data Processing/Reference/reffile.txt"
 
     [[input.nights]]
     path = "F://Summer 2019/September 4, 2019"
-    masterflat = "C://Data Processing/2019/Python Processed/September 12 2019"
+    masterflat = "C://Data Processing/2019/Python Processed/September 12 2019/masterflat.fit"
 
     [[input.nights]]
     path = "F://Summer 2019/September 9, 2019"
