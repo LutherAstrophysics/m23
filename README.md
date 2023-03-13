@@ -138,8 +138,8 @@ provided as input. Additionally note that the provided folder name should match 
 
 ```
 # Note that it's important to define input and output before image definition
-[input] = "F://Summer 2019/September 4, 2019"
-[output] = "C://Data Processing/Masterflat"
+input = "F://Summer 2019/September 4, 2019"
+output = "C://Data Processing/Masterflat"
 
 
 [image]
