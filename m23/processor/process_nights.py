@@ -257,7 +257,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     # Internight normalization
     internight_normalize(
-        NIGHT_INPUT_IMAGES_FOLDER, ref_file_path, color_ref_file_path, radii_of_extraction
+        NIGHT_INPUT_FOLDER, ref_file_path, color_ref_file_path, radii_of_extraction
     )
 
 
