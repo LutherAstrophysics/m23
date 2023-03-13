@@ -9,7 +9,7 @@ modules.
 ### Installation
 
 This packages is available in pypi and can be installed via the `pip` package manger.
-It is recommended that you install this library in a virtual environment. We can install the `m23` library using the 
+It is recommended that you install this library in a virtual environment. We can install the `m23` library using the
 package manager pip that comes by default with python.
 
 ```
@@ -58,6 +58,7 @@ radii_of_extraction = [3, 4, 5]
 # The image file is an actual fit image while the reffile refers to the stats file for that image
 image = "C://Data Processing/Reference/RefImage.fit"
 file = "C://Data Processing/Reference/reffile.txt"
+color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
 [input]

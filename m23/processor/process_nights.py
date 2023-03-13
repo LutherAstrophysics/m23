@@ -29,6 +29,7 @@ from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
+from m23.internight_normalize import internight_normalize
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.norm import normalize_log_files
@@ -102,6 +103,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
+    color_ref_file_path = config["reference"]["color"]
     reference_log_file = ReferenceLogFile(ref_file_path)
 
     # Define relevant input folders for the night being processed
@@ -129,9 +131,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     # Darks
     darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER))
-    # Ensure that image dimensions are as specified by rows and cols 
-    # If there's extra noise cols or rows, we crop them 
-    darks = [crop(matrix, rows, cols) for matrix in darks] 
+    # Ensure that image dimensions are as specified by rows and cols
+    # If there's extra noise cols or rows, we crop them
+    darks = [crop(matrix, rows, cols) for matrix in darks]
     master_dark_data = makeMasterDark(
         saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_DARK_NAME,
         headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
@@ -146,8 +148,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logging.info(f"Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
-        # Ensure that image dimensions are as specified by rows and cols 
-        # If there's extra noise cols or rows, we crop them 
+        # Ensure that image dimensions are as specified by rows and cols
+        # If there's extra noise cols or rows, we crop them
         flats = [crop(matrix, rows, cols) for matrix in flats]
 
         master_flat_data = makeMasterDark(
@@ -171,15 +173,15 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Note the subtle typing difference between no_of_combined_images and no_of_images_to_combine
     no_of_combined_images = len(raw_images) // no_of_images_to_combine
 
-    log_files_to_normalize : List[LogFileCombinedFile] = []
+    log_files_to_normalize: List[LogFileCombinedFile] = []
 
     for i in range(no_of_combined_images):
         from_index = i * no_of_images_to_combine
         to_index = (i + 1) * no_of_images_to_combine
 
         images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
-        # Ensure that image dimensions are as specified by rows and cols 
-        # If there's extra noise cols or rows, we crop them 
+        # Ensure that image dimensions are as specified by rows and cols
+        # If there's extra noise cols or rows, we crop them
         images_data = [crop(matrix, rows, cols) for matrix in images_data]
 
         # Calibrate images
@@ -217,25 +219,33 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         combined_images_data = np.sum(aligned_images_data, axis=0)
         sample_raw_image_file = raw_images[from_index]
         aligned_combined_image_number = to_index // no_of_images_to_combine
-        aligned_combined_file_name = AlignedCombinedFile.generate_file_name(image_duration, aligned_combined_image_number)
-        aligned_combined_file = AlignedCombinedFile(ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name)
+        aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
+            image_duration, aligned_combined_image_number
+        )
+        aligned_combined_file = AlignedCombinedFile(
+            ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
+        )
         aligned_combined_file.create_file(combined_images_data, sample_raw_image_file)
         logging.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
-        log_file_combined_file_name = LogFileCombinedFile.generate_file_name(night_date, aligned_combined_image_number, image_duration)
-        log_file_combined_file = LogFileCombinedFile(LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name)
+        log_file_combined_file_name = LogFileCombinedFile.generate_file_name(
+            night_date, aligned_combined_image_number, image_duration
+        )
+        log_file_combined_file = LogFileCombinedFile(
+            LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name
+        )
         extract_stars(
             combined_images_data,
             reference_log_file,
             radii_of_extraction,
             log_file_combined_file,
-            aligned_combined_file
+            aligned_combined_file,
         )
         log_files_to_normalize.append(log_file_combined_file)
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
 
-    # Normalization
+    # Intranight Normalization
     normalization_helper(
         radii_of_extraction,
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
@@ -245,6 +255,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         night_date,
     )
 
+    # Internight normalization
+    internight_normalize(
+        NIGHT_INPUT_IMAGES_FOLDER, ref_file_path, color_ref_file_path, radii_of_extraction
+    )
 
 
 def start_data_processing_auxiliary(config: Config):

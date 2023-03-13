@@ -47,6 +47,7 @@ class ConfigInput(TypedDict):
 class ConfigReference(TypedDict):
     image: str | Path
     file: str | Path
+    color: str | Path
 
 
 class ConfigOutput(TypedDict):
@@ -95,6 +96,8 @@ def create_processing_config(config_dict: Config) -> Config:
         config_dict["reference"]["file"] = Path(config_dict["reference"]["file"])
     if type(config_dict["reference"]["image"]) == str:
         config_dict["reference"]["image"] = Path(config_dict["reference"]["image"])
+    if type(config_dict["reference"]["color"]) == str:
+        config_dict["reference"]["color"] = Path(config_dict["reference"]["color"])
 
     # Remove duplicates radii of extraction
     radii = list(set(config_dict["processing"]["radii_of_extraction"]))
@@ -314,6 +317,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             "reference": {
                 "image": str(reference_image),
                 "file": str(reference_file),
+                "color": str(color_ref_file),
             },
             "input": {"nights": list(list_of_nights)},
             "output": {"path": str(_)},
