@@ -13,6 +13,6 @@ dependencies = [
     'astropy==5.2.1',
     'astroalign==2.4.1',
     'typing_extensions==4.4.0',
-    'opencv-python==4.7.0.68'
+    'opencv-python==4.7.0.68',
     'matplotlib==3.7.0'
 ]
