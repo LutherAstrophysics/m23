@@ -27,7 +27,7 @@ color = "C://Data Processing/Reference/color_mean_RI.txt"
 
     [[input.nights]]
     path = "F://Summer 2022/September 4, 2022"
-    masterflat = "C://Data Processing/2022/Python Processed/September 12 2022/masteflat.fit"
+    masterflat = "C://Data Processing/2022/Python Processed/September 12 2022/masterflat.fit"
 
     [[input.nights]]
     path = "F://Summer 2022/September 9, 2022"
