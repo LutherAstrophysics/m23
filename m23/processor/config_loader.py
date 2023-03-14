@@ -66,7 +66,9 @@ def is_valid_radii_of_extraction(lst):
     """Verifies that each radius of extraction is a positive integer"""
     is_valid = all([type(i) == int and i > 0 for i in lst])
     if not is_valid:
-        sys.stderr.write.write("Radius of extraction must be positive integers\n")
+        sys.stderr.write.write(
+            "Radius of extraction must be positive integers\n"
+        )
     return is_valid
 
 
@@ -93,11 +95,17 @@ def create_processing_config(config_dict: Config) -> Config:
 
     # Convert reference file/img to Path object
     if type(config_dict["reference"]["file"]) == str:
-        config_dict["reference"]["file"] = Path(config_dict["reference"]["file"])
+        config_dict["reference"]["file"] = Path(
+            config_dict["reference"]["file"]
+        )
     if type(config_dict["reference"]["image"]) == str:
-        config_dict["reference"]["image"] = Path(config_dict["reference"]["image"])
+        config_dict["reference"]["image"] = Path(
+            config_dict["reference"]["image"]
+        )
     if type(config_dict["reference"]["color"]) == str:
-        config_dict["reference"]["color"] = Path(config_dict["reference"]["color"])
+        config_dict["reference"]["color"] = Path(
+            config_dict["reference"]["color"]
+        )
 
     # Remove duplicates radii of extraction
     radii = list(set(config_dict["processing"]["radii_of_extraction"]))
@@ -122,16 +130,24 @@ def sanity_check_image(config: ConfigImage, night_date: date):
     old_camera = night_date < CAMERA_CHANGE_2022_DATE
     if old_camera:
         if rows != 1024:
-            prompt_to_continue(f"Detected non 1024 image row value for old camera date")
+            prompt_to_continue(
+                f"Detected non 1024 image row value for old camera date"
+            )
         if cols != 1024:
-            prompt_to_continue(f"Detected non 1024 image column value for old camera date")
+            prompt_to_continue(
+                f"Detected non 1024 image column value for old camera date"
+            )
         if crop_region and type(crop_region) == list and len(crop_region) > 0:
             prompt_to_continue(f"Detected use of crop region for old camera.")
     else:
         if rows != 2048:
-            prompt_to_continue(f"Detected non 2048 image row value for new camera date")
+            prompt_to_continue(
+                f"Detected non 2048 image row value for new camera date"
+            )
         if cols != 2048:
-            prompt_to_continue(f"Detected non 2048 image column value for new camera date")
+            prompt_to_continue(
+                f"Detected non 2048 image column value for new camera date"
+            )
         if (
             not crop_region
             or crop_region
@@ -145,12 +161,15 @@ def sanity_check_image(config: ConfigImage, night_date: date):
         else:
             try:
                 for crop_section_index, crop_section in enumerate(crop_region):
-                    for section_coordinate_index, section_coordinate in enumerate(crop_section):
+                    for (
+                        section_coordinate_index,
+                        section_coordinate,
+                    ) in enumerate(crop_section):
                         if (
                             section_coordinate
-                            != TYPICAL_NEW_CAMERA_CROP_REGION[crop_section_index][
-                                section_coordinate_index
-                            ]
+                            != TYPICAL_NEW_CAMERA_CROP_REGION[
+                                crop_section_index
+                            ][section_coordinate_index]
                         ):
                             prompt_to_continue(
                                 f"Mismatch between default crop region used in new camera and config file."
@@ -187,7 +206,9 @@ def verify_optional_image_options(options: Dict) -> bool:
             for j in i:
                 valid_values = all([type(x) == int and x >= 0 for x in j])
                 if not valid_values:
-                    sys.stderr.write(f"Invalid value detected in crop_region {j}.\n")
+                    sys.stderr.write(
+                        f"Invalid value detected in crop_region {j}.\n"
+                    )
                     return False
     except Exception as e:
         sys.stderr.write(f"Error in crop_region {j}.\n")
@@ -220,7 +241,9 @@ def validate_night(night: ConfigInputNight) -> bool:
     try:
         NIGHT_INPUT_PATH = Path(night["path"])
     except:
-        sys.stderr.write(f"Invalid night {night} in config file.\nCheck path spell\n")
+        sys.stderr.write(
+            f"Invalid night {night} in config file.\nCheck path spell\n"
+        )
         return False
 
     # Check if the night input path exists
@@ -247,7 +270,9 @@ def validate_night(night: ConfigInputNight) -> bool:
     # Either the masterflat should be provided or the night should contain its own flats.
     if night.get("masterflat"):
         if not Path(night["masterflat"]).exists():
-            sys.stderr.write(f"Provided masterflat path for {night} doesn't exist.\n")
+            sys.stderr.write(
+                f"Provided masterflat path for {night} doesn't exist.\n"
+            )
             return False
     # If masterflat isn't provided, the night should have flats to use
     elif len(list(get_flats(CALIBRATION_FOLDER_PATH))) == 0:
@@ -266,7 +291,9 @@ def validate_night(night: ConfigInputNight) -> bool:
     # Check for raw images
     try:
         if len(list(get_raw_images(M23_FOLDER_PATH))) == 0:
-            sys.stderr.write(f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}.\n")
+            sys.stderr.write(
+                f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}.\n"
+            )
             return False
     except ValueError as e:
         sys.stderr.write(
@@ -284,22 +311,46 @@ def validate_input_nights(list_of_nights: List[ConfigInputNight]) -> bool:
     return all([validate_night(night) for night in list_of_nights])
 
 
-def validate_reference_files(reference_image: str, reference_file: str) -> bool:
+def validate_reference_files(
+    reference_image: str, reference_file: str, color_ref_file: str
+) -> bool:
     """
     Returns True if reference_image and reference_file paths exist
     """
     img_path = Path(reference_image)
     file_path = Path(reference_file)
-    if not (img_path.exists() and img_path.is_file() and img_path.suffix == ".fit"):
-        sys.stderr.write("Make sure that the reference exists and has .fit extension")
+    color_path = Path(color_ref_file)
+    if not (
+        img_path.exists() and img_path.is_file() and img_path.suffix == ".fit"
+    ):
+        sys.stderr.write(
+            "Make sure that the reference exists and has .fit extension"
+        )
         return False
-    if not (file_path.exists() and file_path.is_file() and file_path.suffix == ".txt"):
-        sys.stderr.write("Make sure that the reference file exists and has .txt extension")
+    if not (
+        file_path.exists()
+        and file_path.is_file()
+        and file_path.suffix == ".txt"
+    ):
+        sys.stderr.write(
+            "Make sure that the reference file exists and has .txt extension\n"
+        )
+        return False
+    if not (
+        color_path.exists()
+        and color_path.is_file()
+        and color_path.suffix == ".txt"
+    ):
+        sys.stderr.write(
+            "Make sure that the color reference file exists and has .txt extension\n"
+        )
         return False
     return True
 
 
-def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None:
+def validate_file(
+    file_path: Path, on_success: Callable[[Config], None]
+) -> None:
     """
     This method reads data processing configuration from the file path
     provided and calls the unary function on_success if the configuration
@@ -309,7 +360,11 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
         raise FileNotFoundError("Cannot find configuration file")
     match toml.load(file_path):
         case {
-            "image": {"rows": int(_), "columns": int(_), **optional_image_options},
+            "image": {
+                "rows": int(_),
+                "columns": int(_),
+                **optional_image_options,
+            },
             "processing": {
                 "no_of_images_to_combine": int(_),
                 "radii_of_extraction": list(radii_of_extraction),
@@ -325,8 +380,14 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             verify_optional_image_options(optional_image_options)
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)
-            and validate_reference_files(reference_image, reference_file)
+            and validate_reference_files(
+                reference_image, reference_file, color_ref_file
+            )
         ):
-            on_success(sanity_check(create_processing_config(toml.load(file_path))))
+            on_success(
+                sanity_check(create_processing_config(toml.load(file_path)))
+            )
         case _:
-            sys.stderr.write("Stopping because the provided configuration file has issues.\n")
+            sys.stderr.write(
+                "Stopping because the provided configuration file has issues.\n"
+            )

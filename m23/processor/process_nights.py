@@ -59,7 +59,9 @@ def normalization_helper(
     """
     for radius in radii_of_extraction:
         logging.info(f"Normalizing for radius of extraction {radius} px")
-        RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
+        RADIUS_FOLDER = (
+            FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
+        )
         RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
         for file in RADIUS_FOLDER.glob("*"):
             if file.is_file():
@@ -72,10 +74,14 @@ def normalization_helper(
             img_duration,
             night_date,
         )
-    draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
+    draw_normfactors_chart(
+        log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent
+    )
 
 
-def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):
+def process_night(
+    night: ConfigInputNight, config: Config, output: Path, night_date: date
+):
     """
     Processes a given night of data based on the settings provided in `config` dict
     """
@@ -108,7 +114,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]
-    NIGHT_INPUT_CALIBRATION_FOLDER: Path = NIGHT_INPUT_FOLDER / INPUT_CALIBRATION_FOLDER_NAME
+    NIGHT_INPUT_CALIBRATION_FOLDER: Path = (
+        NIGHT_INPUT_FOLDER / INPUT_CALIBRATION_FOLDER_NAME
+    )
     NIGHT_INPUT_IMAGES_FOLDER = NIGHT_INPUT_FOLDER / M23_RAW_IMAGES_FOLDER_NAME
 
     # Define and create relevant output folders for the night being processed
@@ -124,7 +132,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
     ]:
         if folder.exists():
-            [file.unlink() for file in folder.glob("*") if file.is_file()]  # Remove existing files
+            [
+                file.unlink() for file in folder.glob("*") if file.is_file()
+            ]  # Remove existing files
         folder.mkdir(exist_ok=True)
 
     crop_region = config["image"]["crop_region"]
@@ -136,7 +146,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     darks = [crop(matrix, rows, cols) for matrix in darks]
     master_dark_data = makeMasterDark(
         saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_DARK_NAME,
-        headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
+        headerToCopyFromName=next(
+            get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)
+        ).absolute(),
         listOfDarkData=darks,
     )
     logging.info(f"Created master dark")
@@ -147,7 +159,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         master_flat_data = getdata(night["masterflat"])
         logging.info(f"Using pre-provided masterflat")
     else:
-        flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
+        flats = fit_data_from_fit_images(
+            get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)
+        )
         # Ensure that image dimensions are as specified by rows and cols
         # If there's extra noise cols or rows, we crop them
         flats = [crop(matrix, rows, cols) for matrix in flats]
@@ -162,7 +176,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logging.info(f"Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
-    raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
+    raw_images: List[RawImageFile] = list(
+        get_raw_images(NIGHT_INPUT_IMAGES_FOLDER)
+    )
     image_duration = raw_images[0].image_duration()
     logging.info(f"Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
@@ -179,7 +195,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         from_index = i * no_of_images_to_combine
         to_index = (i + 1) * no_of_images_to_combine
 
-        images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
+        images_data = [
+            raw_image_file.data()
+            for raw_image_file in raw_images[from_index:to_index]
+        ]
         # Ensure that image dimensions are as specified by rows and cols
         # If there's extra noise cols or rows, we crop them
         images_data = [crop(matrix, rows, cols) for matrix in images_data]
@@ -194,7 +213,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         # Fill out the cropped regions with value of 1
         # Note, it's important to fill after the calibration step
         if len(crop_region) > 0:
-            images_data = [fillMatrix(matrix, crop_region, 1) for matrix in images_data]
+            images_data = [
+                fillMatrix(matrix, crop_region, 1) for matrix in images_data
+            ]
 
         # Alignment
         # We want to discard this set of images if any one image in this set cannot be aligned
@@ -204,7 +225,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 aligned_data, _ = image_alignment(image_data, ref_image_path)
                 aligned_images_data.append(aligned_data)
             except Exception:
-                logging.error(f"Could not align image {raw_images[from_index + index]}")
+                logging.error(
+                    f"Could not align image {raw_images[from_index + index]}"
+                )
                 logging.error(f"Skipping combination {from_index}-{to_index}")
                 break
 
@@ -225,7 +248,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         aligned_combined_file = AlignedCombinedFile(
             ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
         )
-        aligned_combined_file.create_file(combined_images_data, sample_raw_image_file)
+        aligned_combined_file.create_file(
+            combined_images_data, sample_raw_image_file
+        )
         logging.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
@@ -243,7 +268,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             aligned_combined_file,
         )
         log_files_to_normalize.append(log_file_combined_file)
-        logging.info(f"Extraction from combination {from_index}-{to_index} completed")
+        logging.info(
+            f"Extraction from combination {from_index}-{to_index} completed"
+        )
 
     # Intranight Normalization
     normalization_helper(
@@ -257,7 +284,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     # Internight normalization
     internight_normalize(
-        NIGHT_INPUT_FOLDER, ref_file_path, color_ref_file_path, radii_of_extraction
+        output, ref_file_path, color_ref_file_path, radii_of_extraction
     )
 
 
@@ -275,7 +302,9 @@ def start_data_processing_auxiliary(config: Config):
     for night in config["input"]["nights"]:
         night_path: Path = night["path"]
         night_date = get_date_from_input_night_folder_name(night_path.name)
-        OUTPUT_NIGHT_FOLDER = OUTPUT_PATH / get_output_folder_name_from_night_date(night_date)
+        OUTPUT_NIGHT_FOLDER = (
+            OUTPUT_PATH / get_output_folder_name_from_night_date(night_date)
+        )
         # Create output folder for the night, if it doesn't already exist
         OUTPUT_NIGHT_FOLDER.mkdir(exist_ok=True)
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
