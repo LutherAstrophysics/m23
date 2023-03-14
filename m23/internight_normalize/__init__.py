@@ -23,7 +23,10 @@ from m23.utils.flux_to_magnitude import flux_to_magnitude
 
 
 def internight_normalize(
-    night: Path, reference_file: Path, color_file: Path, radii_of_extraction: List[int]
+    night: Path,
+    reference_file: Path,
+    color_file: Path,
+    radii_of_extraction: List[int],
 ) -> None:
     """
     This function normalizes the Flux Logs Combined for a night with respect to
@@ -68,7 +71,10 @@ def internight_normalize(
 
 
 def internight_normalize_auxiliary(
-    night: Path, reference_file: Path, color_file: Path, radius_of_extraction: int
+    night: Path,
+    reference_file: Path,
+    color_file: Path,
+    radius_of_extraction: int,
 ):
     """
     This is an auxiliary function for internight_normalize that's different from
@@ -102,7 +108,7 @@ def internight_normalize_auxiliary(
         FluxLogCombinedFile(file) for file in FLUX_LOGS_COMBINED_FOLDER.glob("*")
     ]
     # Filter out the files that don't match conventional flux log combined file format
-    flux_logs_files = filter(lambda x: x.is_valid_file_name(), flux_logs_files)
+    flux_logs_files = list(filter(lambda x: x.is_valid_file_name(), flux_logs_files))
 
     color_data_file = RIColorFile(color_file)
     reference_file_data = ReferenceLogFile(reference_file)
@@ -299,7 +305,11 @@ def internight_normalize_auxiliary(
         color_fit_functions[section_number] = polynomial_fit_fn
     # Create and save the color chart
     draw_internight_color_chart(
-        night, radius_of_extraction, section_x_values, section_y_values, color_fit_functions
+        night,
+        radius_of_extraction,
+        section_x_values,
+        section_y_values,
+        color_fit_functions,
     )
 
     stars_magnitudes = {
