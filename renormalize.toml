@@ -4,6 +4,7 @@ radii_of_extraction = [3, 4, 5,]
 
 [reference]
 file = "C://Data Processing/Reference/refile.txt"
+color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
 [input]

@@ -20,6 +20,7 @@ class RenormalizeConfigProcessing(TypedDict):
 
 class RenormalizeConfigReference(TypedDict):
     file: Path | str
+    color: Path | str
 
 
 class RenormalizeConfigNight(TypedDict):
@@ -73,6 +74,15 @@ def is_valid(config: RenormalizeConfig) -> bool:
     ref_file = Path(config["reference"]["file"])
     if not (ref_file.exists() and ref_file.is_file() and ref_file.suffix == ".txt"):
         sys.stderr.write("Make sure the provided reference file exits and has txt extension\n")
+        return False
+
+    color_ref_file = Path(config["reference"]["color"])
+    if not (
+        color_ref_file.exists() and color_ref_file.is_file() and color_ref_file.suffix == ".txt"
+    ):
+        sys.stderr.write(
+            "Make sure the provided color reference file exits and has txt extension\n"
+        )
         return False
 
     # Validate each night
@@ -135,6 +145,8 @@ def create_enhanced_config(config: RenormalizeConfig):
     """
     if type(config["reference"]["file"]) == str:
         config["reference"]["file"] = Path(config["reference"]["file"])
+    if type(config["reference"]["color"]) == str:
+        config["reference"]["color"] = Path(config["reference"]["color"])
 
     for night in config["input"]["nights"]:
         if type(night["path"]) == str:
@@ -167,7 +179,7 @@ def validate_renormalize_config_file(
         case {
             "processing": {"radii_of_extraction": list(_)},
             "input": {"nights": list(_)},
-            "reference": {"file": str(_)},
+            "reference": {"file": str(_), "color": str(_)},
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:

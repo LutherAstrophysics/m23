@@ -42,16 +42,21 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             renormalize_dict["reference"]["file"],
         )
 
+        # Ensure color ref file path is str
+        color_ref_file_path = str(renormalize_dict["reference"]["color"])
+
         log_files_to_use = [LogFileCombinedFile(file) for file in night["files_to_use"]]
         img_duration = log_files_to_use[0].img_duration()
 
+        # Perform intranight normalization then internight normalization
         normalization_helper(
             radii_of_extraction,
-            FLUX_LOGS_COMBINED_FOLDER,
             reference_log_file,
             log_files_to_use,
             img_duration,
             night_date,
+            color_ref_file_path,
+            NIGHT_FOLDER,
         )
 
 
