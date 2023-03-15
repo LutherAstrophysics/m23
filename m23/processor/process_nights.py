@@ -25,7 +25,6 @@ from m23.constants import (
 )
 from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
-from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
