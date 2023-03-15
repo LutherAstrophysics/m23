@@ -59,8 +59,11 @@ def normalization_helper(
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     ref_file_path = reference_log_file.path()
+
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+
     for radius in radii_of_extraction:
-        logging.info(f"Normalizing for radius of extraction {radius} px")
+        logger.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
         RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
         for file in RADIUS_FOLDER.glob("*"):
@@ -96,14 +99,18 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Clear file contents if exists, so that reprocessing a night wipes out contents instead of appending to it
     if log_file_path.exists():
         log_file_path.unlink()
-    logging.basicConfig(
-        filename=log_file_path,
-        format="%(asctime)s %(message)s",
-        level=logging.INFO,
-    )
+
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+    ch = logging.FileHandler(log_file_path)
+    ch.setFormatter(formatter)
+    logger.addHandler(ch)
     # Write to std out in addition to writing to a logfile
-    logging.getLogger().addHandler(logging.StreamHandler(sys.stdout))
-    logging.info(f"Starting processing for {night_date}")
+    ch2 = logging.StreamHandler(sys.stdout)
+    ch2.setFormatter(formatter)
+    logger.addHandler(ch2)  # Write to stdout
+    logger.info(f"Starting processing for {night_date}")
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
@@ -143,13 +150,13 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
         listOfDarkData=darks,
     )
-    logging.info(f"Created master dark")
+    logger.info(f"Created master dark")
     del darks  # Deleting to free memory as we don't use darks anymore
 
     # Flats
     if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
-        logging.info(f"Using pre-provided masterflat")
+        logger.info(f"Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
         # Ensure that image dimensions are as specified by rows and cols
@@ -163,15 +170,15 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             ).absolute(),  # Gets absolute path of first flat file
             listOfDarkData=flats,
         )
-        logging.info(f"Created masterflat")
+        logger.info(f"Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
     raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
     image_duration = raw_images[0].image_duration()
-    logging.info(f"Processing images")
+    logger.info(f"Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
-    logging.info(f"Using no of images to combine: {no_of_images_to_combine}")
-    logging.info(f"Radii of extraction: {radii_of_extraction}")
+    logger.info(f"Using no of images to combine: {no_of_images_to_combine}")
+    logger.info(f"Radii of extraction: {radii_of_extraction}")
 
     # We now Calibrate/Crop/Align/Combine/Extract set of images in the size of no of combination
     # Note the subtle typing difference between no_of_combined_images and no_of_images_to_combine
@@ -208,8 +215,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 aligned_data, _ = image_alignment(image_data, ref_image_path)
                 aligned_images_data.append(aligned_data)
             except Exception:
-                logging.error(f"Could not align image {raw_images[from_index + index]}")
-                logging.error(f"Skipping combination {from_index}-{to_index}")
+                logger.error(f"Could not align image {raw_images[from_index + index]}")
+                logger.error(f"Skipping combination {from_index}-{to_index}")
                 break
 
         del images_data  # Delete unused object to free up memory
@@ -230,7 +237,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
         )
         aligned_combined_file.create_file(combined_images_data, sample_raw_image_file)
-        logging.info(f"Combined images {from_index}-{to_index}")
+        logger.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
         log_file_combined_file_name = LogFileCombinedFile.generate_file_name(
@@ -247,7 +254,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             aligned_combined_file,
         )
         log_files_to_normalize.append(log_file_combined_file)
-        logging.info(f"Extraction from combination {from_index}-{to_index} completed")
+        logger.info(f"Extraction from combination {from_index}-{to_index} completed")
 
     # Intranight + Internight Normalization
     normalization_helper(
@@ -256,7 +263,6 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_files_to_normalize,
         image_duration,
         night_date,
-        ref_file_path,
         color_ref_file_path,
         output,
     )

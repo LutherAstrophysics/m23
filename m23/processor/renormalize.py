@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 
 from m23.constants import FLUX_LOGS_COMBINED_FOLDER_NAME
@@ -19,12 +20,19 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         night_date = get_date_from_input_night_folder_name(NIGHT_FOLDER.name)
         log_file_path = NIGHT_FOLDER / get_log_file_name(night_date)
         radii_of_extraction = renormalize_dict["processing"]["radii_of_extraction"]
-        logging.basicConfig(
-            filename=log_file_path,
-            format="%(asctime)s %(message)s",
-            level=logging.INFO,
-        )
-        logging.info(f"Running renormalization for radii {radii_of_extraction}")
+
+        logger = logging.getLogger("LOGGER_" + str(night_date))
+        logger.setLevel(logging.INFO)
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+        ch = logging.FileHandler(log_file_path)
+        ch.setFormatter(formatter)
+        logger.addHandler(ch)
+        # Write to std out in addition to writing to a logfile
+        ch2 = logging.StreamHandler(sys.stdout)
+        ch2.setFormatter(formatter)
+        logger.addHandler(ch2)  # Write to stdout
+
+        logger.info(f"Running renormalization for radii {radii_of_extraction}")
 
         FLUX_LOGS_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
         # Create log files combined folder if it doesn't yet exist
@@ -34,9 +42,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             renormalize_dict["reference"]["file"],
         )
 
-        log_files_to_use = [
-            LogFileCombinedFile(file) for file in night["files_to_use"]
-        ]
+        log_files_to_use = [LogFileCombinedFile(file) for file in night["files_to_use"]]
         img_duration = log_files_to_use[0].img_duration()
 
         normalization_helper(

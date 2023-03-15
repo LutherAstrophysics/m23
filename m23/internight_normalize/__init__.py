@@ -1,4 +1,5 @@
 import logging
+import sys
 from pathlib import Path
 from typing import Callable, Dict, List
 
@@ -87,14 +88,8 @@ def internight_normalize_auxiliary(
     """
     # Setup logging
     night_date = get_date_from_input_night_folder_name(night)
-    log_file_path = night / get_log_file_name(night_date)
-    logging.basicConfig(
-        filename=log_file_path,
-        format="%(asctime)s %(message)s",
-        level=logging.INFO,
-    )
-
-    logging.info(f"Running internight color normalization for {radius_of_extraction}")
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+    logger.info(f"Running internight color normalization for {radius_of_extraction}px")
 
     # Flux logs for a particular radius for that night is our primary input to
     # this algorithm We are essentially calculating median values of the flux
@@ -423,7 +418,7 @@ def internight_normalize_auxiliary(
     ColorNormalizedFile(output_file.absolute()).save_data(data_dict, night_date)
 
     # output_file = OUTPUT_FOLDER
-    logging.info(f"Completed internight color normalization for {radius_of_extraction}")
+    logger.info(f"Completed internight color normalization for {radius_of_extraction}")
 
 
 def get_normfactor_for_special_star(
