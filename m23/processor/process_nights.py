@@ -48,15 +48,18 @@ from m23.utils import (
 
 def normalization_helper(
     radii_of_extraction: List[int],
-    FLUX_LOGS_COMBINED_OUTPUT_FOLDER: Path,
     reference_log_file: ReferenceLogFile,
     log_files_to_use: List[LogFileCombinedFile],
     img_duration: float,
     night_date: date,
+    color_ref_file_path: Path,
+    output: Path,
 ):
     """
     This is a normalization helper function extracted so that it can be reused by the renormalization script
     """
+    FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
+    ref_file_path = reference_log_file.path()
     for radius in radii_of_extraction:
         logging.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
@@ -73,6 +76,8 @@ def normalization_helper(
             night_date,
         )
     draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
+    # Internight normalization
+    internight_normalize(output, ref_file_path, color_ref_file_path, radii_of_extraction)
 
 
 def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):
@@ -245,18 +250,17 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_files_to_normalize.append(log_file_combined_file)
         logging.info(f"Extraction from combination {from_index}-{to_index} completed")
 
-    # Intranight Normalization
+    # Intranight + Internight Normalization
     normalization_helper(
         radii_of_extraction,
-        FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
         reference_log_file,
         log_files_to_normalize,
         image_duration,
         night_date,
+        ref_file_path,
+        color_ref_file_path,
+        output,
     )
-
-    # Internight normalization
-    internight_normalize(output, ref_file_path, color_ref_file_path, radii_of_extraction)
 
 
 def start_data_processing_auxiliary(config: Config):
