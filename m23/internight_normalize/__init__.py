@@ -418,7 +418,7 @@ def internight_normalize_auxiliary(
     ColorNormalizedFile(output_file.absolute()).save_data(data_dict, night_date)
 
     # output_file = OUTPUT_FOLDER
-    logger.info(f"Completed internight color normalization for {radius_of_extraction}")
+    logger.info(f"Completed internight color normalization for {radius_of_extraction}px")
 
 
 def get_normfactor_for_special_star(
