@@ -4,12 +4,11 @@ from pathlib import Path
 from typing import Callable, Dict, Iterable
 
 import numpy as np
-from matplotlib import pyplot as plt
-
 from m23.constants import CHARTS_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
 from m23.utils import get_date_from_input_night_folder_name
+from matplotlib import pyplot as plt
 
 
 def draw_normfactors_chart(
@@ -30,6 +29,7 @@ def draw_normfactors_chart(
     # Sort log files
     log_files_used.sort(key=lambda logfile: logfile.img_number())
     flux_log_combined_folder = night_folder / FLUX_LOGS_COMBINED_FOLDER_NAME
+    night_date = get_date_from_input_night_folder_name(night_folder.name)
     chart_folder = night_folder / CHARTS_FOLDER_NAME
     chart_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
 
@@ -54,9 +54,7 @@ def draw_normfactors_chart(
 
         first_img_number = log_files_used[0].img_number()
         last_img_number = log_files_used[-1].img_number()
-        chart_name = (
-            f"normfactors_chart_{first_img_number}-{last_img_number}_{radius_folder.name}.png"
-        )
+        chart_name = f"{night_date} normfactors_chart_{first_img_number}-{last_img_number}_{radius_folder.name}.png"
         chart_file_path = chart_folder / chart_name
         x, y = zip(
             *log_file_number_to_normfactor_map.items()
@@ -65,6 +63,7 @@ def draw_normfactors_chart(
         plt.plot(x, y, "b+")
         plt.xlabel("Log file number")
         plt.ylabel("Normfactor")
+        plt.title(f"{night_date}")
         plt.savefig(chart_file_path)
 
 
@@ -79,7 +78,8 @@ def draw_internight_color_chart(
     Creates and saves color chart for a given night for a particular radius data
     """
     chart_folder = night / CHARTS_FOLDER_NAME
-    chart_name = f"Color Curve Fit Radius {radius}_px.png"
+    night_date = get_date_from_input_night_folder_name(night.name)
+    chart_name = f"{night_date} Color Curve Fit Radius {radius}_px.png"
     chart_save_path = chart_folder / chart_name
     sections = sorted(section_x_values.keys())
     all_x_values = list(
@@ -103,7 +103,6 @@ def draw_internight_color_chart(
     ax = plt.gca()
     ax.set_xlim([0, np.max(all_x_values) + 3 * np.std(all_x_values)])
     ax.set_ylim([0, np.max(all_y_values) + 3 * np.std(all_y_values)])
-    night_date = get_date_from_input_night_folder_name(night.name)
     plt.title(f"{night_date}")
     plt.xlabel("Color")
     plt.ylabel("Flux Ratio")
@@ -121,7 +120,8 @@ def draw_internight_brightness_chart(
     Creates and saves brightness chart for a given night for a particular radius data
     """
     chart_folder = night / CHARTS_FOLDER_NAME
-    chart_name = f"Brightness Curve Fit Radius {radius}_px.png"
+    night_date = get_date_from_input_night_folder_name(night.name)
+    chart_name = f"{night_date} Brightness Curve Fit Radius {radius}_px.png"
     chart_save_path = chart_folder / chart_name
     sections = sorted(section_x_values.keys())
     all_x_values = list(
@@ -143,7 +143,6 @@ def draw_internight_brightness_chart(
         y_new = [section_fit_fn[section](i) for i in x_new]
         plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2)
 
-    night_date = get_date_from_input_night_folder_name(night.name)
     plt.title(f"{night_date}")
     plt.xlabel("Magnitudes")
     plt.ylabel("Flux Ratio")
