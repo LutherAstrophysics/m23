@@ -4,6 +4,7 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import Dict
 
+import numpy as np
 from m23.constants import COLOR_NORMALIZED_FILENAME_DATE_FORMAT
 from m23.utils import get_radius_folder_name
 
@@ -25,7 +26,7 @@ class ColorNormalizedFile:
 
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
-    file_name_re = re.compile('(\d{2}-\d{2}-\d{2})_Normalized_(.*)\.txt')
+    file_name_re = re.compile('(\d{4}-\d{2}-\d{2})_Normalized_(.*)\.txt')
 
     @classmethod
     def get_file_name(cls, night_date: date, radius_of_extraction: int) -> str:
@@ -67,8 +68,8 @@ class ColorNormalizedFile:
         self.__read_data = True
         with self.path().open() as fd:
             lines = [line.strip() for line in fd.readlines()]
-            lines = lines[self.header_rows :]  # Skip the header rows
-            self.__data = []
+            lines = lines[3 :]  # Skip the header rows
+            self.__data = {}
             for line in lines:
                 star_data = line.split()
                 star_no = int(star_data[0])
@@ -76,11 +77,14 @@ class ColorNormalizedFile:
                 normfactor = float(star_data[2])
                 measured_mean_ri = float(star_data[3])
                 used_mean_ri = float(star_data[4])
-                lines.append(self.StarData(
-                    star_no=star_no, 
+                self.__data[star_no] = self.StarData(
                     normalized_median_flux=normalized_median_flux, 
                     norm_factor=normfactor, 
-                    measured_mean_r_i=measured_mean_ri, used_mean_r_i=used_mean_ri))
+                    measured_mean_r_i=measured_mean_ri, used_mean_r_i=used_mean_ri,
+                    attendance=np.nan,
+                    reference_log_adu=np.nan,
+                    median_flux=np.nan
+                    )
         self.__read_data = True  # Marks file as read
 
 
@@ -98,7 +102,7 @@ class ColorNormalizedFile:
             # The first capture group contains the night date
             return datetime.strptime(
                 self.file_name_re.match(self.path().name)[1],
-                COLOR_NORMALIZED_FILENAME_DATE_FORMAT,
+                "%Y-%m-%d",
             ).date()
 
     def data(self):

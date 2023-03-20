@@ -2,10 +2,10 @@ from pathlib import Path
 from typing import Callable, List, TypedDict
 
 import toml
-
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME
 from m23.file.color_normalized_file import ColorNormalizedFile
-from m23.utils import get_date_from_input_night_folder_name
+from m23.utils import (get_date_from_input_night_folder_name,
+                       get_radius_folder_name)
 
 
 class NightsCSVConfig(TypedDict):
@@ -48,18 +48,18 @@ def validate_nights_csv_config_file(file_path: Path, on_success: Callable[[Night
         except ValueError:
             raise Exception(f"{night} name doesn't match naming conventions")
         color_normalized_file_name = ColorNormalizedFile.get_file_name(night_date, radius)
-        cn_file_path = night_path / COLOR_NORMALIZED_FOLDER_NAME / color_normalized_file_name
+        cn_file_path = night_path / COLOR_NORMALIZED_FOLDER_NAME / get_radius_folder_name(radius) / color_normalized_file_name
         if not cn_file_path.exists():
             raise Exception(f"Color normalized file for {night_date} doesn't exist with name {cn_file_path.name}")
         color_normalized_files.append(cn_file_path)
         
-    output_location = config_data.get('location')
+    output_location = config_data.get('output')
     # Output key exists
     if not output_location:
         raise Exception("Can't find 'output' in config file")
     # Output dir exists
     output_path = Path(output_location)
-    if output_path.is_dir() or not output_path.exists():
+    if not output_path.is_dir() or not output_path.exists():
         raise Exception("Output path must be an existing directory")
 
     on_success({'color_normalized_files': color_normalized_files, 'radius': radius, 'output': output_path})

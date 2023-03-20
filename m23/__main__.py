@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 
 from m23 import start_data_processing
-from m23.processor import generate_masterflat, renormalize
+from m23.processor import create_nights_csv, generate_masterflat, renormalize
 
 
 def process(args):
@@ -50,6 +50,19 @@ def mf(args):
         return
     generate_masterflat(config_file.absolute())
 
+def csv(args): 
+    """
+    This is a subcommand that generates the csv file which holds the stars' flux values
+    for a year, this will be later used to get the data onto our server 
+    """
+    config_file: Path = args.config_file
+    if not config_file.exists():
+        sys.stdout.write("Provided file doesn't exist\n")
+        return
+    if not config_file.is_file():
+        sys.stdout.write("Invalid configuration file provided\n")
+        return
+    create_nights_csv(config_file.absolute())
 
 parser = argparse.ArgumentParser(prog="M23 Data processor", epilog="Made in Rapti")
 subparsers = parser.add_subparsers()
@@ -76,10 +89,18 @@ norm_parser.set_defaults(func=norm)
 # Masterflat generator parser
 mf_parser = subparsers.add_parser("mf", help="Generate masterflat for a night from its raw flats")
 mf_parser.add_argument(
-    "config_file", type=Path, help="Path to toml configuration file for renormalization"
+    "config_file", type=Path, help="Path to toml configuration file for master flat generatation"
 )  # positional argument
 # Adding a default value so we later know which subcommand was invoked
 mf_parser.set_defaults(func=mf)
+
+# Csv generator parser 
+csv_parser = subparsers.add_parser("csv", help="Generate csv flux file for a given year")
+csv_parser.add_argument(
+    "config_file", type=Path, help="Path to toml configuration file for csv generation"
+)  # positional argument
+# Adding a default value so we later know which subcommand was invoked
+csv_parser.set_defaults(func=csv)
 
 args = parser.parse_args()
 if hasattr(args, "func"):
