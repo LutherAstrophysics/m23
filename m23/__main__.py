@@ -50,10 +50,11 @@ def mf(args):
         return
     generate_masterflat(config_file.absolute())
 
-def csv(args): 
+
+def csv(args):
     """
     This is a subcommand that generates the csv file which holds the stars' flux values
-    for a year, this will be later used to get the data onto our server 
+    for a year, this will be later used to get the data onto our server
     """
     config_file: Path = args.config_file
     if not config_file.exists():
@@ -63,6 +64,7 @@ def csv(args):
         sys.stdout.write("Invalid configuration file provided\n")
         return
     create_nights_csv(config_file.absolute())
+
 
 parser = argparse.ArgumentParser(prog="M23 Data processor", epilog="Made in Rapti")
 subparsers = parser.add_subparsers()
@@ -94,7 +96,7 @@ mf_parser.add_argument(
 # Adding a default value so we later know which subcommand was invoked
 mf_parser.set_defaults(func=mf)
 
-# Csv generator parser 
+# CSV generator parser
 csv_parser = subparsers.add_parser("csv", help="Generate csv flux file for a given year")
 csv_parser.add_argument(
     "config_file", type=Path, help="Path to toml configuration file for csv generation"
