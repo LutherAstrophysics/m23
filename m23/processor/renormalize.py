@@ -32,7 +32,11 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         ch2.setFormatter(formatter)
         logger.addHandler(ch2)  # Write to stdout
 
-        logger.info(f"Running renormalization for radii {radii_of_extraction}")
+        first_image = night["first_logfile_number"]
+        last_image = night["last_logfile_number"]
+        logger.info(
+            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image}"
+        )
 
         FLUX_LOGS_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
         # Create log files combined folder if it doesn't yet exist
