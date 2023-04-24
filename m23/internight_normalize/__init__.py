@@ -199,14 +199,20 @@ def internight_normalize_auxiliary(
         # Signal ratios
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include]
 
+        # Sort by x
+        x_sort_indices = np.argsort(x_values)
+        x_values - np.array(x_values)[x_sort_indices]
+        y_values - np.array(y_values)[x_sort_indices]
+        stars_to_include = np.array(stars_to_include)[x_sort_indices]
+
         # These lines of code check to make sure the first or last data point in
         # the signal value isn't an outlier.  First or last data points tend to
         # greatly affect the polynomial fit, so if the data points are 2
         # standard deviations away from the next closest point, they are
         # replaced with the mean of the next two closest points.
-        std_signals = np.std(y_values)
+        std_signals = np.std(y_values, ddof=1)
         beginning_diff = abs(y_values[0] - y_values[1]) / std_signals
-        ending_diff = abs(y_values[0] - y_values[1]) / std_signals
+        ending_diff = abs(y_values[-1] - y_values[-2]) / std_signals
         if beginning_diff > 2 or ending_diff > 2:
             modified_y_value = y_values.copy()  # Note making copy is important
             if beginning_diff > 2:
@@ -244,11 +250,11 @@ def internight_normalize_auxiliary(
     for section_number in sections:
         y_differences += section_data[section_number]["y_differences"]
 
-    y_diff_std = np.std(y_differences)
+    y_diff_std = np.std(y_differences, ddof=1)
     y_diff_mean = np.mean(y_differences)
     y_diff_min = y_diff_mean - 5 * y_diff_std
     y_diff_max = y_diff_mean + 5 * y_diff_std
-    y_no_of_bins = 11  # We want to use 11 bins, like IDL code
+    y_no_of_bins = 10  # We want to use 10 bins, like IDL code
     bin_frequencies, bins_edges = np.histogram(
         y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins
     )
@@ -262,8 +268,8 @@ def internight_normalize_auxiliary(
 
     # Now we find stars for which y_difference is more than 2std away from mean
     stars_outside_threshold = []
-    top_threshold = mean + 2 * sigma
-    bottom_threshold = mean - 2 * sigma
+    top_threshold = mean + 2.5 * sigma
+    bottom_threshold = mean - 2.5 * sigma
     # We now create a list of stars that are outside the specified threshold
     for section_number in sections:
         section_y_differences = section_data[section_number]["y_differences"]
