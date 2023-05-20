@@ -45,6 +45,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         reference_log_file = ReferenceLogFile(
             renormalize_dict["reference"]["file"],
         )
+        logfile_combined_reference_logfile = LogFileCombinedFile(renormalize_dict["reference"]["logfile"])
 
         # Ensure color ref file path is str
         color_ref_file_path = str(renormalize_dict["reference"]["color"])
@@ -61,6 +62,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             night_date,
             color_ref_file_path,
             NIGHT_FOLDER,
+            logfile_combined_reference_logfile
         )
 
 

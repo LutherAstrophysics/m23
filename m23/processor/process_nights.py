@@ -53,13 +53,13 @@ def normalization_helper(
     night_date: date,
     color_ref_file_path: Path,
     output: Path,
+    logfile_combined_reference_logfile : LogFileCombinedFile
+
 ):
     """
     This is a normalization helper function extracted so that it can be reused by the renormalization script
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
-    ref_file_path = reference_log_file.path()
-
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     for radius in radii_of_extraction:
@@ -79,7 +79,7 @@ def normalization_helper(
         )
     draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
     # Internight normalization
-    internight_normalize(output, ref_file_path, color_ref_file_path, radii_of_extraction)
+    internight_normalize(output, logfile_combined_reference_logfile, color_ref_file_path, radii_of_extraction)
 
 
 def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):
@@ -116,6 +116,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     ref_file_path = config["reference"]["file"]
     color_ref_file_path = config["reference"]["color"]
     reference_log_file = ReferenceLogFile(ref_file_path)
+    logfile_combined_reference_logfile = LogFileCombinedFile(config["reference"]["logfile"])
 
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]
@@ -265,6 +266,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         night_date,
         color_ref_file_path,
         output,
+        logfile_combined_reference_logfile
     )
 
 

@@ -20,6 +20,7 @@ class RenormalizeConfigProcessing(TypedDict):
 
 class RenormalizeConfigReference(TypedDict):
     file: Path | str
+    logfile: Path | str
     color: Path | str
 
 
@@ -75,6 +76,13 @@ def is_valid(config: RenormalizeConfig) -> bool:
     if not (ref_file.exists() and ref_file.is_file() and ref_file.suffix == ".txt"):
         sys.stderr.write("Make sure the provided reference file exits and has txt extension\n")
         return False
+
+    # Validate logfile file
+    logfile = Path(config["reference"]["logfile"])
+    if not (logfile.exists() and logfile.is_file() and logfile.suffix == ".txt"):
+        sys.stderr.write("Make sure the provided logfile file exits and has txt extension\n")
+        return False
+
 
     color_ref_file = Path(config["reference"]["color"])
     if not (
@@ -179,7 +187,7 @@ def validate_renormalize_config_file(
         case {
             "processing": {"radii_of_extraction": list(_)},
             "input": {"nights": list(_)},
-            "reference": {"file": str(_), "color": str(_)},
+            "reference": {"file": str(_), "color": str(_), "logfile" : str(_)},
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:

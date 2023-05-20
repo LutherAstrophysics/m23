@@ -47,6 +47,7 @@ class ConfigInput(TypedDict):
 class ConfigReference(TypedDict):
     image: str | Path
     file: str | Path
+    logfile : str | Path
     color: str | Path
 
 
@@ -312,7 +313,7 @@ def validate_input_nights(list_of_nights: List[ConfigInputNight]) -> bool:
 
 
 def validate_reference_files(
-    reference_image: str, reference_file: str, color_ref_file: str
+    reference_image: str, reference_file: str, color_ref_file: str, logfile : str
 ) -> bool:
     """
     Returns True if reference_image and reference_file paths exist
@@ -320,6 +321,7 @@ def validate_reference_files(
     img_path = Path(reference_image)
     file_path = Path(reference_file)
     color_path = Path(color_ref_file)
+    logfile_path = Path(logfile)
     if not (
         img_path.exists() and img_path.is_file() and img_path.suffix == ".fit"
     ):
@@ -343,6 +345,15 @@ def validate_reference_files(
     ):
         sys.stderr.write(
             "Make sure that the color reference file exists and has .txt extension\n"
+        )
+        return False
+    if not (
+        logfile_path.exists()
+        and logfile_path.is_file()
+        and logfile_path.suffix == ".txt"
+    ):
+        sys.stderr.write(
+            "Make sure that the log file exists and has .txt extension\n"
         )
         return False
     return True
@@ -372,6 +383,7 @@ def validate_file(
             "reference": {
                 "image": str(reference_image),
                 "file": str(reference_file),
+                "logfile": str(logfile),
                 "color": str(color_ref_file),
             },
             "input": {"nights": list(list_of_nights)},
@@ -381,7 +393,7 @@ def validate_file(
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)
             and validate_reference_files(
-                reference_image, reference_file, color_ref_file
+                reference_image, reference_file, color_ref_file, logfile
             )
         ):
             on_success(
