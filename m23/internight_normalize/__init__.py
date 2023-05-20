@@ -1,5 +1,4 @@
 import logging
-import sys
 from pathlib import Path
 from typing import Callable, Dict, List
 
@@ -12,11 +11,7 @@ from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.reference_log_file import ReferenceLogFile
 from m23.file.ri_color_file import RIColorFile
-from m23.utils import (
-    get_date_from_input_night_folder_name,
-    get_log_file_name,
-    get_radius_folder_name,
-)
+from m23.utils import get_date_from_input_night_folder_name, get_radius_folder_name
 from m23.utils.flux_to_magnitude import flux_to_magnitude
 
 # Note that this code is implemented based on the internight normalization in IDL
