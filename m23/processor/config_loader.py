@@ -413,5 +413,5 @@ def validate_file(
             )
         case _:
             sys.stderr.write(
-                "Stopping because the provided configuration file has issues.\n"
+                "Stopping because the provided configuration file doesn't match the required format.\n"
             )
