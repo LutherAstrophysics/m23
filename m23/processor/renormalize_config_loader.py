@@ -7,6 +7,7 @@ import toml
 from typing_extensions import NotRequired
 
 from m23.constants import LOG_FILES_COMBINED_FOLDER_NAME
+from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.processor.config_loader import (
     is_night_name_valid,
     is_valid_radii_of_extraction,
@@ -82,6 +83,16 @@ def is_valid(config: RenormalizeConfig) -> bool:
     if not (logfile.exists() and logfile.is_file() and logfile.suffix == ".txt"):
         sys.stderr.write("Make sure the provided logfile file exits and has txt extension\n")
         return False
+
+    # Make sure that the logfile combined reference file has 
+    # all radii of extraction data
+    available_radii = LogFileCombinedFile(logfile).get_star_data(1).radii_adu.keys()
+    for i in config["processing"]["radii_of_extraction"]:
+        if i not in available_radii:
+            sys.stderr.write(
+                f"Radius {i} ADU data not present in provided logfile combined file. \n"
+            )
+            return False
 
 
     color_ref_file = Path(config["reference"]["color"])
