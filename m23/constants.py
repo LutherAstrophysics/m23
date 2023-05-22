@@ -24,6 +24,11 @@ CHARTS_FOLDER_NAME = "Charts"
 MASTER_DARK_NAME = "masterdark.fit"
 MASTER_FLAT_NAME = "masterflat.fit"
 
+# INTRA_NIGHT
+# Any star that appears more than this threshold away from the reference file
+# will be masked out during intra night normalization
+INTRA_NIGHT_IMPACT_THRESHOLD_PIXELS = 2
+
 # MISC
 CAMERA_CHANGE_2022_DATE = date(2022, 6, 16)
 TYPICAL_NEW_CAMERA_CROP_REGION = [

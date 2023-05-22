@@ -5,6 +5,7 @@ from typing import List
 
 import numpy as np
 
+from m23.constants import INTRA_NIGHT_IMPACT_THRESHOLD_PIXELS
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
@@ -80,7 +81,7 @@ def normalize_log_files(
             star_x_reffile, star_y_reffile = reference_log_file.get_star_xy(star_no)
             star_x_position, star_y_position = star_data_in_log_file.x, star_data_in_log_file.y
             
-            if math.sqrt((star_x_reffile - star_x_position) ** 2 + (star_y_reffile - star_y_position) ** 2) > 1:
+            if math.sqrt((star_x_reffile - star_x_position) ** 2 + (star_y_reffile - star_y_position) ** 2) > INTRA_NIGHT_IMPACT_THRESHOLD_PIXELS:
                 adu_of_current_log_file[star_index] = 0
             
         all_log_files.append(adu_of_current_log_file)
