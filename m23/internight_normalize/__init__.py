@@ -1,5 +1,4 @@
 import logging
-import sys
 from pathlib import Path
 from typing import Callable, Dict, List
 
@@ -10,13 +9,9 @@ from m23.charts import draw_internight_brightness_chart, draw_internight_color_c
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
-from m23.file.reference_log_file import ReferenceLogFile
+from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.ri_color_file import RIColorFile
-from m23.utils import (
-    get_date_from_input_night_folder_name,
-    get_log_file_name,
-    get_radius_folder_name,
-)
+from m23.utils import get_date_from_input_night_folder_name, get_radius_folder_name
 from m23.utils.flux_to_magnitude import flux_to_magnitude
 
 # Note that this code is implemented based on the internight normalization in IDL
@@ -25,7 +20,7 @@ from m23.utils.flux_to_magnitude import flux_to_magnitude
 
 def internight_normalize(
     night: Path,
-    reference_file: Path,
+    logfile_combined_reference_file: LogFileCombinedFile,
     color_file: Path,
     radii_of_extraction: List[int],
 ) -> None:
@@ -68,12 +63,12 @@ def internight_normalize(
     """
 
     for radius in radii_of_extraction:
-        internight_normalize_auxiliary(night, reference_file, color_file, radius)
+        internight_normalize_auxiliary(night, logfile_combined_reference_file, color_file, radius)
 
 
 def internight_normalize_auxiliary(
     night: Path,
-    reference_file: Path,
+    logfile_combined_reference_file: LogFileCombinedFile,
     color_file: Path,
     radius_of_extraction: int,
 ):
@@ -106,7 +101,6 @@ def internight_normalize_auxiliary(
     flux_logs_files = list(filter(lambda x: x.is_valid_file_name(), flux_logs_files))
 
     color_data_file = RIColorFile(color_file)
-    reference_file_data = ReferenceLogFile(reference_file)
 
     # This dictionary holds the data for each
     # Star's median ADU, normalization factor and normalized ADU
@@ -120,7 +114,7 @@ def internight_normalize_auxiliary(
             color_data_file.get_star_color(log_file.star_number()),
             np.nan,  # Actual color value used
             log_file.attendance(),  # Attendance of the star for the night
-            reference_file_data.get_star_adu(log_file.star_number()) or np.nan,
+            logfile_combined_reference_file.get_star_data(log_file.star_number()).radii_adu[radius_of_extraction] or np.nan
         )
         for log_file in flux_logs_files
     }

@@ -7,6 +7,7 @@ import toml
 from typing_extensions import NotRequired
 
 from m23.constants import LOG_FILES_COMBINED_FOLDER_NAME
+from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.processor.config_loader import (
     is_night_name_valid,
     is_valid_radii_of_extraction,
@@ -20,6 +21,7 @@ class RenormalizeConfigProcessing(TypedDict):
 
 class RenormalizeConfigReference(TypedDict):
     file: Path | str
+    logfile: Path | str
     color: Path | str
 
 
@@ -75,6 +77,23 @@ def is_valid(config: RenormalizeConfig) -> bool:
     if not (ref_file.exists() and ref_file.is_file() and ref_file.suffix == ".txt"):
         sys.stderr.write("Make sure the provided reference file exits and has txt extension\n")
         return False
+
+    # Validate logfile file
+    logfile = Path(config["reference"]["logfile"])
+    if not (logfile.exists() and logfile.is_file() and logfile.suffix == ".txt"):
+        sys.stderr.write("Make sure the provided logfile file exits and has txt extension\n")
+        return False
+
+    # Make sure that the logfile combined reference file has 
+    # all radii of extraction data
+    available_radii = LogFileCombinedFile(logfile).get_star_data(1).radii_adu.keys()
+    for i in config["processing"]["radii_of_extraction"]:
+        if i not in available_radii:
+            sys.stderr.write(
+                f"Radius {i} ADU data not present in provided logfile combined file. \n"
+            )
+            return False
+
 
     color_ref_file = Path(config["reference"]["color"])
     if not (
@@ -179,7 +198,7 @@ def validate_renormalize_config_file(
         case {
             "processing": {"radii_of_extraction": list(_)},
             "input": {"nights": list(_)},
-            "reference": {"file": str(_), "color": str(_)},
+            "reference": {"file": str(_), "color": str(_), "logfile" : str(_)},
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:

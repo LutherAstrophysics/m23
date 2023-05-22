@@ -1,3 +1,4 @@
+import logging
 from typing import Iterable
 
 import numpy as np
@@ -17,9 +18,13 @@ def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, r
     y_coordinates = log_file_combined_file.get_x_position_column()
     x_coordinates = log_file_combined_file.get_y_position_column()
 
+    night_date = log_file_combined_file.night_date()
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+
     # We now alter the x and the y values of the stars that don't have 
     # any ADU value because we don't want to consider them as the stars in 
-    # the corners
+    # the corners. Note that we reset this value after calculating stars to ignore
+    stars_with_bogus_set = {} 
 
     for index in range(len(log_file_combined_file.data())):
         star_no = index + 1
@@ -28,6 +33,8 @@ def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, r
             # Set a bogus value on the star's x and y coordinate 
             # so that it won't affect corner star calculation
             bogus = 512
+            stars_with_bogus_set[star_no] = [x_coordinates[index], y_coordinates[index]]
+            logger.debug(f"Intranight Linfit. Setting bogus x, y as {bogus} to star {star_no}. Found star data {star_data}. Logfile {log_file_combined_file}")
             x_coordinates[index] = bogus
             y_coordinates[index] = bogus
         
@@ -83,6 +90,16 @@ def get_star_to_ignore_bit_vector(log_file_combined_file: LogFileCombinedFile, r
                 bit_vector.append(1)
         else:
             bit_vector.append(0)
+
+
+    # Cleanup
+    # Reverse the x, y co-ordinates of the stars with where we set bogus co-ordinates
+    for star, actual_coordinates in stars_with_bogus_set.items():
+        actual_x, actual_y = actual_coordinates
+        x_coordinates[star - 1] = actual_x
+        y_coordinates[star - 1] = actual_y
+
+
 
     return bit_vector
 

@@ -58,6 +58,8 @@ radii_of_extraction = [3, 4, 5]
 # The image file is an actual fit image while the reffile refers to the stats file for that image
 image = "C://Data Processing/Reference/RefImage.fit"
 file = "C://Data Processing/Reference/reffile.txt"
+# Logfile means log file combined file. This sample log file is what internight normalization normalizes against
+logfile = "C://Data Processing/Reference/logfile.txt"
 color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
@@ -111,6 +113,7 @@ radii_of_extraction = [3, 4, 5,]
 
 [reference]
 file = "C://Data Processing/Reference/refile.txt"
+logfile = "C://Data Processing/Reference/logfile.txt"
 color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 

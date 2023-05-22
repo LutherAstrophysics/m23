@@ -13,7 +13,7 @@ def process(args):
     """
     config_file: Path = args.config_file
     if not config_file.exists():
-        sys.stdout.write("Provided file doesn't exist\n")
+        sys.stdout.write(f"Provided file {config_file} doesn't exist\n")
         return
     if not config_file.is_file():
         sys.stdout.write("Invalid configuration file provided\n")
@@ -28,7 +28,7 @@ def norm(args):
     """
     config_file: Path = args.config_file
     if not config_file.exists():
-        sys.stdout.write("Provided file doesn't exist\n")
+        sys.stdout.write(f"Provided file {config_file} doesn't exist\n")
         return
     if not config_file.is_file():
         sys.stdout.write("Invalid configuration file provided\n")
@@ -43,7 +43,7 @@ def mf(args):
     """
     config_file: Path = args.config_file
     if not config_file.exists():
-        sys.stdout.write("Provided file doesn't exist\n")
+        sys.stdout.write(f"Provided file {config_file} doesn't exist\n")
         return
     if not config_file.is_file():
         sys.stdout.write("Invalid configuration file provided\n")
@@ -58,7 +58,7 @@ def csv(args):
     """
     config_file: Path = args.config_file
     if not config_file.exists():
-        sys.stdout.write("Provided file doesn't exist\n")
+        sys.stdout.write(f"Provided file {config_file} doesn't exist\n")
         return
     if not config_file.is_file():
         sys.stdout.write("Invalid configuration file provided\n")

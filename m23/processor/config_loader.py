@@ -14,6 +14,7 @@ from m23.constants import (
     M23_RAW_IMAGES_FOLDER_NAME,
     TYPICAL_NEW_CAMERA_CROP_REGION,
 )
+from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.utils import (
     get_darks,
     get_date_from_input_night_folder_name,
@@ -47,6 +48,7 @@ class ConfigInput(TypedDict):
 class ConfigReference(TypedDict):
     image: str | Path
     file: str | Path
+    logfile : str | Path
     color: str | Path
 
 
@@ -312,7 +314,7 @@ def validate_input_nights(list_of_nights: List[ConfigInputNight]) -> bool:
 
 
 def validate_reference_files(
-    reference_image: str, reference_file: str, color_ref_file: str
+    reference_image: str, reference_file: str, color_ref_file: str, logfile : str, radii : List[int]
 ) -> bool:
     """
     Returns True if reference_image and reference_file paths exist
@@ -320,6 +322,7 @@ def validate_reference_files(
     img_path = Path(reference_image)
     file_path = Path(reference_file)
     color_path = Path(color_ref_file)
+    logfile_path = Path(logfile)
     if not (
         img_path.exists() and img_path.is_file() and img_path.suffix == ".fit"
     ):
@@ -345,6 +348,26 @@ def validate_reference_files(
             "Make sure that the color reference file exists and has .txt extension\n"
         )
         return False
+    if not (
+        logfile_path.exists()
+        and logfile_path.is_file()
+        and logfile_path.suffix == ".txt"
+    ):
+        sys.stderr.write(
+            "Make sure that the log file exists and has .txt extension\n"
+        )
+        return False
+    
+    # Make sure that the logfile combined reference file has 
+    # all radii of extraction data
+    available_radii = LogFileCombinedFile(logfile_path).get_star_data(1).radii_adu.keys()
+    for i in radii:
+        if i not in available_radii:
+            sys.stderr.write(
+                f"Radius {i} ADU data not present in provided logfile combined file. \n"
+            )
+            return False
+
     return True
 
 
@@ -372,6 +395,7 @@ def validate_file(
             "reference": {
                 "image": str(reference_image),
                 "file": str(reference_file),
+                "logfile": str(logfile),
                 "color": str(color_ref_file),
             },
             "input": {"nights": list(list_of_nights)},
@@ -381,7 +405,7 @@ def validate_file(
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)
             and validate_reference_files(
-                reference_image, reference_file, color_ref_file
+                reference_image, reference_file, color_ref_file, logfile, radii_of_extraction
             )
         ):
             on_success(
@@ -389,5 +413,5 @@ def validate_file(
             )
         case _:
             sys.stderr.write(
-                "Stopping because the provided configuration file has issues.\n"
+                "Stopping because the provided configuration file doesn't match the required format.\n"
             )

@@ -20,6 +20,7 @@ radii_of_extraction = [3, 4, 5,]
 # The image file is an actual fit image while the reffile refers to the stats file for that image
 image = "C://Data Processing/Reference/RefImage.fit" 
 file = "C://Data Processing/Reference/reffile.txt"
+logfile = "C://Data Processing/Reference/logfile.txt"
 color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
