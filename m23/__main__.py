@@ -2,7 +2,7 @@ import argparse
 import sys
 from pathlib import Path
 
-from m23 import start_data_processing
+from m23.processor import start_data_processing
 from m23.processor import create_nights_csv, generate_masterflat, renormalize
 
 

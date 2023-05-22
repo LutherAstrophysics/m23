@@ -1,3 +1,5 @@
+[**See docs**](https://lutherastrophysics.github.io/analysis/m23.html)
+
 # M23 Data Processing
 
 This is a library of tools that compose raw image processing of fits files. It
