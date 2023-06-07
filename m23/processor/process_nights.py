@@ -235,7 +235,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
         # Combination
         combined_images_data = np.sum(aligned_images_data, axis=0)
-        sample_raw_image_file = raw_images[from_index]
+
+        # We take the middle image from the combination as the sample This is
+        # the image whose header will be copied to the combined image fit file
+        midpoint_index = from_index + no_of_combined_images // 2
+        sample_raw_image_file = raw_images[midpoint_index]
+
         aligned_combined_image_number = to_index // no_of_images_to_combine
         aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
             image_duration, aligned_combined_image_number
