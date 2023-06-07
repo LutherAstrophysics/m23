@@ -14,6 +14,28 @@ class NightsCSVConfig(TypedDict):
     radius: int
 
 
+def handle_night(night, radius, color_normalized_files):
+    night_path = Path(night)
+    if not night_path.exists():
+        raise Exception(f"night {night} doesn't exist")
+    try:
+        night_date = get_date_from_input_night_folder_name(night_path)
+    except ValueError:
+        raise Exception(f"{night} name doesn't match naming conventions")
+    color_normalized_file_name = ColorNormalizedFile.get_file_name(night_date, radius)
+    cn_file_path = (
+        night_path
+        / COLOR_NORMALIZED_FOLDER_NAME
+        / get_radius_folder_name(radius)
+        / color_normalized_file_name
+    )
+    if not cn_file_path.exists():
+        raise Exception(
+            f"Color normalized file for {night_date} doesn't exist with name {cn_file_path.name}"
+        )
+    color_normalized_files.append(cn_file_path)
+
+
 def validate_nights_csv_config_file(
     file_path: Path, on_success: Callable[[NightsCSVConfig], None]
 ):
@@ -43,27 +65,7 @@ def validate_nights_csv_config_file(
     color_normalized_files = []
 
     for night in input_nights:
-        night_path = Path(night)
-        if not night_path.exists():
-            raise Exception(f"night {night} doesn't exist")
-        try:
-            night_date = get_date_from_input_night_folder_name(night_path)
-        except ValueError:
-            raise Exception(f"{night} name doesn't match naming conventions")
-        color_normalized_file_name = ColorNormalizedFile.get_file_name(
-            night_date, radius
-        )
-        cn_file_path = (
-            night_path
-            / COLOR_NORMALIZED_FOLDER_NAME
-            / get_radius_folder_name(radius)
-            / color_normalized_file_name
-        )
-        if not cn_file_path.exists():
-            raise Exception(
-                f"Color normalized file for {night_date} doesn't exist with name {cn_file_path.name}"
-            )
-        color_normalized_files.append(cn_file_path)
+        handle_night(night, radius, color_normalized_files)
 
     output_location = config_data.get("output")
     # Output key exists
