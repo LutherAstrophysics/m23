@@ -50,7 +50,9 @@ def draw_normfactors_chart(
             )
             raise ValueError("Mismatch between number of logfiles and the normfactors")
         for index, log_file in enumerate(log_files_used):
-            log_file_number_to_normfactor_map[log_file.img_number()] = normfactor_data[index]
+            log_file_number_to_normfactor_map[log_file.img_number()] = normfactor_data[
+                index
+            ]
 
         first_img_number = log_files_used[0].img_number()
         last_img_number = log_files_used[-1].img_number()
@@ -83,10 +85,14 @@ def draw_internight_color_chart(
     chart_save_path = chart_folder / chart_name
     sections = sorted(section_x_values.keys())
     all_x_values = list(
-        itertools.chain.from_iterable([section_x_values[section] for section in sections])
+        itertools.chain.from_iterable(
+            [section_x_values[section] for section in sections]
+        )
     )
     all_y_values = list(
-        itertools.chain.from_iterable([section_y_values[section] for section in sections])
+        itertools.chain.from_iterable(
+            [section_y_values[section] for section in sections]
+        )
     )
     plt.figure(dpi=300, figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "black"
@@ -125,10 +131,14 @@ def draw_internight_brightness_chart(
     chart_save_path = chart_folder / chart_name
     sections = sorted(section_x_values.keys())
     all_x_values = list(
-        itertools.chain.from_iterable([section_x_values[section] for section in sections])
+        itertools.chain.from_iterable(
+            [section_x_values[section] for section in sections]
+        )
     )
     all_y_values = list(
-        itertools.chain.from_iterable([section_y_values[section] for section in sections])
+        itertools.chain.from_iterable(
+            [section_y_values[section] for section in sections]
+        )
     )
     plt.figure(dpi=300, figsize=(10, 6))
     plt.rcParams["axes.facecolor"] = "black"

@@ -104,7 +104,6 @@ def applyCalibration(
 
 
 def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue):
-
     ### For all hot pixel positions that aren't at edges (in the master dark)
     ### Check if the pixel value in calibrated( or RAW ??? TO FIX) img is abnormally
     ###   high + one of the surrounding pixels is abnormally high too,
@@ -142,7 +141,9 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 
     def doGaussian():
         # print("doing gaussian")
-        surroundingMatrixGaussBox = calibratedImageData[row - 5 : row + 6, col - 5 : col + 6]
+        surroundingMatrixGaussBox = calibratedImageData[
+            row - 5 : row + 6, col - 5 : col + 6
+        ]
 
         ### Create a gaussian matrix for the surrounding matrix
         ### Let the hot pixel value equal to the middle position value of the gaussian box
@@ -154,7 +155,9 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
     def takeAverage():
         surroundingMatrix = calibratedImageData[row - 1 : row + 2, col - 1 : col + 2]
         surroundingSum = np.sum(surroundingMatrix)
-        surroundingMatrixAverageWithoutCenter = (surroundingSum - calibratedImageData[row][col]) / 8
+        surroundingMatrixAverageWithoutCenter = (
+            surroundingSum - calibratedImageData[row][col]
+        ) / 8
         calibratedImageData[row][col] = surroundingMatrixAverageWithoutCenter
 
     doGaussian() if needsGaussian() else takeAverage()
@@ -176,8 +179,9 @@ def recalibrateAtHotLocation(location, calibratedImageData, highValue, lowValue)
 ###   returns array of calibrated image data,
 
 
-def calibrateImages(masterDarkData, masterFlatData, listOfImagesData, masterBiasData=np.array([])):
-
+def calibrateImages(
+    masterDarkData, masterFlatData, listOfImagesData, masterBiasData=np.array([])
+):
     ### We save the hot pixels, which are 3 standard deviation higher than the median
     ### We will save their positions (x,y)
     stdInMasterDark = np.std(masterDarkData)
@@ -204,7 +208,8 @@ def calibrateImages(masterDarkData, masterFlatData, listOfImagesData, masterBias
     filteredHotPixelPositions = tuple(
         filter(
             lambda row_column: not (
-                row_column[0] > totalRows - edgeSize or row_column[1] > totalColumns - edgeSize
+                row_column[0] > totalRows - edgeSize
+                or row_column[1] > totalColumns - edgeSize
             ),
             topLeftFiltered,
         )

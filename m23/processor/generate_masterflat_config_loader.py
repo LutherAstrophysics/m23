@@ -36,7 +36,9 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
     # Verify that the CALIBRATION FOLDER exists
     CALIBRATION_FOLDER_PATH = NIGHT_INPUT_PATH / INPUT_CALIBRATION_FOLDER_NAME
     if not CALIBRATION_FOLDER_PATH.exists():
-        sys.stderr.write(f"Calibration folder {CALIBRATION_FOLDER_PATH} doesn't exist.\n")
+        sys.stderr.write(
+            f"Calibration folder {CALIBRATION_FOLDER_PATH} doesn't exist.\n"
+        )
         return False
 
     # Verify that the night contains flats to use
@@ -81,7 +83,9 @@ def is_image_properties_valid(image_config: ConfigImage) -> bool:
                 for j in i:
                     valid_values = all([type(x) == int and x >= 0 for x in j])
                     if not valid_values:
-                        sys.stderr.write(f"Invalid value detected in crop_region {j}.\n")
+                        sys.stderr.write(
+                            f"Invalid value detected in crop_region {j}.\n"
+                        )
                         return False
         except Exception as e:
             sys.stderr.write(f"Error in crop_region {j}.\n")
@@ -90,7 +94,9 @@ def is_image_properties_valid(image_config: ConfigImage) -> bool:
     return True  # No error detected
 
 
-def create_enhanced_config(config: MasterflatGeneratorConfig) -> MasterflatGeneratorConfig:
+def create_enhanced_config(
+    config: MasterflatGeneratorConfig,
+) -> MasterflatGeneratorConfig:
     """
     This function enhances the configuration file for ease of functions
     that later require processing of the config file
@@ -127,6 +133,10 @@ def validate_generate_masterflat_config_file(
             "output": _,
             "image": {"rows": int(_), "columns": int(_), **optional_image_options},
         } as masterflat_generator_config if is_valid(masterflat_generator_config):
-            on_success(sanity_check(create_enhanced_config(masterflat_generator_config)))
+            on_success(
+                sanity_check(create_enhanced_config(masterflat_generator_config))
+            )
         case _:
-            sys.stderr.write("Stopping because the provided configuration file has issues.\n")
+            sys.stderr.write(
+                "Stopping because the provided configuration file has issues.\n"
+            )

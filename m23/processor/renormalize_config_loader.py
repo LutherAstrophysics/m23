@@ -43,7 +43,9 @@ class RenormalizeConfig(TypedDict):
 
 
 @cache
-def get_relevant_log_files_combined_files(folder: Path, start: int, end: int) -> List[Path]:
+def get_relevant_log_files_combined_files(
+    folder: Path, start: int, end: int
+) -> List[Path]:
     """
     Returns the list of log files combined files in the range enclosed
     (inclusively) by start and end path.
@@ -75,16 +77,20 @@ def is_valid(config: RenormalizeConfig) -> bool:
     # Validate reference file
     ref_file = Path(config["reference"]["file"])
     if not (ref_file.exists() and ref_file.is_file() and ref_file.suffix == ".txt"):
-        sys.stderr.write("Make sure the provided reference file exits and has txt extension\n")
+        sys.stderr.write(
+            "Make sure the provided reference file exits and has txt extension\n"
+        )
         return False
 
     # Validate logfile file
     logfile = Path(config["reference"]["logfile"])
     if not (logfile.exists() and logfile.is_file() and logfile.suffix == ".txt"):
-        sys.stderr.write("Make sure the provided logfile file exits and has txt extension\n")
+        sys.stderr.write(
+            "Make sure the provided logfile file exits and has txt extension\n"
+        )
         return False
 
-    # Make sure that the logfile combined reference file has 
+    # Make sure that the logfile combined reference file has
     # all radii of extraction data
     available_radii = LogFileCombinedFile(logfile).get_star_data(1).radii_adu.keys()
     for i in config["processing"]["radii_of_extraction"]:
@@ -94,10 +100,11 @@ def is_valid(config: RenormalizeConfig) -> bool:
             )
             return False
 
-
     color_ref_file = Path(config["reference"]["color"])
     if not (
-        color_ref_file.exists() and color_ref_file.is_file() and color_ref_file.suffix == ".txt"
+        color_ref_file.exists()
+        and color_ref_file.is_file()
+        and color_ref_file.suffix == ".txt"
     ):
         sys.stderr.write(
             "Make sure the provided color reference file exits and has txt extension\n"
@@ -198,12 +205,16 @@ def validate_renormalize_config_file(
         case {
             "processing": {"radii_of_extraction": list(_)},
             "input": {"nights": list(_)},
-            "reference": {"file": str(_), "color": str(_), "logfile" : str(_)},
+            "reference": {"file": str(_), "color": str(_), "logfile": str(_)},
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:
-            sys.stderr.write("Stopping because the provided configuration file has issues.\n")
+            sys.stderr.write(
+                "Stopping because the provided configuration file has issues.\n"
+            )
 
 
 if __name__ == "__main__":
-    validate_renormalize_config_file(Path("1.toml"), on_success=lambda *args: print("Success"))
+    validate_renormalize_config_file(
+        Path("1.toml"), on_success=lambda *args: print("Success")
+    )

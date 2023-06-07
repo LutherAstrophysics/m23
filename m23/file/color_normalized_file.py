@@ -26,7 +26,7 @@ class ColorNormalizedFile:
 
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
-    file_name_re = re.compile('(\d{4}-\d{2}-\d{2})_Normalized_(.*)\.txt')
+    file_name_re = re.compile("(\d{4}-\d{2}-\d{2})_Normalized_(.*)\.txt")
 
     @classmethod
     def get_file_name(cls, night_date: date, radius_of_extraction: int) -> str:
@@ -68,7 +68,7 @@ class ColorNormalizedFile:
         self.__read_data = True
         with self.path().open() as fd:
             lines = [line.strip() for line in fd.readlines()]
-            lines = lines[3 :]  # Skip the header rows
+            lines = lines[3:]  # Skip the header rows
             self.__data = {}
             for line in lines:
                 star_data = line.split()
@@ -78,15 +78,15 @@ class ColorNormalizedFile:
                 measured_mean_ri = float(star_data[3])
                 used_mean_ri = float(star_data[4])
                 self.__data[star_no] = self.StarData(
-                    normalized_median_flux=normalized_median_flux, 
-                    norm_factor=normfactor, 
-                    measured_mean_r_i=measured_mean_ri, used_mean_r_i=used_mean_ri,
+                    normalized_median_flux=normalized_median_flux,
+                    norm_factor=normfactor,
+                    measured_mean_r_i=measured_mean_ri,
+                    used_mean_r_i=used_mean_ri,
                     attendance=np.nan,
                     reference_log_adu=np.nan,
-                    median_flux=np.nan
-                    )
+                    median_flux=np.nan,
+                )
         self.__read_data = True  # Marks file as read
-
 
     def is_valid_file_name(self):
         return bool(self.file_name_re.match(self.path().name))

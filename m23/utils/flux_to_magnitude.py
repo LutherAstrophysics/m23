@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 
-def flux_to_magnitude(flux: float, radius : int ) -> float :
+def flux_to_magnitude(flux: float, radius: int) -> float:
     if not flux > 0:
         return np.nan
     if radius == 5:

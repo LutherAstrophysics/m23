@@ -10,7 +10,6 @@
 ###
 ### it mutates the original array provided, npArray
 def surroundWith(npArray, size, value=0):
-
     # columns
     npArray[:, :size] = value
     npArray[:, -size:] = value
