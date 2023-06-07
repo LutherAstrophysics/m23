@@ -2,8 +2,12 @@ import argparse
 import sys
 from pathlib import Path
 
-from m23.processor import start_data_processing
-from m23.processor import create_nights_csv, generate_masterflat, renormalize
+from m23.processor import (
+    create_nights_csv,
+    generate_masterflat,
+    renormalize,
+    start_data_processing,
+)
 
 
 def process(args):
@@ -53,8 +57,8 @@ def mf(args):
 
 def csv(args):
     """
-    This is a subcommand that generates the csv file which holds the stars' flux values
-    for a year, this will be later used to get the data onto our server
+    This is a subcommand that generates the csv file which holds the stars' flux
+    values for a year, this will be later used to get the data onto our server
     """
     config_file: Path = args.config_file
     if not config_file.exists():
@@ -91,7 +95,7 @@ norm_parser.set_defaults(func=norm)
 # Masterflat generator parser
 mf_parser = subparsers.add_parser("mf", help="Generate masterflat for a night from its raw flats")
 mf_parser.add_argument(
-    "config_file", type=Path, help="Path to toml configuration file for master flat generatation"
+    "config_file", type=Path, help="Path to toml configuration file for master flat generation"
 )  # positional argument
 # Adding a default value so we later know which subcommand was invoked
 mf_parser.set_defaults(func=mf)
