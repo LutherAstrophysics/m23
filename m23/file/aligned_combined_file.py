@@ -1,3 +1,4 @@
+import datetime
 import re
 from pathlib import Path
 
@@ -11,6 +12,8 @@ from m23.file.raw_image_file import RawImageFile
 class AlignedCombinedFile:
     # Class attributes
     file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
+    date_observed_header_name = "DATE-OBS"
+    date_observed_datetime_format = "%Y-%m-%dT%H:%M:%S"
 
     @classmethod
     def generate_file_name(cls, img_duration: float, img_number: int) -> str:
@@ -37,6 +40,15 @@ class AlignedCombinedFile:
 
     def exists(self):
         return self.path().exists()
+
+    def datetime(self) -> None | datetime.datetime:
+        """
+        Returns the datetime object of the time observed. Parses the datetime
+        field from the header of the image
+        """
+        timestr = self.header().get(self.date_observed_header_name)
+        if timestr:
+            return datetime.datetime.strptime(timestr, self.date_observed_datetime_format)
 
     def is_valid_file_name(self):
         """
