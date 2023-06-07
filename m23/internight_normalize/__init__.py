@@ -222,14 +222,14 @@ def internight_normalize_auxiliary(  # noqa
 
             # ax^3 + bx^2 + cx + d
             def polynomial_fit_fn(x):
-                a * x**3 + b * x**2 + c * x + d
+                return a * x**3 + b * x**2 + c * x + d
 
         else:
             a, b, c, d = np.polyfit(x_values, y_values, 3)  # Degree 3
 
             # ax^3 + bx^2 + cx + d
             def polynomial_fit_fn(x):
-                a * x**3 + b * x**2 + c * x + d
+                return a * x**3 + b * x**2 + c * x + d
 
         # This list stores the difference between actual signal value and the
         # value given by fitted curve

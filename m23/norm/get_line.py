@@ -91,22 +91,22 @@ def get_star_to_ignore_bit_vector(  # noqa
     left_line_a, left_line_b = left_line
 
     def left_line_get_x(y):
-        (y - left_line_b) / left_line_a
+        return (y - left_line_b) / left_line_a
 
     right_line_a, right_line_b = right_line
 
     def right_line_get_x(y):
-        (y - right_line_b) / right_line_a
+        return (y - right_line_b) / right_line_a
 
     top_line_a, top_line_b = top_line
 
     def top_line_get_y(x):
-        top_line_a * x + top_line_b
+        return top_line_a * x + top_line_b
 
     bottom_line_a, bottom_line_b = bottom_line
 
     def bottom_line_get_y(x):
-        bottom_line_a * x + bottom_line_b
+        return bottom_line_a * x + bottom_line_b
 
     def should_include(point):
         y, x = point
@@ -137,10 +137,10 @@ def get_star_to_ignore_bit_vector(  # noqa
 
 def is_point_to_left_of_line(a, b, point):
     def eqn_y(x):
-        a * x + b
+        return a * x + b
 
     def eqn_x(y):
-        (y - b) / a
+        return (y - b) / a
 
     x, y = point
     x_prime = eqn_x(y)

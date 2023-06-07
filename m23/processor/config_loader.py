@@ -1,3 +1,4 @@
+import datetime
 import os
 import sys
 from datetime import date
@@ -55,12 +56,18 @@ class ConfigOutput(TypedDict):
     path: str | Path
 
 
+class ConfigDateTime(TypedDict):
+    start: datetime.datetime
+    end: datetime.datetime
+
+
 class Config(TypedDict):
     image: ConfigImage
     processing: ConfigProcessing
     reference: ConfigReference
     input: ConfigInput
     output: ConfigOutput
+    datetime: NotRequired[ConfigDateTime]
 
 
 def is_valid_radii_of_extraction(lst):
@@ -114,7 +121,7 @@ def prompt_to_continue(msg: str):
         os._exit(1)
 
 
-def sanity_check_image(config: ConfigImage, night_date: date):
+def sanity_check_image(config: ConfigImage, night_date: date):  # noqa
     """
     Checks for abnormal values in configuration images
     """
@@ -125,18 +132,14 @@ def sanity_check_image(config: ConfigImage, night_date: date):
         if rows != 1024:
             prompt_to_continue("Detected non 1024 image row value for old camera date")
         if cols != 1024:
-            prompt_to_continue(
-                "Detected non 1024 image column value for old camera date"
-            )
+            prompt_to_continue("Detected non 1024 image column value for old camera date")
         if crop_region and type(crop_region) == list and len(crop_region) > 0:
             prompt_to_continue("Detected use of crop region for old camera.")
     else:
         if rows != 2048:
             prompt_to_continue("Detected non 2048 image row value for new camera date")
         if cols != 2048:
-            prompt_to_continue(
-                "Detected non 2048 image column value for new camera date"
-            )
+            prompt_to_continue("Detected non 2048 image column value for new camera date")
         if (
             not crop_region
             or crop_region
@@ -161,9 +164,12 @@ def sanity_check_image(config: ConfigImage, night_date: date):
                             ]
                         ):
                             prompt_to_continue(
-                                "Mismatch between default crop region used in new camera and config file."
+                                "Mismatch between default crop region"
+                                + " used in new camera and config file."
                             )
-                            return  # Ignore further checking if already made the user aware of inconsistency once
+                            # Ignore further checking if already made the user
+                            # aware of inconsistency once
+                            return
 
             except Exception as e:
                 prompt_to_continue(
@@ -197,7 +203,7 @@ def verify_optional_image_options(options: Dict) -> bool:
                 if not valid_values:
                     sys.stderr.write(f"Invalid value detected in crop_region {j}.\n")
                     return False
-    except Exception as e:
+    except ValueError:
         sys.stderr.write(f"Error in crop_region {j}.\n")
         return False
     return True  # Valid
@@ -212,14 +218,14 @@ def is_night_name_valid(NIGHT_INPUT_PATH: Path):
     try:
         get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
         return True
-    except:
+    except [ValueError]:
         sys.stderr.write(
             f"Night {NIGHT_INPUT_PATH} folder name doesn't match the naming convention\n"
         )
         return False
 
 
-def validate_night(night: ConfigInputNight) -> bool:
+def validate_night(night: ConfigInputNight) -> bool:  # noqa
     """
     Checks whether the input configuration provided for night is valid.
     We check whether the input folders follow the required conventions,
@@ -227,7 +233,9 @@ def validate_night(night: ConfigInputNight) -> bool:
     """
     try:
         NIGHT_INPUT_PATH = Path(night["path"])
-    except:
+    except [
+        ValueError,
+    ]:
         sys.stderr.write(f"Invalid night {night} in config file.\nCheck path spell\n")
         return False
 
@@ -260,23 +268,23 @@ def validate_night(night: ConfigInputNight) -> bool:
     # If masterflat isn't provided, the night should have flats to use
     elif len(list(get_flats(CALIBRATION_FOLDER_PATH))) == 0:
         sys.stderr.write(
-            f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}. Provide masterflat path.\n"
+            f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}."
+            + " Provide masterflat path.\n"
         )
         return False
 
     # Check for darks
     if len(list(get_darks(CALIBRATION_FOLDER_PATH))) == 0:
         sys.stderr.write(
-            f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}. Cannot continue without darks.\n"
+            f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}."
+            + " Cannot continue without darks.\n"
         )
         return False
 
     # Check for raw images
     try:
         if len(list(get_raw_images(M23_FOLDER_PATH))) == 0:
-            sys.stderr.write(
-                f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}.\n"
-            )
+            sys.stderr.write(f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}.\n")
             return False
     except ValueError as e:
         sys.stderr.write(
@@ -312,30 +320,18 @@ def validate_reference_files(
         sys.stderr.write("Make sure that the reference exists and has .fit extension")
         return False
     if not (file_path.exists() and file_path.is_file() and file_path.suffix == ".txt"):
-        sys.stderr.write(
-            "Make sure that the reference file exists and has .txt extension\n"
-        )
+        sys.stderr.write("Make sure that the reference file exists and has .txt extension\n")
         return False
-    if not (
-        color_path.exists() and color_path.is_file() and color_path.suffix == ".txt"
-    ):
-        sys.stderr.write(
-            "Make sure that the color reference file exists and has .txt extension\n"
-        )
+    if not (color_path.exists() and color_path.is_file() and color_path.suffix == ".txt"):
+        sys.stderr.write("Make sure that the color reference file exists and has .txt extension\n")
         return False
-    if not (
-        logfile_path.exists()
-        and logfile_path.is_file()
-        and logfile_path.suffix == ".txt"
-    ):
+    if not (logfile_path.exists() and logfile_path.is_file() and logfile_path.suffix == ".txt"):
         sys.stderr.write("Make sure that the log file exists and has .txt extension\n")
         return False
 
     # Make sure that the logfile combined reference file has
     # all radii of extraction data
-    available_radii = (
-        LogFileCombinedFile(logfile_path).get_star_data(1).radii_adu.keys()
-    )
+    available_radii = LogFileCombinedFile(logfile_path).get_star_data(1).radii_adu.keys()
     for i in radii:
         if i not in available_radii:
             sys.stderr.write(
@@ -388,5 +384,6 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             on_success(sanity_check(create_processing_config(toml.load(file_path))))
         case _:
             sys.stderr.write(
-                "Stopping because the provided configuration file doesn't match the required format.\n"
+                "Stopping because the provided configuration file"
+                + " doesn't match the required format.\n"
             )
