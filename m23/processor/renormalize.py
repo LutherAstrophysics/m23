@@ -23,9 +23,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
 
         logger = logging.getLogger("LOGGER_" + str(night_date))
         logger.setLevel(logging.INFO)
-        formatter = logging.Formatter(
-            "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-        )
+        formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch = logging.FileHandler(log_file_path)
         ch.setFormatter(formatter)
         logger.addHandler(ch)
@@ -37,7 +35,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         first_image = night["first_logfile_number"]
         last_image = night["last_logfile_number"]
         logger.info(
-            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image}"
+            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image}"  # noqa ES501
         )
 
         FLUX_LOGS_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME

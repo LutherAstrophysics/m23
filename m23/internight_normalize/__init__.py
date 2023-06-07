@@ -63,12 +63,10 @@ def internight_normalize(
     """
 
     for radius in radii_of_extraction:
-        internight_normalize_auxiliary(
-            night, logfile_combined_reference_file, color_file, radius
-        )
+        internight_normalize_auxiliary(night, logfile_combined_reference_file, color_file, radius)
 
 
-def internight_normalize_auxiliary(
+def internight_normalize_auxiliary(  # noqa
     night: Path,
     logfile_combined_reference_file: LogFileCombinedFile,
     color_file: Path,
@@ -94,9 +92,7 @@ def internight_normalize_auxiliary(
     # do this for each star.  How we calculate normalization factor is described
     # later below.
     FLUX_LOGS_COMBINED_FOLDER = (
-        night
-        / FLUX_LOGS_COMBINED_FOLDER_NAME
-        / get_radius_folder_name(radius_of_extraction)
+        night / FLUX_LOGS_COMBINED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)
     )
     flux_logs_files: List[FluxLogCombinedFile] = [
         FluxLogCombinedFile(file) for file in FLUX_LOGS_COMBINED_FOLDER.glob("*")
@@ -118,9 +114,9 @@ def internight_normalize_auxiliary(
             color_data_file.get_star_color(log_file.star_number()),
             np.nan,  # Actual color value used
             log_file.attendance(),  # Attendance of the star for the night
-            logfile_combined_reference_file.get_star_data(
-                log_file.star_number()
-            ).radii_adu[radius_of_extraction]
+            logfile_combined_reference_file.get_star_data(log_file.star_number()).radii_adu[
+                radius_of_extraction
+            ]
             or np.nan,
         )
         for log_file in flux_logs_files
@@ -196,9 +192,7 @@ def internight_normalize_auxiliary(
                 stars_to_include.append(star_no)
 
         # Colors
-        x_values = [
-            data_dict[star_no].measured_mean_r_i for star_no in stars_to_include
-        ]
+        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include]
         # Signal ratios
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include]
 
@@ -225,12 +219,17 @@ def internight_normalize_auxiliary(
                 # Note python slicing excludes last element, IDL's includes
                 modified_y_value[-1] = np.mean(modified_y_value[-4:-1])
             a, b, c, d = np.polyfit(x_values, modified_y_value, 3)  # Degree 3
+
             # ax^3 + bx^2 + cx + d
-            polynomial_fit_fn = lambda x: a * x**3 + b * x**2 + c * x + d
+            def polynomial_fit_fn(x):
+                a * x**3 + b * x**2 + c * x + d
+
         else:
             a, b, c, d = np.polyfit(x_values, y_values, 3)  # Degree 3
+
             # ax^3 + bx^2 + cx + d
-            polynomial_fit_fn = lambda x: a * x**3 + b * x**2 + c * x + d
+            def polynomial_fit_fn(x):
+                a * x**3 + b * x**2 + c * x + d
 
         # This list stores the difference between actual signal value and the
         # value given by fitted curve
@@ -265,9 +264,7 @@ def internight_normalize_auxiliary(
     for index, current_value in enumerate(bins_edges[:-1]):
         next_value = bins_edges[index + 1]
         bins_mid_values.append((current_value + next_value) / 2)
-    fit_coefficients, _ = curve_fit(
-        n_term_3_gauss_fit, bins_mid_values, bin_frequencies
-    )
+    fit_coefficients, _ = curve_fit(n_term_3_gauss_fit, bins_mid_values, bin_frequencies)
     mean, sigma = fit_coefficients[1], fit_coefficients[2]
     sigma = abs(sigma)  # Important since sigma given by our curve fit could be negative
 
@@ -296,16 +293,10 @@ def internight_normalize_auxiliary(
         # Note that we're excluding stars in `stars_outside_threshold` list
         stars_in_section = section_data[section_number]["stars_to_include"]
         stars_to_include = [
-            star_no
-            for star_no in stars_in_section
-            if star_no not in stars_outside_threshold
+            star_no for star_no in stars_in_section if star_no not in stars_outside_threshold
         ]
-        x_values = [
-            data_dict[star_no].measured_mean_r_i for star_no in stars_to_include
-        ]  # Colors
-        y_values = [
-            stars_signal_ratio[star_no] for star_no in stars_to_include
-        ]  # Signal ratios
+        x_values = [data_dict[star_no].measured_mean_r_i for star_no in stars_to_include]  # Colors
+        y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include]  # Signal ratios
         section_x_values[section_number] = x_values
         section_y_values[section_number] = y_values
 
@@ -395,18 +386,14 @@ def internight_normalize_auxiliary(
 
         if 0.135 <= color < 7:
             color_section_number = stars_color_section_number[star_no]
-            norm_factor = color_fit_functions[color_section_number](
-                star_data.measured_mean_r_i
-            )
+            norm_factor = color_fit_functions[color_section_number](star_data.measured_mean_r_i)
 
         # Now for the stars that didn't have good R-I values which is (< 0.135
         # or >= 7) we calculate the normfactors based on the brightness fit
         else:
             # If the star is a known LPV that doesn't have a color, we calculate
             # the normfactor for it by providing a custom calculated color value
-            special_star_value = get_normfactor_for_special_star(
-                star_no, color_fit_functions[3]
-            )
+            special_star_value = get_normfactor_for_special_star(star_no, color_fit_functions[3])
 
             if special_star_value:
                 # Note we're mutating color variable here
@@ -431,9 +418,7 @@ def internight_normalize_auxiliary(
 
     # Save data
     OUTPUT_FOLDER = (
-        night
-        / COLOR_NORMALIZED_FOLDER_NAME
-        / get_radius_folder_name(radius_of_extraction)
+        night / COLOR_NORMALIZED_FOLDER_NAME / get_radius_folder_name(radius_of_extraction)
     )
     output_file = OUTPUT_FOLDER / ColorNormalizedFile.get_file_name(
         night_date, radius_of_extraction
@@ -441,9 +426,7 @@ def internight_normalize_auxiliary(
     ColorNormalizedFile(output_file.absolute()).save_data(data_dict, night_date)
 
     # output_file = OUTPUT_FOLDER
-    logger.info(
-        f"Completed internight color normalization for {radius_of_extraction}px"
-    )
+    logger.info(f"Completed internight color normalization for {radius_of_extraction}px")
 
 
 def get_normfactor_for_special_star(

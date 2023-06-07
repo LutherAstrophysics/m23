@@ -14,7 +14,7 @@ from m23.file.reference_log_file import ReferenceLogFile
 from .get_line import get_star_to_ignore_bit_vector
 
 
-def normalize_log_files(
+def normalize_log_files(  # noqa
     reference_log_file: ReferenceLogFile,
     log_files_to_normalize: List[LogFileCombinedFile],
     output_folder: Path,
@@ -69,7 +69,8 @@ def normalize_log_files(
             # Mark the adu of the star as 0 if that's to be ignored
             if stars_to_ignore_bit_vector[star_index] == 0:
                 adu_of_current_log_file[star_index] = 0
-                # We go to the next star in the for loop as we already know ADU for this star for this image
+                # We go to the next star in the for loop as we already know ADU
+                # for this star for this image
                 continue
 
             star_data_in_log_file = log_file.get_star_data(star_no)
@@ -119,10 +120,7 @@ def normalize_log_files(
             for ref_log_file in reference_log_files:
                 star_adu_in_reference_log_files.append(ref_log_file[star_index])
             star_adu = log_file[star_index]
-            if (
-                all([value > 0 for value in star_adu_in_reference_log_files])
-                and star_adu > 0
-            ):
+            if all([value > 0 for value in star_adu_in_reference_log_files]) and star_adu > 0:
                 normfactor = sum(star_adu_in_reference_log_files) / (4 * star_adu)
             else:
                 normfactor = 0
@@ -141,21 +139,15 @@ def normalize_log_files(
     noOfStars = len(all_log_files[0])
     for star_index in range(noOfStars):
         star_no = star_index + 1
-        star_data = [
-            all_log_files[file_index][star_index] for file_index in range(no_of_files)
-        ]
+        star_data = [all_log_files[file_index][star_index] for file_index in range(no_of_files)]
         # Turn all star_data that's negative to 0
-        star_data = [
-            current_data if current_data > 0 else 0 for current_data in star_data
-        ]
+        star_data = [current_data if current_data > 0 else 0 for current_data in star_data]
 
         # We now create flux log combined file
         flux_log_combined_file_name = FluxLogCombinedFile.generate_file_name(
             night_date, star_no, img_duration
         )
-        flux_log_combined_file = FluxLogCombinedFile(
-            output_folder / flux_log_combined_file_name
-        )
+        flux_log_combined_file = FluxLogCombinedFile(output_folder / flux_log_combined_file_name)
 
         fist_log_file_number = log_files_to_normalize[0].img_number()
         last_log_file_number = log_files_to_normalize[-1].img_number()

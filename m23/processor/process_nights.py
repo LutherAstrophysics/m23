@@ -56,16 +56,15 @@ def normalization_helper(
     logfile_combined_reference_logfile: LogFileCombinedFile,
 ):
     """
-    This is a normalization helper function extracted so that it can be reused by the renormalization script
+    This is a normalization helper function extracted so that it can be reused
+    by the renormalization script
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     for radius in radii_of_extraction:
         logger.info(f"Normalizing for radius of extraction {radius} px")
-        RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(
-            radius
-        )
+        RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
         RADIUS_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
         for file in RADIUS_FOLDER.glob("*"):
             if file.is_file():
@@ -88,9 +87,7 @@ def normalization_helper(
     )
 
 
-def process_night(
-    night: ConfigInputNight, config: Config, output: Path, night_date: date
-):
+def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):  # noqa
     """
     Processes a given night of data based on the settings provided in `config` dict
     """
@@ -104,15 +101,14 @@ def process_night(
     radii_of_extraction = config["processing"]["radii_of_extraction"]
 
     log_file_path = output / get_log_file_name(night_date)
-    # Clear file contents if exists, so that reprocessing a night wipes out contents instead of appending to it
+    # Clear file contents if exists, so that reprocessing a night wipes out
+    # contents instead of appending to it
     if log_file_path.exists():
         log_file_path.unlink()
 
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(
-        "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
+    formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ch = logging.FileHandler(log_file_path)
     ch.setFormatter(formatter)
     logger.addHandler(ch)
@@ -126,15 +122,11 @@ def process_night(
     ref_file_path = config["reference"]["file"]
     color_ref_file_path = config["reference"]["color"]
     reference_log_file = ReferenceLogFile(ref_file_path)
-    logfile_combined_reference_logfile = LogFileCombinedFile(
-        config["reference"]["logfile"]
-    )
+    logfile_combined_reference_logfile = LogFileCombinedFile(config["reference"]["logfile"])
 
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]
-    NIGHT_INPUT_CALIBRATION_FOLDER: Path = (
-        NIGHT_INPUT_FOLDER / INPUT_CALIBRATION_FOLDER_NAME
-    )
+    NIGHT_INPUT_CALIBRATION_FOLDER: Path = NIGHT_INPUT_FOLDER / INPUT_CALIBRATION_FOLDER_NAME
     NIGHT_INPUT_IMAGES_FOLDER = NIGHT_INPUT_FOLDER / M23_RAW_IMAGES_FOLDER_NAME
 
     # Define and create relevant output folders for the night being processed
@@ -150,9 +142,7 @@ def process_night(
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
     ]:
         if folder.exists():
-            [
-                file.unlink() for file in folder.glob("*") if file.is_file()
-            ]  # Remove existing files
+            [file.unlink() for file in folder.glob("*") if file.is_file()]  # Remove existing files
         folder.mkdir(exist_ok=True)
 
     crop_region = config["image"]["crop_region"]
@@ -167,13 +157,13 @@ def process_night(
         headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
         listOfDarkData=darks,
     )
-    logger.info(f"Created master dark")
+    logger.info("Created master dark")
     del darks  # Deleting to free memory as we don't use darks anymore
 
     # Flats
     if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
-        logger.info(f"Using pre-provided masterflat")
+        logger.info("Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
         # Ensure that image dimensions are as specified by rows and cols
@@ -187,12 +177,12 @@ def process_night(
             ).absolute(),  # Gets absolute path of first flat file
             listOfDarkData=flats,
         )
-        logger.info(f"Created masterflat")
+        logger.info("Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
     raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
     image_duration = raw_images[0].image_duration()
-    logger.info(f"Processing images")
+    logger.info("Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
     logger.info(f"Using no of images to combine: {no_of_images_to_combine}")
     logger.info(f"Radii of extraction: {radii_of_extraction}")
@@ -207,9 +197,7 @@ def process_night(
         from_index = i * no_of_images_to_combine
         to_index = (i + 1) * no_of_images_to_combine
 
-        images_data = [
-            raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]
-        ]
+        images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
         # Ensure that image dimensions are as specified by rows and cols
         # If there's extra noise cols or rows, we crop them
         images_data = [crop(matrix, rows, cols) for matrix in images_data]
@@ -302,9 +290,7 @@ def start_data_processing_auxiliary(config: Config):
     for night in config["input"]["nights"]:
         night_path: Path = night["path"]
         night_date = get_date_from_input_night_folder_name(night_path.name)
-        OUTPUT_NIGHT_FOLDER = OUTPUT_PATH / get_output_folder_name_from_night_date(
-            night_date
-        )
+        OUTPUT_NIGHT_FOLDER = OUTPUT_PATH / get_output_folder_name_from_night_date(night_date)
         # Create output folder for the night, if it doesn't already exist
         OUTPUT_NIGHT_FOLDER.mkdir(exist_ok=True)
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)

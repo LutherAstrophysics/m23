@@ -75,9 +75,7 @@ subparsers = parser.add_subparsers()
 
 # We are dividing our command line function into subcommands
 # The first subcommand is `process` denoting a full fledged data processing for night(s)
-process_parser = subparsers.add_parser(
-    "process", help="Process raw data for one or more nights"
-)
+process_parser = subparsers.add_parser("process", help="Process raw data for one or more nights")
 process_parser.add_argument(
     "config_file", type=Path, help="Path to toml configuration file for data processing"
 )  # positional argument
@@ -95,9 +93,7 @@ norm_parser.add_argument(
 norm_parser.set_defaults(func=norm)
 
 # Masterflat generator parser
-mf_parser = subparsers.add_parser(
-    "mf", help="Generate masterflat for a night from its raw flats"
-)
+mf_parser = subparsers.add_parser("mf", help="Generate masterflat for a night from its raw flats")
 mf_parser.add_argument(
     "config_file",
     type=Path,
@@ -107,9 +103,7 @@ mf_parser.add_argument(
 mf_parser.set_defaults(func=mf)
 
 # CSV generator parser
-csv_parser = subparsers.add_parser(
-    "csv", help="Generate csv flux file for a given year"
-)
+csv_parser = subparsers.add_parser("csv", help="Generate csv flux file for a given year")
 csv_parser.add_argument(
     "config_file", type=Path, help="Path to toml configuration file for csv generation"
 )  # positional argument

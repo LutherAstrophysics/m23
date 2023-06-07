@@ -4,6 +4,7 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
+
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -38,15 +39,13 @@ def extract_stars(
             yFWHM=star_FWHM[0],
             avgFWHM=star_FWHM[2],
             # Note that star_fluxes[radius] is a list of 3 tuples
-            # where the elements of the tuple are (total star flux, background flux, subtracted star flux)
+            # where the elements of the tuple are (total star flux, background
+            # flux, subtracted star flux)
             # Also note that we only write sky ADU for one of the radius of extraction
             # This is the usually just the first radius of extraction
             sky_adu=adu_per_pixel,  # Sky ADU from first of extraction
             radii_adu=(
-                {
-                    radius: star_fluxes[radius][star_no - 1][2]
-                    for radius in radii_of_extraction
-                }
+                {radius: star_fluxes[radius][star_no - 1][2] for radius in radii_of_extraction}
             ),
         )
     log_file_combined_file.create_file(log_file_combined_data, aligned_combined_file)
@@ -79,16 +78,15 @@ def newStarCenters(imageData, reference_log_file: ReferenceLogFile):
         return yWght, xWght
 
     return [
-        centerFinder(
-            [stars_x_positions_in_ref_file[i], stars_y_positions_in_ref_file[i]]
-        )
+        centerFinder([stars_x_positions_in_ref_file[i], stars_y_positions_in_ref_file[i]])
         for i in range(len(stars_x_positions_in_ref_file))
     ]
 
 
 def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
     """
-    We need to optimize this code to work more efficiently with the caller function i.e extract_stars
+    We need to optimize this code to work more efficiently with the caller
+    function i.e extract_stars
     """
     regionSize = 64
     pixelsPerStar = np.count_nonzero(circleMatrix(radius))
@@ -135,12 +133,8 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
         x, y = position
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
-        backgroundAverageInStarRegion = backgroundAverage(
-            (x // regionSize, y // regionSize)
-        )
-        subtractedStarFlux = (
-            np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
-        )
+        backgroundAverageInStarRegion = backgroundAverage((x // regionSize, y // regionSize))
+        subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
 
         # Convert to zero, in case there's any nan.
         # This ensures that two log files correspond to same star number as they are
@@ -162,9 +156,7 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
 @cache
 def circleMatrix(radius):
     lengthOfSquare = radius * 2 + 1
-    myMatrix = np.zeros(lengthOfSquare * lengthOfSquare).reshape(
-        lengthOfSquare, lengthOfSquare
-    )
+    myMatrix = np.zeros(lengthOfSquare * lengthOfSquare).reshape(lengthOfSquare, lengthOfSquare)
     for row in range(-radius, radius + 1):
         for col in range(-radius, radius + 1):
             if math.ceil(math.sqrt((row) ** 2 + (col) ** 2)) <= radius:
@@ -180,12 +172,12 @@ def fwhm(data, xweight, yweight, aduPerPixel):
     for axis in range(-5, 6):
         col_sum += data[round(xweight) + axis, round(yweight)]
         row_sum += data[round(xweight), round(yweight) + axis]
-        weighted_col_sum += (
-            data[round(xweight) + axis, round(yweight)] - aduPerPixel
-        ) * ((round(xweight) + axis) - xweight) ** 2
-        weighted_row_sum += (
-            data[round(xweight), round(yweight) + axis] - aduPerPixel
-        ) * ((round(yweight) + axis) - yweight) ** 2
+        weighted_col_sum += (data[round(xweight) + axis, round(yweight)] - aduPerPixel) * (
+            (round(xweight) + axis) - xweight
+        ) ** 2
+        weighted_row_sum += (data[round(xweight), round(yweight) + axis] - aduPerPixel) * (
+            (round(yweight) + axis) - yweight
+        ) ** 2
     col_sum = col_sum - (aduPerPixel * 11)
     row_sum = row_sum - (aduPerPixel * 11)
     xFWHM = 2.355 * np.sqrt(weighted_col_sum / (col_sum - 1))

@@ -1,8 +1,11 @@
-###  Taken from https://stackoverflow.com/questions/44782476/split-a-numpy-array-both-horizontally-and-vertically
-###
-### arr is the numpy array to turn into blocks
-### blockSize is the tuple/array of sizes
 def blockRegions(arr, blockSize):
+    """
+    Taken from
+    https://stackoverflow.com/questions/44782476/split-a-numpy-array-both-horizontally-and-vertically
+
+    arr is the numpy array to turn into blocks blockSize is the tuple/array of
+    sizes
+    """
     # arr is input array, blockSizeis block-size
     m, n = arr.shape
     M, N = blockSize

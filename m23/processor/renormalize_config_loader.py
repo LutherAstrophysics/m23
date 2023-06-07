@@ -43,9 +43,7 @@ class RenormalizeConfig(TypedDict):
 
 
 @cache
-def get_relevant_log_files_combined_files(
-    folder: Path, start: int, end: int
-) -> List[Path]:
+def get_relevant_log_files_combined_files(folder: Path, start: int, end: int) -> List[Path]:
     """
     Returns the list of log files combined files in the range enclosed
     (inclusively) by start and end path.
@@ -66,6 +64,49 @@ def get_relevant_log_files_combined_files(
     return result
 
 
+def validate_night(night):
+    path = Path(night["path"])
+
+    first_logfile = night["first_logfile_number"]
+    last_logfile = night["last_logfile_number"]
+
+    # Validate path
+    if not path.exists():
+        sys.stderr.write(f"Path {path} doesn't exist\n")
+        return False
+
+    # Check if the naming convention is valid for the input night
+    if not is_night_name_valid(path):
+        return False
+
+    LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
+
+    if not LOG_FILES_COMBINED_FOLDER.exists():
+        sys.stderr.write(f"Path {LOG_FILES_COMBINED_FOLDER} doesn't exist\n")
+        return False
+
+    if (type(first_logfile) != int or type(last_logfile) != int) and not (
+        last_logfile >= first_logfile >= 1
+    ):
+        sys.stderr.write(
+            f"Invalid logfile numbers. First: {first_logfile} Last: {last_logfile} for night {night}\n"  # noqa
+        )
+        return False
+
+    # Ensure that the list of files to use from LOG_FILES_COMBINED_FOLDER isn't empty
+    # based on given constraints of start and end indices
+    if (
+        len(
+            get_relevant_log_files_combined_files(
+                LOG_FILES_COMBINED_FOLDER, first_logfile, last_logfile
+            )
+        )
+        == 0
+    ):
+        sys.stderr.write(f"No logfiles in range {first_logfile}-{last_logfile} \n")
+        return False
+
+
 def is_valid(config: RenormalizeConfig) -> bool:
     """
     Returns whether any error can be found in renormalize config dict
@@ -77,17 +118,13 @@ def is_valid(config: RenormalizeConfig) -> bool:
     # Validate reference file
     ref_file = Path(config["reference"]["file"])
     if not (ref_file.exists() and ref_file.is_file() and ref_file.suffix == ".txt"):
-        sys.stderr.write(
-            "Make sure the provided reference file exits and has txt extension\n"
-        )
+        sys.stderr.write("Make sure the provided reference file exits and has txt extension\n")
         return False
 
     # Validate logfile file
     logfile = Path(config["reference"]["logfile"])
     if not (logfile.exists() and logfile.is_file() and logfile.suffix == ".txt"):
-        sys.stderr.write(
-            "Make sure the provided logfile file exits and has txt extension\n"
-        )
+        sys.stderr.write("Make sure the provided logfile file exits and has txt extension\n")
         return False
 
     # Make sure that the logfile combined reference file has
@@ -102,9 +139,7 @@ def is_valid(config: RenormalizeConfig) -> bool:
 
     color_ref_file = Path(config["reference"]["color"])
     if not (
-        color_ref_file.exists()
-        and color_ref_file.is_file()
-        and color_ref_file.suffix == ".txt"
+        color_ref_file.exists() and color_ref_file.is_file() and color_ref_file.suffix == ".txt"
     ):
         sys.stderr.write(
             "Make sure the provided color reference file exits and has txt extension\n"
@@ -113,45 +148,8 @@ def is_valid(config: RenormalizeConfig) -> bool:
 
     # Validate each night
     for night in config["input"]["nights"]:
-        path = Path(night["path"])
-
-        first_logfile = night["first_logfile_number"]
-        last_logfile = night["last_logfile_number"]
-
-        # Validate path
-        if not path.exists():
-            sys.stderr.write(f"Path {path} doesn't exist\n")
-            return False
-
-        # Check if the naming convention is valid for the input night
-        if not is_night_name_valid(path):
-            return False
-
-        LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
-
-        if not LOG_FILES_COMBINED_FOLDER.exists():
-            sys.stderr.write(f"Path {LOG_FILES_COMBINED_FOLDER} doesn't exist\n")
-            return False
-
-        if (type(first_logfile) != int or type(last_logfile) != int) and not (
-            last_logfile >= first_logfile >= 1
-        ):
-            sys.stderr.write(
-                f"Invalid logfile numbers. First: {first_logfile} Last: {last_logfile} for night {night}\n"
-            )
-            return False
-
-        # Ensure that the list of files to use from LOG_FILES_COMBINED_FOLDER isn't empty
-        # based on given constraints of start and end indices
-        if (
-            len(
-                get_relevant_log_files_combined_files(
-                    LOG_FILES_COMBINED_FOLDER, first_logfile, last_logfile
-                )
-            )
-            == 0
-        ):
-            sys.stderr.write(f"No logfiles in range {first_logfile}-{last_logfile} \n")
+        is_valid = validate_night(night)
+        if not is_valid:
             return False
 
         return True  # No errors detected
@@ -177,7 +175,8 @@ def create_enhanced_config(config: RenormalizeConfig):
     for night in config["input"]["nights"]:
         if type(night["path"]) == str:
             night["path"] = Path(night["path"])
-        # Set the list of log files to use for normalization based on the provided start, end indices
+        # Set the list of log files to use for normalization based on the
+        # provided start, end indices
         night["files_to_use"] = get_relevant_log_files_combined_files(
             night["path"] / LOG_FILES_COMBINED_FOLDER_NAME,
             night["first_logfile_number"],
@@ -209,12 +208,8 @@ def validate_renormalize_config_file(
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:
-            sys.stderr.write(
-                "Stopping because the provided configuration file has issues.\n"
-            )
+            sys.stderr.write("Stopping because the provided configuration file has issues.\n")
 
 
 if __name__ == "__main__":
-    validate_renormalize_config_file(
-        Path("1.toml"), on_success=lambda *args: print("Success")
-    )
+    validate_renormalize_config_file(Path("1.toml"), on_success=lambda *args: print("Success"))

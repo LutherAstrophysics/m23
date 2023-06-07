@@ -6,7 +6,7 @@ import numpy as np
 from m23.file.log_file_combined_file import LogFileCombinedFile
 
 
-def get_star_to_ignore_bit_vector(
+def get_star_to_ignore_bit_vector(  # noqa
     log_file_combined_file: LogFileCombinedFile, radius: int
 ) -> Iterable[int]:
     """
@@ -32,15 +32,15 @@ def get_star_to_ignore_bit_vector(
         star_no = index + 1
         star_data = log_file_combined_file.get_star_data(star_no)
         if not (
-            star_data.sky_adu > 0
-            and all([adu > 0 for adu in star_data.radii_adu.values()])
+            star_data.sky_adu > 0 and all([adu > 0 for adu in star_data.radii_adu.values()])
         ):  # Note that some may be nan values
             # Set a bogus value on the star's x and y coordinate
             # so that it won't affect corner star calculation
             bogus = 512
             stars_with_bogus_set[star_no] = [x_coordinates[index], y_coordinates[index]]
             logger.debug(
-                f"Intranight Linfit. Setting bogus x, y as {bogus} to star {star_no}. Found star data {star_data}. Logfile {log_file_combined_file}"
+                f"Intranight Linfit. Setting bogus x, y as {bogus} to star {star_no}. "
+                + f"Found star data {star_data}. Logfile {log_file_combined_file}"
             )
             x_coordinates[index] = bogus
             y_coordinates[index] = bogus
@@ -51,9 +51,7 @@ def get_star_to_ignore_bit_vector(
     dist_from_top_left = np.sqrt(x_coordinates**2 + y_coordinates**2)
     dist_from_top_right = np.sqrt(x_coordinates**2 + (y_coordinates - 1023) ** 2)
     dist_from_bottom_left = np.sqrt((x_coordinates - 1023) ** 2 + y_coordinates**2)
-    dist_from_bottom_right = np.sqrt(
-        (x_coordinates - 1023) ** 2 + (y_coordinates - 1023) ** 2
-    )
+    dist_from_bottom_right = np.sqrt((x_coordinates - 1023) ** 2 + (y_coordinates - 1023) ** 2)
 
     # indices of stars with least distances from four corners
     min_top_left = np.argmin(dist_from_top_left)
@@ -91,25 +89,31 @@ def get_star_to_ignore_bit_vector(
     )
 
     left_line_a, left_line_b = left_line
-    left_line_get_x = lambda y: (y - left_line_b) / left_line_a
+
+    def left_line_get_x(y):
+        (y - left_line_b) / left_line_a
 
     right_line_a, right_line_b = right_line
-    right_line_get_x = lambda y: (y - right_line_b) / right_line_a
+
+    def right_line_get_x(y):
+        (y - right_line_b) / right_line_a
 
     top_line_a, top_line_b = top_line
-    top_line_get_y = lambda x: top_line_a * x + top_line_b
+
+    def top_line_get_y(x):
+        top_line_a * x + top_line_b
 
     bottom_line_a, bottom_line_b = bottom_line
-    bottom_line_get_y = lambda x: bottom_line_a * x + bottom_line_b
+
+    def bottom_line_get_y(x):
+        bottom_line_a * x + bottom_line_b
 
     def should_include(point):
         y, x = point
         is_between_left_and_right_lines = (
             left_line_get_x(y) + 12 < x and right_line_get_x(y) - 12 > x
         )
-        is_between_top_and_bottom = (
-            top_line_get_y(x) + 12 < y and bottom_line_get_y(x) - 12 > y
-        )
+        is_between_top_and_bottom = top_line_get_y(x) + 12 < y and bottom_line_get_y(x) - 12 > y
         return is_between_left_and_right_lines and is_between_top_and_bottom
 
     # We crop in 12 pixels from those four lines, and exclude stars that are
@@ -132,8 +136,12 @@ def get_star_to_ignore_bit_vector(
 
 
 def is_point_to_left_of_line(a, b, point):
-    eqn_y = lambda x: a * x + b
-    eqn_x = lambda y: (y - b) / a
+    def eqn_y(x):
+        a * x + b
+
+    def eqn_x(y):
+        (y - b) / a
+
     x, y = point
     x_prime = eqn_x(y)
     return x_prime > x

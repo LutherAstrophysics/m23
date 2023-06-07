@@ -11,7 +11,8 @@ def image_combination(
 ) -> npt.NDArray:
     """
     Combines the `images_data` that's provided and saves the combination in fit file
-    that's given by `file_name` copying header information of the fit file from `fit_file_name_to_copy_header_from`
+    that's given by `file_name` copying header information of the fit file from
+    `fit_file_name_to_copy_header_from`
     """
     images_data = np.array(images_data)
     combinedImageData = np.sum(images_data, axis=0)

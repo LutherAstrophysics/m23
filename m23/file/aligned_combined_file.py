@@ -38,9 +38,6 @@ class AlignedCombinedFile:
     def exists(self):
         return self.path().exists()
 
-    def path(self):
-        return self.__path
-
     def is_valid_file_name(self):
         """
         Checks if the file name is valid as per the file naming conventions

@@ -46,7 +46,7 @@ class FluxLogCombinedFile:
         param: star_no : Star number
         param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_{img_duration}-{star_no:04}_flux.txt"
+        return f"{night_date.strftime(FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT)}_m23_{img_duration}-{star_no:04}_flux.txt"  # noqa
 
     def _validate_file(self):
         if not self.path().exists():
@@ -247,7 +247,7 @@ class FluxLogCombinedFile:
             raise ValueError(f"File name is invalid {self.path()}")
         x, y = location
         with self.path().open("w") as fd:
-            fd.write(f"Program:\n")
+            fd.write("Program:\n")
             fd.write(f"Started with image\t{start_img}\n")
             fd.write(f"Ended with image\t{end_img}\n")
             fd.write(f"Reference log file used: {reference_logfile}\n")

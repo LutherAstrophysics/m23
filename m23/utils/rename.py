@@ -1,10 +1,13 @@
 import os
 
 
-### Dry specifies if you want to actually make the changes
-### or just see what the changes will be
-###
 def rename(folder, newNameFromOldName, dry=True):
+    """
+    @param folder: folder where the the files to rename live
+    @param: newNameFromOldName: function that takes old file name
+            and returns new filename. You must pass this function.
+    @param dry: specifies if you want to actually make the changes
+    """
     files = os.listdir(folder)
     for file in files:
         if dry:

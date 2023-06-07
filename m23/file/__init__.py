@@ -40,5 +40,5 @@ def is_string_float(string: str) -> bool:
     try:
         float(string)
         return True
-    except:
+    except ValueError:
         return False

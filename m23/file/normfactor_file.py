@@ -11,9 +11,7 @@ class NormfactorFile:
 
     @classmethod
     def generate_file_name(cls, night_date: date, img_duration: float):
-        return (
-            f"{night_date.strftime(cls.date_format)}_m23_{img_duration}_normfactors.txt"
-        )
+        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}_normfactors.txt"
 
     def __init__(self, file_path: str) -> None:
         self.__path = Path(file_path)

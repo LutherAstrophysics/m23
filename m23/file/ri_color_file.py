@@ -24,9 +24,7 @@ class RIColorFile:
         with self.path().open() as fd:
             lines = [line.strip() for line in fd.readlines()]
             lines = lines[self.header_rows :]  # Skip the header rows
-            self.__data = np.array(
-                [x for x in lines if is_string_float(x)], dtype="float"
-            )
+            self.__data = np.array([x for x in lines if is_string_float(x)], dtype="float")
             self.__is_read = True
 
     def data(self):

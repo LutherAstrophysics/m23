@@ -38,9 +38,7 @@ class LogFileCombinedFile:
         param: img_no : Image number corresponding to the Aligned combined image
         param: img_duration : the duration of images taken on the night
         """
-        return (
-            f"{night_date.strftime(cls.date_format)}_m23_{img_duration}-{img_no:03}.txt"
-        )
+        return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}-{img_no:03}.txt"
 
     def __init__(self, file_path: str) -> None:
         self.__path = Path(file_path)
@@ -53,9 +51,7 @@ class LogFileCombinedFile:
             lines = [line.strip() for line in fd.readlines()]
             # Save the title row
             # We split the title row by gap of more than two spaces
-            self.__title_row = re.split(
-                r"\s{2,}", lines[self.data_titles_row_zero_index]
-            )
+            self.__title_row = re.split(r"\s{2,}", lines[self.data_titles_row_zero_index])
             lines = lines[self.header_rows :]  # Skip headers - 1
             # Create a 2d list
             lines = [line.split() for line in lines]
@@ -137,9 +133,7 @@ class LogFileCombinedFile:
         for index, col_name in enumerate(titles[first_radii_adu_column:]):
             radius = int(self.star_adu_radius_re.match(col_name)[1])
             radii_adu[radius] = star_data[first_radii_adu_column + index]
-        return self.StarLogfileCombinedData(
-            *star_data[:first_radii_adu_column], radii_adu
-        )
+        return self.StarLogfileCombinedData(*star_data[:first_radii_adu_column], radii_adu)
 
     def img_duration(self) -> float | None:
         """
@@ -194,15 +188,13 @@ class LogFileCombinedFile:
         no_of_stars = len(stars)
         with self.path().open("w") as fd:
             fd.write("\n")
-            fd.write(
-                f"Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n"
-            )
+            fd.write("Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n")
             fd.write(f"\tImage {aligned_combined_file.path().name}\n")
             fd.write(f"\tTotal no of stars: {no_of_stars}\n")
             fd.write(f"\tRadius of star diaphragm: {', '.join(map(str, radii))}\n")
-            fd.write(f"\tSky annulus inner radius: \n")
-            fd.write(f"\tSky annulus outer radius: \n")
-            fd.write(f"\tThreshold factor: \n")
+            fd.write("\tSky annulus inner radius: \n")
+            fd.write("\tSky annulus outer radius: \n")
+            fd.write("\tThreshold factor: \n")
 
             headers = [
                 "X",
@@ -219,7 +211,7 @@ class LogFileCombinedFile:
             for star in stars:  # Sorted in ascending order by star number
                 star_data = data[star]
                 fd.write(
-                    f"{star_data.x:>16.2f}{star_data.y:>16.2f}{star_data.xFWHM:>16.4f}{star_data.yFWHM:>16.4f}{star_data.avgFWHM:>16.4f}{star_data.sky_adu:>16.2f}"
+                    f"{star_data.x:>16.2f}{star_data.y:>16.2f}{star_data.xFWHM:>16.4f}{star_data.yFWHM:>16.4f}{star_data.avgFWHM:>16.4f}{star_data.sky_adu:>16.2f}"  # noqa
                 )
                 for radius in radii:
                     fd.write(f"{star_data.radii_adu[radius]:16.2f}")

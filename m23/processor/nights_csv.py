@@ -25,7 +25,7 @@ def create_nights_csv_auxiliary(config: NightsCSVConfig):
     ]
     color_normalized_files = sorted(color_normalized_files, key=lambda x: x.night_date())
 
-    stardata = [color_normalized_files[i].data() for i in range(len(color_normalized_files))]
+    star_data = [color_normalized_files[i].data() for i in range(len(color_normalized_files))]
     night_dates = [
         str(color_normalized_files[i].night_date()) for i in range(len(color_normalized_files))
     ]
@@ -33,14 +33,14 @@ def create_nights_csv_auxiliary(config: NightsCSVConfig):
     with open(output_file, "w", newline="") as file:
         writer = csv.writer(file)
         writer.writerow(["Star #"] + night_dates)
-        for starno in range(len(stardata[0])):  # Writes the data of 2510 stars
+        for star_no in range(len(star_data[0])):  # Writes the data of 2510 stars
             star_data = [
-                stardata[i][starno + 1].normalized_median_flux
+                star_data[i][star_no + 1].normalized_median_flux
                 for i in range(len(color_normalized_files))
             ]
-            writer.writerow([str(starno + 1)] + star_data)
+            writer.writerow([str(star_no + 1)] + star_data)
         if (
-            len(stardata[0]) == 2508
+            len(star_data[0]) == 2508
         ):  # If no data for stars 2509 and 2510, then write them as empty
             writer.writerow(["2509"] + ["0" for i in range(len(color_normalized_files))])
             writer.writerow(["2510"] + ["0" for i in range(len(color_normalized_files))])
