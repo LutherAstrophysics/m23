@@ -39,6 +39,7 @@ class ConfigProcessing(TypedDict):
 class ConfigInputNight(TypedDict):
     path: str | Path
     masterflat: NotRequired[str]
+    starttime: NotRequired[str]
 
 
 class ConfigInput(TypedDict):
@@ -68,7 +69,6 @@ class Config(TypedDict):
     reference: ConfigReference
     input: ConfigInput
     output: ConfigOutput
-    datetime: NotRequired[ConfigDateTime]
 
 
 def is_valid_radii_of_extraction(lst):
@@ -293,6 +293,18 @@ def validate_night(night: ConfigInputNight) -> bool:  # noqa
         )
         raise e
 
+    # Validate the start and end time of observation if provided
+    # Check if datetime is declared
+    if start := night.get("starttime"):
+        try:
+            validate_datetime(start)
+        except InvalidDatetimeInConfig as e:
+            sys.stderr.write(
+                f"OPTIONAL observation start time for {night} isn't"
+                " in the format  1979-05-27T07:32:00 where timezone is UT\n"
+            )
+            raise e
+
     return True  # Assuming we did the best we could to catch errors
 
 
@@ -343,22 +355,9 @@ def validate_reference_files(
     return True
 
 
-def validate_datetime(dtime: ConfigDateTime):
-    if start := dtime.get("start"):
-        if not isinstance(start, datetime.datetime):
-            raise InvalidDatetimeInConfig(
-                f"Start time {start} isn't in proper format. Example: 1979-05-27T07:32:00"
-            )
-    else:
-        raise InvalidDatetimeInConfig("Cannot find start field for datetime")
-
-    if end := dtime.get("end"):
-        if not isinstance(end, datetime.datetime):
-            raise InvalidDatetimeInConfig(
-                f"End time {end} isn't in proper format. Example: 1979-05-27T07:32:00"
-            )
-    else:
-        raise InvalidDatetimeInConfig("Cannot find end field for datetime")
+def validate_datetime(time_obj):
+    if not isinstance(time_obj, datetime.datetime):
+        raise InvalidDatetimeInConfig
 
 
 def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None:
@@ -403,10 +402,6 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             # Check for the optional configurations
             # Optional configs should either not be declared or be
             # correctly declared
-
-            # Check if datetime is declared
-            if observation_datetime := configuration.get("datetime"):
-                validate_datetime(observation_datetime)
             on_success(sanity_check(create_processing_config(configuration)))
         case _:
             sys.stderr.write(

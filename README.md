@@ -73,6 +73,10 @@ color = "C://Data Processing/Reference/color_mean_RI.txt"
     path = "F://Summer 2019/September 9, 2019"
     # Because we haven't provided masterflat, this night must have flats to use
 
+    # Note that the starttime is optional and you must ONLY specify this if you
+    # want to use it instead of date/time from the headers of the fit files.
+    # starttime = 2010-10-20T10:20:50
+
     [[input.nights]]
     path = "F://Summer 2019/September 8, 2019"
     # Because we haven't provided masterflat, this night must have flats to use
@@ -80,16 +84,6 @@ color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 [output]
 path = "C://Data Processing/2019 Python Processed"
-
-
-# Note that the datetime configuration is optional and you must ONLY specify
-# this if you want to use these datetimes instead of taking them from the
-# headers of the fit files
-# Furthermore the the timezone is Universal Time and you must specify 24 hr
-# format
-# [datetime] # Note this is commented
-#    start = **Commented**
-#    end = **Commented**
 
 ```
 

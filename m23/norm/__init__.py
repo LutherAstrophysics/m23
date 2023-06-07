@@ -103,8 +103,9 @@ def normalize_log_files(  # noqa
     # Now for each log file we calculate its normfactor
     # For each logfile, its normfactor is the median of normfactors of the stars
     # in that image.
-    # For a star, it's normfactor in a logfile, is sum of adus in reference log file
-    # divided by 4 * its adu
+    # For a star, its normfactor in a logfile is sum of adus in reference log
+    # files divided by 4 * its adu. Note that reference log files mean the 4
+    # sample log files taken from within the night.
     reference_log_files = []
     for index, log_file in enumerate(all_log_files):
         if index in indices_to_normalize_to:

@@ -210,7 +210,7 @@ class LogFileCombinedFile:
         no_of_stars = len(stars)
         with self.path().open("w") as fd:
             # First line represents the datetime
-            fd.write(f"ObservedAt\t{datetime_of_img}\n")
+            fd.write(f"ObservedAt:\t{datetime_of_img}\n")
             fd.write("Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n")
             fd.write(f"\tImage {aligned_combined_file.path().name}\n")
             fd.write(f"\tTotal no of stars: {no_of_stars}\n")

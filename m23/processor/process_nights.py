@@ -88,7 +88,9 @@ def normalization_helper(
 
 
 def get_datetime_to_use(
-    aligned_combined: AlignedCombinedFile, config: Config, no_of_raw_images_in_one_combination: int
+    aligned_combined: AlignedCombinedFile,
+    night_config: ConfigInputNight,
+    no_of_raw_images_in_one_combination: int,
 ) -> str:
     """
     Returns the datetime to use in the logfile combined file,
@@ -103,10 +105,9 @@ def get_datetime_to_use(
 
     # If the datetime option was passed in the header we use that one
     # Otherwise we use the datetime in the header, if that's present
-    if config.get("datetime"):
-        start = config["datetime"]["start"]
-        duration_of_raw_img = aligned_combined.image_duration
-        img_no = aligned_combined.image_number
+    if start := night_config.get("starttime"):
+        duration_of_raw_img = aligned_combined.image_duration()
+        img_no = aligned_combined.image_number()
         time_taken_to_capture_one_combined_image = (
             duration_of_raw_img * no_of_raw_images_in_one_combination
         )
@@ -302,7 +303,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         )
 
         date_time_to_use = get_datetime_to_use(
-            aligned_combined_file, config, no_of_images_to_combine
+            aligned_combined_file, night, no_of_images_to_combine
         )
 
         extract_stars(
