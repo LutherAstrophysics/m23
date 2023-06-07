@@ -41,3 +41,12 @@ color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 [output]
 path = "D://xxx"
+
+# Note that the datetime configuration is optional and you must ONLY specify
+# this if you want to use these datetimes instead of taking them from the
+# headers of the fit files
+# Furthermore the the timezone is Universal Time and you must specify 24 hr
+# format
+# [datetime] # Note this is commented
+#    start = **Commented** 
+#    end = **Commented** 
