@@ -2,11 +2,12 @@ import re
 from collections import namedtuple
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Iterable
 
 import numpy as np
 import numpy.typing as npt
 
+from m23.constants import OBSERVATION_DATETIME_FORMAT
 from m23.file.aligned_combined_file import AlignedCombinedFile
 
 
@@ -30,6 +31,8 @@ class LogFileCombinedFile:
     )
     LogFileCombinedDataType = Dict[int, StarLogfileCombinedData]
 
+    date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT
+
     @classmethod
     def generate_file_name(cls, night_date: date, img_no: int, img_duration: float):
         """
@@ -43,6 +46,7 @@ class LogFileCombinedFile:
     def __init__(self, file_path: str) -> None:
         self.__path = Path(file_path)
         self.__is_read = False
+        self.__header = None
         self.__data = None
         self.__title_row = None
 
@@ -52,6 +56,7 @@ class LogFileCombinedFile:
             # Save the title row
             # We split the title row by gap of more than two spaces
             self.__title_row = re.split(r"\s{2,}", lines[self.data_titles_row_zero_index])
+            self.__header = lines[: self.header_rows]
             lines = lines[self.header_rows :]  # Skip headers - 1
             # Create a 2d list
             lines = [line.split() for line in lines]
@@ -76,6 +81,22 @@ class LogFileCombinedFile:
         Checks if the filename matches the naming convention
         """
         return bool(self.file_name_re.match(self.path().name))
+
+    def header(self) -> Iterable[str]:
+        """
+        Returns an iterable to string representing the header information in the
+        file
+        """
+        if not self.__is_read():
+            self._read()
+        return self.__header
+
+    def datetime(self) -> str:
+        """
+        Return the datetime string representing the observation of this image
+        or empty string if no data is present
+        """
+        return self.header()[0]
 
     def night_date(self) -> date | None:
         """
@@ -169,6 +190,7 @@ class LogFileCombinedFile:
         self,
         data: LogFileCombinedDataType,
         aligned_combined_file: AlignedCombinedFile,
+        datetime_of_img: str = "",
     ):
         """
         Creates logfile combined file based on the provided data
@@ -187,7 +209,8 @@ class LogFileCombinedFile:
         stars = sorted(data.keys())
         no_of_stars = len(stars)
         with self.path().open("w") as fd:
-            fd.write("\n")
+            # First line represents the datetime
+            fd.write(f"ObservedAt\t{datetime_of_img}\n")
             fd.write("Star Data Extractor Tool: (Note: This program mocks format of AIP_4_WIN) \n")
             fd.write(f"\tImage {aligned_combined_file.path().name}\n")
             fd.write(f"\tTotal no of stars: {no_of_stars}\n")

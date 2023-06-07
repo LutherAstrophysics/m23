@@ -214,7 +214,7 @@ class FluxLogCombinedFile:
     def mean(self) -> float:
         """
         Returns the mean value for the star for the night
-        Note that this is the median of only valid data points (> 0 magnitudes)
+        Note that this is the mean of only valid data points (> 0 magnitudes)
         This means that 0.00 values are automatically ignored.
         Note that if the night doesn't contain any valid data, this returns nan
         """

@@ -70,11 +70,6 @@ class Config(TypedDict):
     output: ConfigOutput
     datetime: NotRequired[ConfigDateTime]
 
-    # Stores if the header datetime is to be used
-    # This value is set to false if the user species the (otherwise optional)
-    # start and end date and time values of the observation.
-    use_header_datetime: bool
-
 
 def is_valid_radii_of_extraction(lst):
     """Verifies that each radius of extraction is a positive integer"""
@@ -116,10 +111,6 @@ def create_processing_config(config_dict: Config) -> Config:
     # Remove duplicates radii of extraction
     radii = list(set(config_dict["processing"]["radii_of_extraction"]))
     config_dict["processing"]["radii_of_extraction"] = radii
-
-    # Use the datetime value from the header if it's not provided by the use in
-    # the configuration file
-    config_dict["use_header_datetime"] = not bool(config_dict.get("datetime"))
 
     return config_dict
 

@@ -6,6 +6,7 @@ import numpy.typing as npt
 from astropy.io import fits
 from astropy.io.fits.header import Header
 
+from m23.constants import OBSERVATION_DATETIME_FORMAT
 from m23.file.raw_image_file import RawImageFile
 
 
@@ -13,7 +14,7 @@ class AlignedCombinedFile:
     # Class attributes
     file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
     date_observed_header_name = "DATE-OBS"
-    date_observed_datetime_format = "%Y-%m-%dT%H:%M:%S"
+    date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT
 
     @classmethod
     def generate_file_name(cls, img_duration: float, img_number: int) -> str:

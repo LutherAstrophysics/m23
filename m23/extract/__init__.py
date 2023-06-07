@@ -16,7 +16,8 @@ def extract_stars(
     reference_log_file: ReferenceLogFile,
     radii_of_extraction,
     log_file_combined_file: LogFileCombinedFile,
-    aligned_combined_file=AlignedCombinedFile,
+    aligned_combined_file: AlignedCombinedFile,
+    date_time_to_use: str = "",
 ):
     stars_centers_in_new_image = newStarCenters(image_data, reference_log_file)
     star_fluxes = {
@@ -48,7 +49,9 @@ def extract_stars(
                 {radius: star_fluxes[radius][star_no - 1][2] for radius in radii_of_extraction}
             ),
         )
-    log_file_combined_file.create_file(log_file_combined_data, aligned_combined_file)
+    log_file_combined_file.create_file(
+        log_file_combined_data, aligned_combined_file, date_time_to_use
+    )
 
 
 def newStarCenters(imageData, reference_log_file: ReferenceLogFile):

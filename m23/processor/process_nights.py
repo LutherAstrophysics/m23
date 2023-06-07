@@ -1,6 +1,6 @@
 import logging
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import List
 
@@ -85,6 +85,42 @@ def normalization_helper(
         color_ref_file_path,
         radii_of_extraction,
     )
+
+
+def get_datetime_to_use(
+    aligned_combined: AlignedCombinedFile, config: Config, no_of_raw_images_in_one_combination: int
+) -> str:
+    """
+    Returns the datetime to use in the logfile combined file,
+    based on the a given `config` and `aligned_combine` file
+
+    Returns an empty string if no datetime is available to use
+    """
+
+    # We use the same format of the datetime string as is in the
+    # header of our fit files
+    datetime_format = aligned_combined.date_observed_datetime_format
+
+    # If the datetime option was passed in the header we use that one
+    # Otherwise we use the datetime in the header, if that's present
+    if config.get("datetime"):
+        start = config["datetime"]["start"]
+        duration_of_raw_img = aligned_combined.image_duration
+        img_no = aligned_combined.image_number
+        time_taken_to_capture_one_combined_image = (
+            duration_of_raw_img * no_of_raw_images_in_one_combination
+        )
+        seconds_elapsed_from_beginning_of_night = (
+            time_taken_to_capture_one_combined_image * (img_no - 1)
+            + time_taken_to_capture_one_combined_image * 0.5
+        )
+        return (start + timedelta(seconds=seconds_elapsed_from_beginning_of_night)).strftime(
+            datetime_format
+        )
+    elif datetime_in_aligned_combined := aligned_combined.datetime():
+        return datetime_in_aligned_combined.strftime(datetime_format)
+    else:
+        return ""
 
 
 def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):  # noqa
@@ -194,7 +230,13 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     log_files_to_normalize: List[LogFileCombinedFile] = []
 
     for i in range(no_of_combined_images):
+        # NOTE
+        # It's very easy to get confused between no_of_combined_images
+        # and the no_of_images_to_combine. THe later is the number of raw images
+        # that are combined together to form on aligned combined image
+
         from_index = i * no_of_images_to_combine
+        # Note the to_index is exclusive
         to_index = (i + 1) * no_of_images_to_combine
 
         images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
@@ -238,7 +280,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
         # We take the middle image from the combination as the sample This is
         # the image whose header will be copied to the combined image fit file
-        midpoint_index = from_index + no_of_combined_images // 2
+        midpoint_index = from_index + no_of_images_to_combine // 2
         sample_raw_image_file = raw_images[midpoint_index]
 
         aligned_combined_image_number = to_index // no_of_images_to_combine
@@ -258,12 +300,18 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_file_combined_file = LogFileCombinedFile(
             LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name
         )
+
+        date_time_to_use = get_datetime_to_use(
+            aligned_combined_file, config, no_of_images_to_combine
+        )
+
         extract_stars(
             combined_images_data,
             reference_log_file,
             radii_of_extraction,
             log_file_combined_file,
             aligned_combined_file,
+            date_time_to_use,
         )
         log_files_to_normalize.append(log_file_combined_file)
         logger.info(f"Extraction from combination {from_index}-{to_index} completed")
