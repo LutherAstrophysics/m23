@@ -14,6 +14,7 @@ from m23.constants import (
     M23_RAW_IMAGES_FOLDER_NAME,
     TYPICAL_NEW_CAMERA_CROP_REGION,
 )
+from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.utils import (
     get_darks,
@@ -69,6 +70,11 @@ class Config(TypedDict):
     output: ConfigOutput
     datetime: NotRequired[ConfigDateTime]
 
+    # Stores if the header datetime is to be used
+    # This value is set to false if the user species the (otherwise optional)
+    # start and end date and time values of the observation.
+    use_header_datetime: bool
+
 
 def is_valid_radii_of_extraction(lst):
     """Verifies that each radius of extraction is a positive integer"""
@@ -110,6 +116,10 @@ def create_processing_config(config_dict: Config) -> Config:
     # Remove duplicates radii of extraction
     radii = list(set(config_dict["processing"]["radii_of_extraction"]))
     config_dict["processing"]["radii_of_extraction"] = radii
+
+    # Use the datetime value from the header if it's not provided by the use in
+    # the configuration file
+    config_dict["use_header_datetime"] = not bool(config_dict.get("datetime"))
 
     return config_dict
 
@@ -342,6 +352,24 @@ def validate_reference_files(
     return True
 
 
+def validate_datetime(dtime: ConfigDateTime):
+    if start := dtime.get("start"):
+        if not isinstance(start, datetime.datetime):
+            raise InvalidDatetimeInConfig(
+                f"Start time {start} isn't in proper format. Example: 1979-05-27T07:32:00"
+            )
+    else:
+        raise InvalidDatetimeInConfig("Cannot find start field for datetime")
+
+    if end := dtime.get("end"):
+        if not isinstance(end, datetime.datetime):
+            raise InvalidDatetimeInConfig(
+                f"End time {end} isn't in proper format. Example: 1979-05-27T07:32:00"
+            )
+    else:
+        raise InvalidDatetimeInConfig("Cannot find end field for datetime")
+
+
 def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None:
     """
     This method reads data processing configuration from the file path
@@ -350,7 +378,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
     """
     if not file_path.exists() or not file_path.exists():
         raise FileNotFoundError("Cannot find configuration file")
-    match toml.load(file_path):
+    match configuration := toml.load(file_path):
         case {
             "image": {
                 "rows": int(_),
@@ -381,7 +409,14 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 radii_of_extraction,
             )
         ):
-            on_success(sanity_check(create_processing_config(toml.load(file_path))))
+            # Check for the optional configurations
+            # Optional configs should either not be declared or be
+            # correctly declared
+
+            # Check if datetime is declared
+            if observation_datetime := configuration.get("datetime"):
+                validate_datetime(observation_datetime)
+            on_success(sanity_check(create_processing_config(configuration)))
         case _:
             sys.stderr.write(
                 "Stopping because the provided configuration file"
