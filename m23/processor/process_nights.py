@@ -2,7 +2,7 @@ import logging
 import sys
 from datetime import date, timedelta
 from pathlib import Path
-from typing import List
+from typing import Iterable, List
 
 import numpy as np
 import toml
@@ -22,12 +22,15 @@ from m23.constants import (
     MASTER_DARK_NAME,
     MASTER_FLAT_NAME,
     OUTPUT_CALIBRATION_FOLDER_NAME,
+    SKY_BG_BOX_REGION_SIZE,
+    SKY_BG_FOLDER_NAME,
 )
-from m23.extract import extract_stars
+from m23.extract import extract_stars, sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
+from m23.file.sky_bg_file import SkyBgFile
 from m23.internight_normalize import internight_normalize
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
@@ -62,6 +65,14 @@ def normalization_helper(
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
+    # Generate sky bg file
+    sky_bg_filename = (
+        output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date, img_duration)
+    )
+    # Create folder if it doesn't exist
+    sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
+    create_sky_bg_file(SkyBgFile(sky_bg_filename), log_files_to_use, night_date)
+
     for radius in radii_of_extraction:
         logger.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
@@ -85,6 +96,39 @@ def normalization_helper(
         color_ref_file_path,
         radii_of_extraction,
     )
+
+
+def create_sky_bg_file(
+    sky_bg_file: SkyBgFile, log_files_to_use: Iterable[LogFileCombinedFile], night_date: date
+):
+    """
+    Creates sky bg data. Note that this isn't performed right after extraction
+    is that we want to re-perform it after re-normalization. If we do it as part
+    of `normalization_helper` which is what both `process_night` and `renorm`
+    use, we wouldn't have to do it twice.
+    """
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+    logger.info("Generating sky background file")
+    bg_data_of_all_images = []
+    for logfile in log_files_to_use:
+        date_time_of_image = logfile.datetime()
+        # Here we find the corresponding aligned combined file first
+        # so we can use that to calculate the sky bg data.
+        aligned_combined_folder = logfile.path().parent.parent / ALIGNED_COMBINED_FOLDER_NAME
+        aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
+            logfile.img_duration(), logfile.img_number()
+        )
+        aligned_combined_file = AlignedCombinedFile(
+            aligned_combined_folder / aligned_combined_file_name
+        )
+        bg_data_of_image = sky_bg_average_for_all_regions(
+            aligned_combined_file.data(), SKY_BG_BOX_REGION_SIZE
+        )
+        # Append tuple of result
+        bg_data_of_all_images.append((date_time_of_image, bg_data_of_image))
+
+    sky_bg_file.create_file(bg_data_of_all_images)
+    logger.info("Completed generating sky background file")
 
 
 def get_datetime_to_use(
