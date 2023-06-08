@@ -6,11 +6,13 @@
   "[python]": {
     "editor.codeActionsOnSave": {
       "source.organizeImports": true
-    }
+    },
+    "editor.defaultFormatter": "ms-python.black-formatter"
   },
   "cSpell.words": [
     "adus",
     "ainbow",
+    "arange",
     "argmin",
     "argsort",
     "astroalign",

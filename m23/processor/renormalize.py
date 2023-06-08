@@ -35,7 +35,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         first_image = night["first_logfile_number"]
         last_image = night["last_logfile_number"]
         logger.info(
-            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image}"
+            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image}"  # noqa ES501
         )
 
         FLUX_LOGS_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
@@ -45,7 +45,9 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         reference_log_file = ReferenceLogFile(
             renormalize_dict["reference"]["file"],
         )
-        logfile_combined_reference_logfile = LogFileCombinedFile(renormalize_dict["reference"]["logfile"])
+        logfile_combined_reference_logfile = LogFileCombinedFile(
+            renormalize_dict["reference"]["logfile"]
+        )
 
         # Ensure color ref file path is str
         color_ref_file_path = str(renormalize_dict["reference"]["color"])
@@ -62,7 +64,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             night_date,
             color_ref_file_path,
             NIGHT_FOLDER,
-            logfile_combined_reference_logfile
+            logfile_combined_reference_logfile,
         )
 
 

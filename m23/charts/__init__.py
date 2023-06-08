@@ -4,11 +4,12 @@ from pathlib import Path
 from typing import Callable, Dict, Iterable
 
 import numpy as np
+from matplotlib import pyplot as plt
+
 from m23.constants import CHARTS_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
 from m23.utils import get_date_from_input_night_folder_name
-from matplotlib import pyplot as plt
 
 
 def draw_normfactors_chart(
@@ -19,7 +20,8 @@ def draw_normfactors_chart(
     Note that you must also provided `log_files_used` because otherwise there is no way to know
     which logfile corresponds to which norm factor
 
-    param: log_files_used: The list or sequence of log files to used when doing intra night normalization
+    param: log_files_used: The list or sequence of log files to used when doing
+            intra night normalization
     param: night_folder: The night folder that hosts other folders like Flux Logs Combined, etc.
     return: None
 
@@ -37,7 +39,7 @@ def draw_normfactors_chart(
         normfactor_files = list(radius_folder.glob("*normfactor*"))
         if len(normfactor_files) != 1:
             sys.stderr.write(
-                f"Expected to find 1 normfactor file, found {len(normfactor_files)} in {radius_folder}\n"
+                f"Expected to find 1 normfactor file, found {len(normfactor_files)} in {radius_folder}\n"  # noqa
             )
             # Skip this radius folder
             continue
@@ -46,7 +48,7 @@ def draw_normfactors_chart(
         log_file_number_to_normfactor_map = {}
         if len(log_files_used) != len(normfactor_data):
             sys.stderr.write(
-                "Make sure you're providing exactly the same number of logfiles as there are normfactor values\n"
+                "Make sure you're providing exactly the same number of logfiles as there are normfactor values\n"  # noqa
             )
             raise ValueError("Mismatch between number of logfiles and the normfactors")
         for index, log_file in enumerate(log_files_used):
@@ -54,7 +56,7 @@ def draw_normfactors_chart(
 
         first_img_number = log_files_used[0].img_number()
         last_img_number = log_files_used[-1].img_number()
-        chart_name = f"{night_date} normfactors_chart_{first_img_number}-{last_img_number}_{radius_folder.name}.png"
+        chart_name = f"{night_date} normfactors_chart_{first_img_number}-{last_img_number}_{radius_folder.name}.png"  # noqa
         chart_file_path = chart_folder / chart_name
         x, y = zip(
             *log_file_number_to_normfactor_map.items()

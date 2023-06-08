@@ -6,12 +6,11 @@ import numpy.typing as npt
 
 
 class NormfactorFile:
-
     # Class attributes
     date_format = "%m-%d-%y"
 
     @classmethod
-    def generate_file_name(cls, night_date : date, img_duration : float):
+    def generate_file_name(cls, night_date: date, img_duration: float):
         return f"{night_date.strftime(cls.date_format)}_m23_{img_duration}_normfactors.txt"
 
     def __init__(self, file_path: str) -> None:
@@ -27,7 +26,7 @@ class NormfactorFile:
             lines = [line.strip() for line in fd.readlines()]
             self.__data = np.array(lines, dtype="float")
             self.__is_read = True
-    
+
     def path(self):
         return self.__path
 
@@ -54,9 +53,8 @@ class NormfactorFile:
                 fmt="%3.5f",
             )
 
-        
     def __repr__(self) -> str:
         return self.__str__()
-    
+
     def __str__(self) -> str:
         return f"Normfactors {self.path()}"

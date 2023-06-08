@@ -4,6 +4,7 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
+
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -15,7 +16,8 @@ def extract_stars(
     reference_log_file: ReferenceLogFile,
     radii_of_extraction,
     log_file_combined_file: LogFileCombinedFile,
-    aligned_combined_file=AlignedCombinedFile,
+    aligned_combined_file: AlignedCombinedFile,
+    date_time_to_use: str = "",
 ):
     stars_centers_in_new_image = newStarCenters(image_data, reference_log_file)
     star_fluxes = {
@@ -38,7 +40,8 @@ def extract_stars(
             yFWHM=star_FWHM[0],
             avgFWHM=star_FWHM[2],
             # Note that star_fluxes[radius] is a list of 3 tuples
-            # where the elements of the tuple are (total star flux, background flux, subtracted star flux)
+            # where the elements of the tuple are (total star flux, background
+            # flux, subtracted star flux)
             # Also note that we only write sky ADU for one of the radius of extraction
             # This is the usually just the first radius of extraction
             sky_adu=adu_per_pixel,  # Sky ADU from first of extraction
@@ -46,11 +49,12 @@ def extract_stars(
                 {radius: star_fluxes[radius][star_no - 1][2] for radius in radii_of_extraction}
             ),
         )
-    log_file_combined_file.create_file(log_file_combined_data, aligned_combined_file)
+    log_file_combined_file.create_file(
+        log_file_combined_data, aligned_combined_file, date_time_to_use
+    )
 
 
 def newStarCenters(imageData, reference_log_file: ReferenceLogFile):
-
     stars_x_positions_in_ref_file = reference_log_file.get_x_position_column()
     stars_y_positions_in_ref_file = reference_log_file.get_y_position_column()
 
@@ -84,7 +88,8 @@ def newStarCenters(imageData, reference_log_file: ReferenceLogFile):
 
 def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
     """
-    We need to optimize this code to work more efficiently with the caller function i.e extract_stars
+    We need to optimize this code to work more efficiently with the caller
+    function i.e extract_stars
     """
     regionSize = 64
     pixelsPerStar = np.count_nonzero(circleMatrix(radius))

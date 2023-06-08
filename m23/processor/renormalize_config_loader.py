@@ -64,6 +64,52 @@ def get_relevant_log_files_combined_files(folder: Path, start: int, end: int) ->
     return result
 
 
+def validate_night(night):
+    path = Path(night["path"])
+
+    first_logfile = night["first_logfile_number"]
+    last_logfile = night["last_logfile_number"]
+
+    # Validate path
+    if not path.exists():
+        sys.stderr.write(f"Path {path} doesn't exist\n")
+        return False
+
+    # Check if the naming convention is valid for the input night
+    if not is_night_name_valid(path):
+        sys.stderr.write("Naming convention is invalid\n")
+        return False
+
+    LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
+
+    if not LOG_FILES_COMBINED_FOLDER.exists():
+        sys.stderr.write(f"Path {LOG_FILES_COMBINED_FOLDER} doesn't exist\n")
+        return False
+
+    if (type(first_logfile) != int or type(last_logfile) != int) and not (
+        last_logfile >= first_logfile >= 1
+    ):
+        sys.stderr.write(
+            f"Invalid logfile numbers. First: {first_logfile} Last: {last_logfile} for night {night}\n"  # noqa
+        )
+        return False
+
+    # Ensure that the list of files to use from LOG_FILES_COMBINED_FOLDER isn't empty
+    # based on given constraints of start and end indices
+    if (
+        len(
+            get_relevant_log_files_combined_files(
+                LOG_FILES_COMBINED_FOLDER, first_logfile, last_logfile
+            )
+        )
+        == 0
+    ):
+        sys.stderr.write(f"No logfiles in range {first_logfile}-{last_logfile} \n")
+        return False
+
+    return True
+
+
 def is_valid(config: RenormalizeConfig) -> bool:
     """
     Returns whether any error can be found in renormalize config dict
@@ -84,7 +130,7 @@ def is_valid(config: RenormalizeConfig) -> bool:
         sys.stderr.write("Make sure the provided logfile file exits and has txt extension\n")
         return False
 
-    # Make sure that the logfile combined reference file has 
+    # Make sure that the logfile combined reference file has
     # all radii of extraction data
     available_radii = LogFileCombinedFile(logfile).get_star_data(1).radii_adu.keys()
     for i in config["processing"]["radii_of_extraction"]:
@@ -93,7 +139,6 @@ def is_valid(config: RenormalizeConfig) -> bool:
                 f"Radius {i} ADU data not present in provided logfile combined file. \n"
             )
             return False
-
 
     color_ref_file = Path(config["reference"]["color"])
     if not (
@@ -106,45 +151,9 @@ def is_valid(config: RenormalizeConfig) -> bool:
 
     # Validate each night
     for night in config["input"]["nights"]:
-        path = Path(night["path"])
-
-        first_logfile = night["first_logfile_number"]
-        last_logfile = night["last_logfile_number"]
-
-        # Validate path
-        if not path.exists():
-            sys.stderr.write(f"Path {path} doesn't exist\n")
-            return False
-
-        # Check if the naming convention is valid for the input night
-        if not is_night_name_valid(path):
-            return False
-
-        LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
-
-        if not LOG_FILES_COMBINED_FOLDER.exists():
-            sys.stderr.write(f"Path {LOG_FILES_COMBINED_FOLDER} doesn't exist\n")
-            return False
-
-        if (type(first_logfile) != int or type(last_logfile) != int) and not (
-            last_logfile >= first_logfile >= 1
-        ):
-            sys.stderr.write(
-                f"Invalid logfile numbers. First: {first_logfile} Last: {last_logfile} for night {night}\n"
-            )
-            return False
-
-        # Ensure that the list of files to use from LOG_FILES_COMBINED_FOLDER isn't empty
-        # based on given constraints of start and end indices
-        if (
-            len(
-                get_relevant_log_files_combined_files(
-                    LOG_FILES_COMBINED_FOLDER, first_logfile, last_logfile
-                )
-            )
-            == 0
-        ):
-            sys.stderr.write(f"No logfiles in range {first_logfile}-{last_logfile} \n")
+        is_valid = validate_night(night)
+        if not is_valid:
+            sys.stderr.write(f"Invalid night {night}\n")
             return False
 
         return True  # No errors detected
@@ -170,7 +179,8 @@ def create_enhanced_config(config: RenormalizeConfig):
     for night in config["input"]["nights"]:
         if type(night["path"]) == str:
             night["path"] = Path(night["path"])
-        # Set the list of log files to use for normalization based on the provided start, end indices
+        # Set the list of log files to use for normalization based on the
+        # provided start, end indices
         night["files_to_use"] = get_relevant_log_files_combined_files(
             night["path"] / LOG_FILES_COMBINED_FOLDER_NAME,
             night["first_logfile_number"],
@@ -198,7 +208,7 @@ def validate_renormalize_config_file(
         case {
             "processing": {"radii_of_extraction": list(_)},
             "input": {"nights": list(_)},
-            "reference": {"file": str(_), "color": str(_), "logfile" : str(_)},
+            "reference": {"file": str(_), "color": str(_), "logfile": str(_)},
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:

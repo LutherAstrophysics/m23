@@ -42,7 +42,7 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
     # Verify that the night contains flats to use
     if len(list(get_flats(CALIBRATION_FOLDER_PATH))) == 0:
         sys.stderr.write(
-            f"Night {NIGHT_INPUT_PATH} doesn't contain flats in {CALIBRATION_FOLDER_PATH}. Provide masterflat path.\n"
+            f"Night {NIGHT_INPUT_PATH} doesn't contain flats in {CALIBRATION_FOLDER_PATH}. Provide masterflat path.\n"  # noqa ES501
         )
         return False
 
@@ -54,7 +54,8 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
         return False
 
     if not is_image_properties_valid(config["image"]):
-        # No error message needed as the function `is_image_properties_valid` write error if there's one
+        # No error message needed as the function
+        # `is_image_properties_valid` write error if there's one
         return False
 
     return True  # No errors detected
@@ -83,14 +84,16 @@ def is_image_properties_valid(image_config: ConfigImage) -> bool:
                     if not valid_values:
                         sys.stderr.write(f"Invalid value detected in crop_region {j}.\n")
                         return False
-        except Exception as e:
+        except [ValueError]:
             sys.stderr.write(f"Error in crop_region {j}.\n")
             return False
 
     return True  # No error detected
 
 
-def create_enhanced_config(config: MasterflatGeneratorConfig) -> MasterflatGeneratorConfig:
+def create_enhanced_config(
+    config: MasterflatGeneratorConfig,
+) -> MasterflatGeneratorConfig:
     """
     This function enhances the configuration file for ease of functions
     that later require processing of the config file
@@ -125,7 +128,7 @@ def validate_generate_masterflat_config_file(
         case {
             "input": _,
             "output": _,
-            "image": {"rows": int(_), "columns": int(_), **optional_image_options},
+            "image": {"rows": int(_), "columns": int(_)},
         } as masterflat_generator_config if is_valid(masterflat_generator_config):
             on_success(sanity_check(create_enhanced_config(masterflat_generator_config)))
         case _:

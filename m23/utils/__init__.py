@@ -68,15 +68,14 @@ def get_all_fit_files(folder: Path) -> Iterable[PosixPath]:
 
 def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
     """
-    Return a list `RawImageFile` files in `folder` provided sorted asc. by image number 
+    Return a list `RawImageFile` files in `folder` provided sorted asc. by image number
     Note that only filenames matching the naming convention of RawImageFile are returned
     """
     all_files = [RawImageFile(file.absolute()) for file in folder.glob("*.fit")]
     # Filter files whose filename don't match naming convention
-    all_files = filter(lambda raw_image_file : raw_image_file.is_valid_file_name(), all_files)
+    all_files = filter(lambda raw_image_file: raw_image_file.is_valid_file_name(), all_files)
     # Sort files by image number
     return sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
-
 
 
 def get_radius_folder_name(radius: int) -> str:
@@ -133,9 +132,11 @@ def get_log_file_name(night_date: date):
     return f"Night-{night_date}-Processing-log.txt"
 
 
-### Similar to the default version of IDL Median
-### https://github.com/LutherAstrophysics/python-helpers/issues/8
 def customMedian(arr, *args, **kwargs):
+    """
+    Median similar to the default version of IDL Median
+    https://github.com/LutherAstrophysics/python-helpers/issues/8
+    """
     arr = np.array(arr)
     if len(arr) % 2 == 0:
         newArray = np.append(arr, [np.multiply(np.ones(arr[0].shape), np.max(arr))], axis=0)

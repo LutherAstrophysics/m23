@@ -66,7 +66,7 @@ def internight_normalize(
         internight_normalize_auxiliary(night, logfile_combined_reference_file, color_file, radius)
 
 
-def internight_normalize_auxiliary(
+def internight_normalize_auxiliary(  # noqa
     night: Path,
     logfile_combined_reference_file: LogFileCombinedFile,
     color_file: Path,
@@ -114,7 +114,10 @@ def internight_normalize_auxiliary(
             color_data_file.get_star_color(log_file.star_number()),
             np.nan,  # Actual color value used
             log_file.attendance(),  # Attendance of the star for the night
-            logfile_combined_reference_file.get_star_data(log_file.star_number()).radii_adu[radius_of_extraction] or np.nan
+            logfile_combined_reference_file.get_star_data(log_file.star_number()).radii_adu[
+                radius_of_extraction
+            ]
+            or np.nan,
         )
         for log_file in flux_logs_files
     }
@@ -216,12 +219,17 @@ def internight_normalize_auxiliary(
                 # Note python slicing excludes last element, IDL's includes
                 modified_y_value[-1] = np.mean(modified_y_value[-4:-1])
             a, b, c, d = np.polyfit(x_values, modified_y_value, 3)  # Degree 3
+
             # ax^3 + bx^2 + cx + d
-            polynomial_fit_fn = lambda x: a * x**3 + b * x**2 + c * x + d
+            def polynomial_fit_fn(x):
+                return a * x**3 + b * x**2 + c * x + d
+
         else:
             a, b, c, d = np.polyfit(x_values, y_values, 3)  # Degree 3
+
             # ax^3 + bx^2 + cx + d
-            polynomial_fit_fn = lambda x: a * x**3 + b * x**2 + c * x + d
+            def polynomial_fit_fn(x):
+                return a * x**3 + b * x**2 + c * x + d
 
         # This list stores the difference between actual signal value and the
         # value given by fitted curve
