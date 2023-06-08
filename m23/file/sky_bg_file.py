@@ -57,7 +57,7 @@ class SkyBgFile:
         bg_sections = map(lambda x: "_".join(map(str, x)), sky_bg_data[0][1].keys())
         bg_sections_str = "".join(map("{:<10s}".format, bg_sections))
         with open(self.path(), "w") as fd:
-            fd.write(f"{'Date':<26s}{'Mean':<10s}{'Median':<10s}{bg_sections_str}\n")
+            fd.write(f"{'Date':<26s}{'Mean':<10s}{'Median':<10s}{'Std':<10s}{bg_sections_str}\n")
             for night_datetime, bg_data in sky_bg_data:
                 bg_data_np = np.array([bg_data[x] for x in bg_data.keys()])
 
@@ -67,8 +67,12 @@ class SkyBgFile:
                 mean, median = np.mean(bg_data_ignoring_bogus_values), np.median(
                     bg_data_ignoring_bogus_values
                 )
+                std = np.std(bg_data_ignoring_bogus_values)
+
                 values_str = "".join(map("{:<10.2f}".format, bg_data_np))
-                fd.write(f"{night_datetime:<26s}{mean:<10.2f}{median:<10.2f}{values_str}\n")
+                fd.write(
+                    f"{night_datetime:<26s}{mean:<10.2f}{median:<10.2f}{std:<10.2f}{values_str}\n"
+                )
 
     def __repr__(self) -> str:
         return self.__str__()
