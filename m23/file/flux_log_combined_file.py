@@ -281,7 +281,7 @@ class FluxLogCombinedFile:
                     ("x", float),
                     ("y", float),
                     ("norm", float),
-                    ("date", "U6"),
+                    ("date", "U32"),
                 ],
             )
             cols_to_save["adu"] = adu_data
@@ -293,7 +293,7 @@ class FluxLogCombinedFile:
             np.savetxt(
                 fd,
                 cols_to_save,
-                fmt="%-15d%-13.2f%-13.2f%-15.5f%-32s",
+                fmt="%-15.2f%-13.2f%-13.2f%-15.5f%-32s",
             )
 
     def __repr__(self) -> str:

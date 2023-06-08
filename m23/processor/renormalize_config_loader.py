@@ -77,6 +77,7 @@ def validate_night(night):
 
     # Check if the naming convention is valid for the input night
     if not is_night_name_valid(path):
+        sys.stderr.write("Naming convention is invalid\n")
         return False
 
     LOG_FILES_COMBINED_FOLDER = path / LOG_FILES_COMBINED_FOLDER_NAME
@@ -105,6 +106,8 @@ def validate_night(night):
     ):
         sys.stderr.write(f"No logfiles in range {first_logfile}-{last_logfile} \n")
         return False
+
+    return True
 
 
 def is_valid(config: RenormalizeConfig) -> bool:
@@ -150,6 +153,7 @@ def is_valid(config: RenormalizeConfig) -> bool:
     for night in config["input"]["nights"]:
         is_valid = validate_night(night)
         if not is_valid:
+            sys.stderr.write(f"Invalid night {night}\n")
             return False
 
         return True  # No errors detected

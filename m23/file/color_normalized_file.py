@@ -56,12 +56,12 @@ class ColorNormalizedFile:
                 "Used Mean R-I",
             ]
             fd.write(
-                f"{headers[0]:>8s}{headers[1]:>32s}{headers[2]:>24s}{headers[3]:>32s}{headers[4]:>32s}\n"  # noqa
+                f"{headers[0]:<8s}{headers[1]:>32s}{headers[2]:>24s}{headers[3]:>32s}{headers[4]:>32s}\n"  # noqa
             )
             for star_no in sorted(data_dict.keys()):
                 star_data = data_dict[star_no]
                 fd.write(
-                    f"{star_no:>8d}{star_data.normalized_median_flux:>32.7f}{star_data.norm_factor:>24.7f}{star_data.measured_mean_r_i:>32.7f}{star_data.used_mean_r_i:>32.7f}\n"  # noqa
+                    f"{star_no:<8d}{star_data.normalized_median_flux:>32.7f}{star_data.norm_factor:>24.7f}{star_data.measured_mean_r_i:>32.7f}{star_data.used_mean_r_i:>32.7f}\n"  # noqa
                 )
 
     def _read(self):

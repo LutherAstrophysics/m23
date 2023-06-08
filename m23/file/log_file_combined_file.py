@@ -87,7 +87,7 @@ class LogFileCombinedFile:
         Returns an iterable to string representing the header information in the
         file
         """
-        if not self.__is_read():
+        if not self.__is_read:
             self._read()
         return self.__header
 
@@ -96,7 +96,7 @@ class LogFileCombinedFile:
         Return the datetime string representing the observation of this image
         or empty string if no data is present
         """
-        return self.header()[0]
+        return self.header()[0].split("\t")[-1]
 
     def night_date(self) -> date | None:
         """
