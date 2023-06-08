@@ -5,6 +5,7 @@ from typing import Tuple
 import numpy as np
 import numpy.typing as npt
 
+from m23.constants import SKY_BG_BOX_REGION_SIZE
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -57,10 +58,9 @@ def extract_stars(
     aligned_combined_file: AlignedCombinedFile,
     date_time_to_use: str = "",
 ):
-    region_size = 64
     # We save the sky background in each `region_sized`(d)
     # square box of the image in the following
-    sky_backgrounds = sky_bg_average_for_all_regions(image_data, region_size)
+    sky_backgrounds = sky_bg_average_for_all_regions(image_data, SKY_BG_BOX_REGION_SIZE)
 
     stars_centers_in_new_image = newStarCenters(image_data, reference_log_file)
 

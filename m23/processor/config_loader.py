@@ -219,7 +219,7 @@ def is_night_name_valid(NIGHT_INPUT_PATH: Path):
     try:
         get_date_from_input_night_folder_name(NIGHT_INPUT_PATH.name)
         return True
-    except [ValueError]:
+    except Exception:  # noqa
         sys.stderr.write(
             f"Night {NIGHT_INPUT_PATH} folder name doesn't match the naming convention\n"
         )
@@ -234,9 +234,7 @@ def validate_night(night: ConfigInputNight) -> bool:  # noqa
     """
     try:
         NIGHT_INPUT_PATH = Path(night["path"])
-    except [
-        ValueError,
-    ]:
+    except Exception:  # noqa
         sys.stderr.write(f"Invalid night {night} in config file.\nCheck path spell\n")
         return False
 

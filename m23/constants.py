@@ -12,6 +12,7 @@ OUTPUT_NIGHT_FOLDER_NAME_DATE_FORMAT = "%B %d, %Y"
 LOG_FILE_COMBINED_FILENAME_DATE_FORMAT = "%m-%d-%y"
 FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT = "%m-%d-%y"
 COLOR_NORMALIZED_FILENAME_DATE_FORMAT = "%m-%d-%y"
+SKY_BG_FILENAME_DATE_FORMAT = "%m-%d-%y"
 OBSERVATION_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 
 # Output folder/file name conventions
@@ -21,9 +22,14 @@ ALIGNED_COMBINED_FOLDER_NAME = "Aligned Combined"
 LOG_FILES_COMBINED_FOLDER_NAME = "Log Files Combined"
 FLUX_LOGS_COMBINED_FOLDER_NAME = "Flux Logs Combined"
 COLOR_NORMALIZED_FOLDER_NAME = "Color Normalized"
+SKY_BG_FOLDER_NAME = "Sky background"
 CHARTS_FOLDER_NAME = "Charts"
 MASTER_DARK_NAME = "masterdark.fit"
 MASTER_FLAT_NAME = "masterflat.fit"
+
+# Extraction
+# We currently use 64*64 size boxes when calculating sky bg
+SKY_BG_BOX_REGION_SIZE = 64
 
 # INTRA_NIGHT
 # Any star that appears more than this threshold away from the reference file
