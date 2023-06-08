@@ -1,3 +1,4 @@
+import datetime
 import re
 from datetime import date
 from pathlib import Path
@@ -5,11 +6,14 @@ from typing import Dict, Iterable, Tuple
 
 import numpy as np
 
-from m23.constants import SKY_BG_FILENAME_DATE_FORMAT
+from m23.constants import OBSERVATION_DATETIME_FORMAT, SKY_BG_FILENAME_DATE_FORMAT
+from m23.sky.moon import phase as get_moon_phase_name
+from m23.sky.moon import position as get_moon_phase
 
 
 class SkyBgFile:
     file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)_sky_bg\.txt")
+    date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT
 
     # We divide up the sky into several square sections (currently, sized 64px)
     # and calculate the mean background in that region.  Additionally,
@@ -63,7 +67,10 @@ class SkyBgFile:
         bg_sections_str = "".join(map("{:<10s}".format, bg_sections))
         with open(self.path(), "w") as fd:
             fd.write(
-                f"{'Date':<26s}{'Mean':<10s}{'Median':<10s}"
+                f"{'Date':<26s}"
+                f"{'Moon_Phase':<16s}"
+                f"{'Moon_Phase_Name':<20s}"
+                f"{'Mean':<10s}{'Median':<10s}"
                 f"{'Std':<10s}{normfactors_titles_str}{bg_sections_str}\n"
             )
             for night_datetime, bg_data, normfactors in sky_bg_data:
@@ -76,11 +83,19 @@ class SkyBgFile:
                     bg_data_ignoring_bogus_values
                 )
                 std = np.std(bg_data_ignoring_bogus_values)
+                date_time_of_observation = datetime.datetime.strptime(
+                    night_datetime, self.date_observed_datetime_format
+                )
+                moon_phase = get_moon_phase(date_time_of_observation)
+                moon_phase_name = get_moon_phase_name(date_time_of_observation)
 
-                normfactors_values = "".join(map("{:<10.2f}".format, normfactors))
+                normfactors_values = "".join(map("{:<10.5f}".format, normfactors))
                 values_str = "".join(map("{:<10.2f}".format, bg_data_np))
                 fd.write(
-                    f"{night_datetime:<26s}{mean:<10.2f}{median:<10.2f}"
+                    f"{night_datetime:<26s}"
+                    f"{moon_phase:<16.5f}"
+                    f"{moon_phase_name:<20s}"
+                    f"{mean:<10.2f}{median:<10.2f}"
                     f"{std:<10.2f}{normfactors_values}{values_str}\n"
                 )
 
