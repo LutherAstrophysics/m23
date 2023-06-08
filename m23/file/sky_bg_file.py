@@ -19,7 +19,10 @@ class SkyBgFile:
     BackgroundRegionType = Tuple[int, int]
     BGAduPerPixelType = float
     BackgroundDictType = Dict[BackgroundRegionType, BGAduPerPixelType]
-    SkyBGDataType = Iterable[Tuple[DateTimeType, BackgroundDictType]]
+    NormfactorsForVariousRadiiType = Iterable[float]
+    SkyBGDataType = Iterable[
+        Tuple[DateTimeType, BackgroundDictType, NormfactorsForVariousRadiiType]
+    ]
 
     @classmethod
     def generate_file_name(cls, night_date: date, img_duration: float):
@@ -45,7 +48,7 @@ class SkyBgFile:
         if not self.path().is_file():
             raise ValueError("Directory provided, expected file f{self.path()}")
 
-    def create_file(self, sky_bg_data: SkyBGDataType):
+    def create_file(self, sky_bg_data: SkyBGDataType, radius_of_extraction: Iterable[int]):
         """
         Creates/Updates sky background file based on the `sky_bg_data`
         """
@@ -54,11 +57,16 @@ class SkyBgFile:
             with open(self.path(), "w") as fd:
                 pass
             return
+        normfactors_titles_str = map(lambda x: f"norm_{x}px", radius_of_extraction)
+        normfactors_titles_str = "".join(map("{:<10s}".format, normfactors_titles_str))
         bg_sections = map(lambda x: "_".join(map(str, x)), sky_bg_data[0][1].keys())
         bg_sections_str = "".join(map("{:<10s}".format, bg_sections))
         with open(self.path(), "w") as fd:
-            fd.write(f"{'Date':<26s}{'Mean':<10s}{'Median':<10s}{'Std':<10s}{bg_sections_str}\n")
-            for night_datetime, bg_data in sky_bg_data:
+            fd.write(
+                f"{'Date':<26s}{'Mean':<10s}{'Median':<10s}"
+                f"{'Std':<10s}{normfactors_titles_str}{bg_sections_str}\n"
+            )
+            for night_datetime, bg_data, normfactors in sky_bg_data:
                 bg_data_np = np.array([bg_data[x] for x in bg_data.keys()])
 
                 # We ignore the bogus values before taking the mean and the median
@@ -69,9 +77,11 @@ class SkyBgFile:
                 )
                 std = np.std(bg_data_ignoring_bogus_values)
 
+                normfactors_values = "".join(map("{:<10.2f}".format, normfactors))
                 values_str = "".join(map("{:<10.2f}".format, bg_data_np))
                 fd.write(
-                    f"{night_datetime:<26s}{mean:<10.2f}{median:<10.2f}{std:<10.2f}{values_str}\n"
+                    f"{night_datetime:<26s}{mean:<10.2f}{median:<10.2f}"
+                    f"{std:<10.2f}{normfactors_values}{values_str}\n"
                 )
 
     def __repr__(self) -> str:

@@ -1,7 +1,7 @@
 import math
 from datetime import date
 from pathlib import Path
-from typing import List
+from typing import Iterable, List
 
 import numpy as np
 
@@ -21,7 +21,7 @@ def normalize_log_files(  # noqa
     radius: int,
     img_duration: float,
     night_date: date,
-):
+) -> Iterable[float]:
     """
     This function normalizes (intra night *not* inter night) the
     LogFilesCombined files provided.  Note that the normalization **isn't** done
@@ -30,6 +30,8 @@ def normalize_log_files(  # noqa
 
     Note that this code assumes that the all stars in the log files are
     available in reference log file and no more or less.
+
+    @return: iterable of normfactors for the images
     """
 
     # We are sorting the log files so that we know what's the first logfile
@@ -180,3 +182,5 @@ def normalize_log_files(  # noqa
             date_times,
             reference_log_file,
         )
+
+    return all_norm_factors

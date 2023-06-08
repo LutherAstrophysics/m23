@@ -2,7 +2,7 @@ import logging
 import sys
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 import numpy as np
 import toml
@@ -65,13 +65,7 @@ def normalization_helper(
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
-    # Generate sky bg file
-    sky_bg_filename = (
-        output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date, img_duration)
-    )
-    # Create folder if it doesn't exist
-    sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
-    create_sky_bg_file(SkyBgFile(sky_bg_filename), log_files_to_use, night_date)
+    normfactors_for_radii: Dict[int, Iterable[float]] = {}
 
     for radius in radii_of_extraction:
         logger.info(f"Normalizing for radius of extraction {radius} px")
@@ -80,7 +74,7 @@ def normalization_helper(
         for file in RADIUS_FOLDER.glob("*"):
             if file.is_file():
                 file.unlink()  # Remove each file in the folder
-        normalize_log_files(
+        normfactors = normalize_log_files(
             reference_log_file,
             log_files_to_use,
             RADIUS_FOLDER,
@@ -88,7 +82,20 @@ def normalization_helper(
             img_duration,
             night_date,
         )
+        normfactors_for_radii[radius] = normfactors
+
     draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
+
+    # Generate sky bg file
+    sky_bg_filename = (
+        output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date, img_duration)
+    )
+    # Create folder if it doesn't exist
+    sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
+    create_sky_bg_file(
+        SkyBgFile(sky_bg_filename), log_files_to_use, night_date, normfactors_for_radii
+    )
+
     # Internight normalization
     internight_normalize(
         output,
@@ -99,18 +106,29 @@ def normalization_helper(
 
 
 def create_sky_bg_file(
-    sky_bg_file: SkyBgFile, log_files_to_use: Iterable[LogFileCombinedFile], night_date: date
+    sky_bg_file: SkyBgFile,
+    log_files_to_use: Iterable[LogFileCombinedFile],
+    night_date: date,
+    normfactors: Dict[int, Iterable[float]],  # normfactors for different radius of extraction
 ):
     """
     Creates sky bg data. Note that this isn't performed right after extraction
     is that we want to re-perform it after re-normalization. If we do it as part
     of `normalization_helper` which is what both `process_night` and `renorm`
     use, we wouldn't have to do it twice.
+
+    param: sky_bg_file: SkyBgFile object to use
+    param: log_files_to_use: List of log files to use
+    param: night_date: Date object of the night
+    normfactors: Dictionary of normfactors for various radii of extraction
+
     """
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.info("Generating sky background file")
     bg_data_of_all_images = []
-    for logfile in log_files_to_use:
+    radii_of_extraction = normfactors.keys()
+
+    for index, logfile in enumerate(log_files_to_use):
         date_time_of_image = logfile.datetime()
         # Here we find the corresponding aligned combined file first
         # so we can use that to calculate the sky bg data.
@@ -125,9 +143,20 @@ def create_sky_bg_file(
             aligned_combined_file.data(), SKY_BG_BOX_REGION_SIZE
         )
         # Append tuple of result
-        bg_data_of_all_images.append((date_time_of_image, bg_data_of_image))
+        bg_data_of_all_images.append(
+            (
+                date_time_of_image,
+                bg_data_of_image,
+                # Normfactors for various radii for that image
+                [normfactors[radius][index] for radius in radii_of_extraction],
+            )
+        )
 
-    sky_bg_file.create_file(bg_data_of_all_images)
+    sky_bg_file.create_file(
+        bg_data_of_all_images,
+        # List of radius of extraction
+        radii_of_extraction,
+    )
     logger.info("Completed generating sky background file")
 
 
