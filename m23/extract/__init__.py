@@ -11,6 +11,44 @@ from m23.file.reference_log_file import ReferenceLogFile
 from m23.matrix import blockRegions
 
 
+def sky_bg_average_for_all_regions(image_data, region_size):
+    """
+    Returns a dictionary of background average for all `region_size` sized
+    square boxes in `image_data`
+    """
+    rows, cols = image_data.shape
+    no_of_blocks_across_rows = rows // region_size
+    no_of_blocks_across_cols = cols // region_size
+
+    # Block in third row first column can be accessed by [2, 0]
+    blocks = blockRegions(image_data, (region_size, region_size)).reshape(
+        no_of_blocks_across_rows, no_of_blocks_across_cols, region_size, region_size
+    )
+
+    # This is a dictionary of background data in all regions The key to this
+    # dictionary is the block region number represented as a tuple. For example
+    # (1, 2) means second row, third column
+    bg_data = {}
+
+    for i in range(no_of_blocks_across_rows):
+        for j in range(no_of_blocks_across_cols):
+            region = blocks[i][j]
+            # Throw out the background of zeroes, since they might be at the edge
+            sorted_data = np.sort(region, axis=None)
+            non_zero_indices = np.nonzero(sorted_data)
+            # Ignore the zeros
+            sorted_data = sorted_data[non_zero_indices]
+
+            centered_array = sorted_data[
+                int(len(sorted_data) // 2 - 0.05 * len(sorted_data)) : int(
+                    len(sorted_data) // 2 + 0.05 * len(sorted_data)
+                )
+            ]
+            bg_data[(i, j)] = np.mean(centered_array)
+
+    return bg_data
+
+
 def extract_stars(
     image_data: npt.NDArray,
     reference_log_file: ReferenceLogFile,
@@ -19,20 +57,31 @@ def extract_stars(
     aligned_combined_file: AlignedCombinedFile,
     date_time_to_use: str = "",
 ):
+    region_size = 64
+    # We save the sky background in each `region_sized`(d)
+    # square box of the image in the following
+    sky_backgrounds = sky_bg_average_for_all_regions(image_data, region_size)
+
     stars_centers_in_new_image = newStarCenters(image_data, reference_log_file)
+
     star_fluxes = {
-        radius: flux_log_for_radius(radius, stars_centers_in_new_image, image_data)
+        radius: flux_log_for_radius(
+            radius, stars_centers_in_new_image, image_data, sky_backgrounds
+        )
         for radius in radii_of_extraction
     }
     no_of_stars = len(star_fluxes[radii_of_extraction[0]])
 
     log_file_combined_data: LogFileCombinedFile.LogFileCombinedDataType = {}
+
     for star_no in range(1, no_of_stars + 1):
         weighted_x = stars_centers_in_new_image[star_no - 1][0]
         weighted_y = stars_centers_in_new_image[star_no - 1][1]
-        adu_per_pixel = star_fluxes[radii_of_extraction[0]][star_no - 1][1]
 
-        star_FWHM = fwhm(image_data, weighted_x, weighted_y, adu_per_pixel)
+        #
+        bg_adu_per_pixel = star_fluxes[radii_of_extraction[0]][star_no - 1][1]
+
+        star_FWHM = fwhm(image_data, weighted_x, weighted_y, bg_adu_per_pixel)
         log_file_combined_data[star_no] = LogFileCombinedFile.StarLogfileCombinedData(
             x=weighted_y,  # IDL and Python have Axes reversed
             y=weighted_x,  # Note the axes are reversed by convention
@@ -44,7 +93,7 @@ def extract_stars(
             # flux, subtracted star flux)
             # Also note that we only write sky ADU for one of the radius of extraction
             # This is the usually just the first radius of extraction
-            sky_adu=adu_per_pixel,  # Sky ADU from first of extraction
+            sky_adu=bg_adu_per_pixel,  # Sky ADU from first of extraction
             radii_adu=(
                 {radius: star_fluxes[radius][star_no - 1][2] for radius in radii_of_extraction}
             ),
@@ -86,45 +135,13 @@ def newStarCenters(imageData, reference_log_file: ReferenceLogFile):
     ]
 
 
-def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
+def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data, sky_backgrounds):
     """
     We need to optimize this code to work more efficiently with the caller
     function i.e extract_stars
     """
     regionSize = 64
     pixelsPerStar = np.count_nonzero(circleMatrix(radius))
-
-    @cache
-    def backgroundRegion():
-        """
-        Returns an array of arrays of 64x64 matrices
-        """
-        row, col = image_data.shape
-        # Block in third row first column can be accessed by [2, 0]
-        return blockRegions(image_data, (regionSize, regionSize)).reshape(
-            row // regionSize, col // regionSize, regionSize, regionSize
-        )
-
-    @cache
-    def backgroundAverage(backgroundRegionTuple: Tuple[int]):
-        """
-        Returns the average background in a region.
-        Example, `backgroundRegionTuple` (2, 0) means the third row first column region.
-        """
-        row, column = backgroundRegionTuple
-        region = backgroundRegion()[row][column]
-        # Throw out the background of zeroes, since they might be at the edge
-        sortedData = np.sort(region, axis=None)
-        nonZeroIndices = np.nonzero(sortedData)
-        # Ignore the zeros
-        sortedData = sortedData[nonZeroIndices]
-
-        centeredArray = sortedData[
-            int(len(sortedData) // 2 - 0.05 * len(sortedData)) : int(
-                len(sortedData) // 2 + 0.05 * len(sortedData)
-            )
-        ]
-        return np.mean(centeredArray)
 
     def fluxSumForStar(position, radius) -> Tuple[int]:
         """
@@ -136,7 +153,7 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data):
         x, y = position
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
-        backgroundAverageInStarRegion = backgroundAverage((x // regionSize, y // regionSize))
+        backgroundAverageInStarRegion = sky_backgrounds[(x // regionSize, y // regionSize)]
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
 
         # Convert to zero, in case there's any nan.
