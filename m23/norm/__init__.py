@@ -43,7 +43,7 @@ def normalize_log_files(  # noqa
     # night to which to normalize.  Note, we aren't normalizing with reference
     # to the ref file
     indices_to_normalize_to = np.linspace(0, no_of_files, 6, dtype="int")[1:-1]
-    all_log_files = []  # This is an array of arrays
+    array_of_logfiles_of_array_of_adus = []  # This is an array of arrays
 
     # This holds the normalization factor for each log_file to use
     all_norm_factors = []
@@ -98,7 +98,7 @@ def normalize_log_files(  # noqa
             ):
                 adu_of_current_log_file[star_index] = 0
 
-        all_log_files.append(adu_of_current_log_file)
+        array_of_logfiles_of_array_of_adus.append(adu_of_current_log_file)
 
     # Now for each log file we calculate its normfactor
     # For each logfile, its normfactor is the median of normfactors of the stars
@@ -107,13 +107,15 @@ def normalize_log_files(  # noqa
     # files divided by 4 * its adu. Note that reference log files mean the 4
     # sample log files taken from within the night.
     reference_log_files = []
-    for index, log_file in enumerate(all_log_files):
+    for index, log_file in enumerate(array_of_logfiles_of_array_of_adus):
         if index in indices_to_normalize_to:
             reference_log_files.append(log_file)
 
-    all_log_files = np.array(all_log_files)  # Convert to numpy array
+    array_of_logfiles_of_array_of_adus = np.array(
+        array_of_logfiles_of_array_of_adus
+    )  # Convert to numpy array
     reference_log_files = np.array(reference_log_files)  # Convert to numpy array
-    for file_index, log_file in enumerate(all_log_files):
+    for file_index, log_file in enumerate(array_of_logfiles_of_array_of_adus):
         no_of_stars = len(log_file)
         norm_factor_for_stars = []
         for star_index in range(no_of_stars):
@@ -129,7 +131,9 @@ def normalize_log_files(  # noqa
         good_scale_factors = [x for x in norm_factor_for_stars if 0 < x <= 5]
         norm_factor_for_logfile = np.median(good_scale_factors)
         all_norm_factors.append(norm_factor_for_logfile)
-        all_log_files[file_index] = norm_factor_for_logfile * all_log_files[file_index]
+        array_of_logfiles_of_array_of_adus[file_index] = (
+            norm_factor_for_logfile * array_of_logfiles_of_array_of_adus[file_index]
+        )
 
     # Save normfactors
     normfactors_file_name = NormfactorFile.generate_file_name(night_date, img_duration)
@@ -137,12 +141,15 @@ def normalize_log_files(  # noqa
     normfactor_file.create_file(all_norm_factors)
 
     # Save the normalized data for each star
-    noOfStars = len(all_log_files[0])
+    noOfStars = len(array_of_logfiles_of_array_of_adus[0])
     for star_index in range(noOfStars):
         star_no = star_index + 1
-        star_data = [all_log_files[file_index][star_index] for file_index in range(no_of_files)]
-        # Turn all star_data that's negative to 0
-        star_data = [current_data if current_data > 0 else 0 for current_data in star_data]
+        star_adu_data = [
+            array_of_logfiles_of_array_of_adus[file_index][star_index]
+            for file_index in range(no_of_files)
+        ]
+        # Turn all star_adu_data that's negative to 0
+        star_adu_data = [current_data if current_data > 0 else 0 for current_data in star_adu_data]
 
         # We now create flux log combined file
         flux_log_combined_file_name = FluxLogCombinedFile.generate_file_name(
@@ -153,14 +160,23 @@ def normalize_log_files(  # noqa
         fist_log_file_number = log_files_to_normalize[0].img_number()
         last_log_file_number = log_files_to_normalize[-1].img_number()
 
-        # To write x,y position, we use the position from the first log file
-        x_position = log_files_to_normalize[0].get_star_data(star_no).x
-        y_position = log_files_to_normalize[0].get_star_data(star_no).y
+        x_positions = []
+        y_positions = []
+        date_times = []
+
+        for lf in log_files_to_normalize:
+            star_data = lf.get_star_data(star_no)
+            x_positions.append(star_data.x)
+            y_positions.append(star_data.y)
+            date_times.append(lf.datetime())
 
         flux_log_combined_file.create_file(
-            star_data,
+            star_adu_data,
             fist_log_file_number,
             last_log_file_number,
-            (x_position, y_position),
+            x_positions,
+            y_positions,
+            all_norm_factors,
+            date_times,
             reference_log_file,
         )

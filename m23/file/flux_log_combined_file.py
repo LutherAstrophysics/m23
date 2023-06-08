@@ -1,13 +1,12 @@
 import re
 from datetime import date, datetime
 from pathlib import Path
-from typing import Tuple
+from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
 
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
-from m23.file import is_string_float
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
 
@@ -28,6 +27,7 @@ class FluxLogCombinedFile:
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
     file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt")
+    header_columns = ["ADU", "X", "Y", "Normfactors", "DateTime"]
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:
@@ -80,11 +80,25 @@ class FluxLogCombinedFile:
         with self.path().open() as fd:
             lines = [line.strip() for line in fd.readlines()]
             lines = lines[self.header_rows :]  # Skip the header rows
-            self.__data = np.array(lines, dtype="float")  # Save data as numpy array
-            self.__valid_data = np.array(
-                [float(x) for x in self.__data if is_string_float(x) and float(x) > 0],
-                dtype="float",
-            )
+
+            # Create a 2d list
+            lines = [line.split() for line in lines]
+
+            # Convert to 2d numpy array
+            self.__data = np.array(lines)
+
+            self.__all_adus = np.array(self.__data[:, 0], dtype="float")
+
+            # These might be made public future but are unstable
+            # thus not available as API at the moment
+            self.__all_x_values = np.array(self.__data[:, 1], dtype="float")
+            self.__all_y_values = np.array(self.__data[:, 2], dtype="float")
+            self.__all_normfactors = np.array(self.__data[:, 3], dtype="float")
+            self.__all_dates = np.array(self.__data[:, 4])
+
+            # Remove nan and values < 0
+            self.__valid_adus = self.__all_adus[self.__all_adus > 0]
+
         self.__read_data = True  # Marks file as read
         self.__attendance = self._calculate_attendance()
 
@@ -134,19 +148,21 @@ class FluxLogCombinedFile:
     def data(self) -> None | npt.ArrayLike:
         """
         The data property returns either None or a numpy one dimensional array
+        of the adu values
         """
         if not self.__read_data:
             self.read_file_data()
-        return self.__data
+        # Note there we're returning just the ADUs not the entire records
+        return self.__all_adus
 
     def valid_data(self) -> None | npt.ArrayLike:
         """
-        Returns a sample of data for the star for the nights with only valid
+        Returns a sample of adu data for the star for the nights with only valid
         data points > 0 magnitudes
         """
         if not self.__read_data:
             self.read_file_data()
-        return self.__valid_data
+        return self.__valid_adus
 
     def attendance(self) -> float:
         """
@@ -227,10 +243,13 @@ class FluxLogCombinedFile:
 
     def create_file(
         self,
-        data: npt.NDArray,
+        adu_data: npt.NDArray,
         start_img: int,
         end_img: int,
-        location: Tuple[float],
+        x_positions: Iterable[float],
+        y_positions: Iterable[float],
+        normfactors: Iterable[float],
+        date_times: Iterable[str],
         reference_logfile: ReferenceLogFile,
     ):
         """
@@ -245,18 +264,36 @@ class FluxLogCombinedFile:
         """
         if not self.is_valid_file_name():
             raise ValueError(f"File name is invalid {self.path()}")
-        x, y = location
+
         with self.path().open("w") as fd:
             fd.write("Program:\n")
             fd.write(f"Started with image\t{start_img}\n")
             fd.write(f"Ended with image\t{end_img}\n")
             fd.write(f"Reference log file used: {reference_logfile}\n")
-            fd.write(f"X location:\t{x:.3f}\n")
-            fd.write(f"Y location:\t{y:.3f}\n")
+            median_x, median_y = np.median(x_positions), np.median(y_positions)
+            fd.write(f"MedianX,Y: \t{median_x:.3f}, {median_y:.3f}\n")
+            fd.write(f"{'ADU':<15s}{'X':<13s}{'Y':<13s}{'Norm':<15s}{'Datetime':<32s}\n")
+
+            cols_to_save = np.zeros(
+                np.array(adu_data).size,
+                dtype=[
+                    ("adu", float),
+                    ("x", float),
+                    ("y", float),
+                    ("norm", float),
+                    ("date", "U6"),
+                ],
+            )
+            cols_to_save["adu"] = adu_data
+            cols_to_save["x"] = x_positions
+            cols_to_save["y"] = y_positions
+            cols_to_save["norm"] = normfactors
+            cols_to_save["date"] = date_times
+
             np.savetxt(
                 fd,
-                np.array(data),
-                fmt="%10.2f",
+                cols_to_save,
+                fmt="%-15d%-13.2f%-13.2f%-15.5f%-32s",
             )
 
     def __repr__(self) -> str:
