@@ -4,3 +4,7 @@ class ConfigException(Exception):
 
 class InvalidDatetimeInConfig(ConfigException):
     pass
+
+
+class CouldNotAlignException(Exception):
+    pass

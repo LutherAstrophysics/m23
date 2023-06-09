@@ -25,8 +25,10 @@ from m23.constants import (
     SKY_BG_BOX_REGION_SIZE,
     SKY_BG_FOLDER_NAME,
 )
+from m23.exceptions import CouldNotAlignException
 from m23.extract import extract_stars, sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
+from m23.file.alignment_stats_file import AlignmentStatsFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -303,6 +305,11 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
 
+    # Create a file for storing alignment transformation
+    alignment_stats_file_name = AlignmentStatsFile.generate_file_name(night_date)
+    alignment_stats_file = AlignmentStatsFile(output / alignment_stats_file_name)
+    alignment_stats_file.create_file_and_write_header()
+
     for i in range(no_of_combined_images):
         # NOTE
         # It's very easy to get confused between no_of_combined_images
@@ -334,11 +341,21 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         # We want to discard this set of images if any one image in this set cannot be aligned
         aligned_images_data = []
         for index, image_data in enumerate(images_data):
+            raw_image_to_align = raw_images[from_index + index]
+            raw_image_to_align_name = raw_image_to_align.path().name
             try:
-                aligned_data, _ = image_alignment(image_data, ref_image_path)
+                aligned_data, statistics = image_alignment(image_data, ref_image_path)
                 aligned_images_data.append(aligned_data)
-            except Exception:
-                logger.error(f"Could not align image {raw_images[from_index + index]}")
+                # We add the transformation statistics to the alignment stats
+                # file Information of the file that can't be aligned isn't
+                # written only in the logfile. This is intended so that we can
+                # easily process the alignment stats file if we keep it in a TSV
+                # like format
+
+                alignment_stats_file.add_record(raw_image_to_align_name, statistics)
+                logger.info(f"Aligned {raw_image_to_align_name}")
+            except CouldNotAlignException:
+                logger.error(f"Could not align image {raw_image_to_align}")
                 logger.error(f"Skipping combination {from_index}-{to_index}")
                 break
 
