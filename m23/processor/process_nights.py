@@ -2,7 +2,7 @@ import logging
 import sys
 from datetime import date, timedelta
 from pathlib import Path
-from typing import Dict, Iterable, List
+from typing import Iterable, List
 
 import numpy as np
 import toml
@@ -67,8 +67,6 @@ def normalization_helper(
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
-    normfactors_for_radii: Dict[int, Iterable[float]] = {}
-
     for radius in radii_of_extraction:
         logger.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
@@ -76,7 +74,7 @@ def normalization_helper(
         for file in RADIUS_FOLDER.glob("*"):
             if file.is_file():
                 file.unlink()  # Remove each file in the folder
-        normfactors = normalize_log_files(
+        normalize_log_files(
             reference_log_file,
             log_files_to_use,
             RADIUS_FOLDER,
@@ -84,7 +82,6 @@ def normalization_helper(
             img_duration,
             night_date,
         )
-        normfactors_for_radii[radius] = normfactors
 
     draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
 
@@ -92,18 +89,48 @@ def normalization_helper(
     sky_bg_filename = (
         output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date, img_duration)
     )
-    # Create folder if it doesn't exist
-    sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
-    create_sky_bg_file(
-        SkyBgFile(sky_bg_filename), log_files_to_use, night_date, normfactors_for_radii
-    )
 
     # Internight normalization
-    internight_normalize(
+    normfactors = internight_normalize(
         output,
         logfile_combined_reference_logfile,
         color_ref_file_path,
         radii_of_extraction,
+    )
+
+    # Create folder if it doesn't exist
+    sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
+    color_normfactors = {
+        radius: normfactors[radius]["color"].items() for radius in radii_of_extraction
+    }
+    brightness_normfactors = {
+        radius: normfactors[radius]["brightness"].items() for radius in radii_of_extraction
+    }
+
+    color_normfactors_titles = []
+    color_normfactors_values = []
+
+    for radius in color_normfactors:
+        for section, section_value in color_normfactors[radius]:
+            color_normfactors_titles.append(f"norm_{radius}px_color_{section}")
+            color_normfactors_values.append(section_value)
+
+    brightness_normfactors_titles = []
+    brightness_normfactors_values = []
+
+    for radius in brightness_normfactors:
+        for section, section_value in brightness_normfactors[radius]:
+            brightness_normfactors_titles.append(f"norm_{radius}px_brightness{section}")
+            brightness_normfactors_values.append(section_value)
+
+    create_sky_bg_file(
+        SkyBgFile(sky_bg_filename),
+        log_files_to_use,
+        night_date,
+        color_normfactors_titles,
+        color_normfactors_values,
+        brightness_normfactors_titles,
+        brightness_normfactors_values,
     )
 
 
@@ -111,7 +138,10 @@ def create_sky_bg_file(
     sky_bg_file: SkyBgFile,
     log_files_to_use: Iterable[LogFileCombinedFile],
     night_date: date,
-    normfactors: Dict[int, Iterable[float]],  # normfactors for different radius of extraction
+    color_normfactors_title: Iterable[str],
+    color_normfactors_values: Iterable[float],
+    brightness_normfactors_title: Iterable[str],
+    brightness_normfactors_values: Iterable[float],
 ):
     """
     Creates sky bg data. Note that this isn't performed right after extraction
@@ -128,7 +158,6 @@ def create_sky_bg_file(
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.info("Generating sky background file")
     bg_data_of_all_images = []
-    radii_of_extraction = normfactors.keys()
 
     for index, logfile in enumerate(log_files_to_use):
         date_time_of_image = logfile.datetime()
@@ -149,15 +178,15 @@ def create_sky_bg_file(
             (
                 date_time_of_image,
                 bg_data_of_image,
-                # Normfactors for various radii for that image
-                [normfactors[radius][index] for radius in radii_of_extraction],
             )
         )
 
     sky_bg_file.create_file(
         bg_data_of_all_images,
-        # List of radius of extraction
-        radii_of_extraction,
+        color_normfactors_title,
+        color_normfactors_values,
+        brightness_normfactors_title,
+        brightness_normfactors_values,
     )
     logger.info("Completed generating sky background file")
 

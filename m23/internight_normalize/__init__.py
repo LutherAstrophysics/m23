@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Callable, Dict, List
+from typing import Callable, Dict, List, TypedDict
 
 import numpy as np
 from scipy.optimize import curve_fit
@@ -18,12 +18,16 @@ from m23.utils.flux_to_magnitude import flux_to_magnitude
 # https://github.com/LutherAstrophysics/idl-files/blob/39dfa1c0c6d03d64020c42583bbcaa94655d69cc/inter_night_normalization_345.pro
 
 
+class ConfigImage(TypedDict):
+    rows: int
+
+
 def internight_normalize(
     night: Path,
     logfile_combined_reference_file: LogFileCombinedFile,
     color_file: Path,
     radii_of_extraction: List[int],
-) -> None:
+) -> Dict[int, Dict[str, Dict[int, float]]]:
     """
     This function normalizes the Flux Logs Combined for a night with respect to
     the data in the reference night. It also saves the result of inter-night
@@ -61,9 +65,12 @@ def internight_normalize(
 
     `color_file` is a valid file path in conventional R-I color file format
     """
-
+    normfactors = {}
     for radius in radii_of_extraction:
-        internight_normalize_auxiliary(night, logfile_combined_reference_file, color_file, radius)
+        normfactors[radius] = internight_normalize_auxiliary(
+            night, logfile_combined_reference_file, color_file, radius
+        )
+    return normfactors
 
 
 def internight_normalize_auxiliary(  # noqa
@@ -71,7 +78,7 @@ def internight_normalize_auxiliary(  # noqa
     logfile_combined_reference_file: LogFileCombinedFile,
     color_file: Path,
     radius_of_extraction: int,
-):
+) -> Dict[str, Dict[int, float]]:
     """
     This is an auxiliary function for internight_normalize that's different from
     the `internight_normalize` because this function takes
@@ -306,8 +313,11 @@ def internight_normalize_auxiliary(  # noqa
             a, b, c
         )  # ax^2 + bx + c
         color_fit_functions[section_number] = polynomial_fit_fn
+
+    normfactors_to_return = {}
+
     # Create and save the color chart
-    draw_internight_color_chart(
+    normfactors_to_return["color"] = draw_internight_color_chart(
         night,
         radius_of_extraction,
         section_x_values,
@@ -370,7 +380,7 @@ def internight_normalize_auxiliary(  # noqa
     # For region 3, we just return the median of y values
     magnitude_fit_fn[3] = lambda x: np.median(region_3_y)
     # Create and save the brightness chart
-    draw_internight_brightness_chart(
+    normfactors_to_return["brightness"] = draw_internight_brightness_chart(
         night,
         radius_of_extraction,
         {1: region_1_x, 2: region_2_x, 3: region_3_x},
@@ -427,15 +437,16 @@ def internight_normalize_auxiliary(  # noqa
 
     # output_file = OUTPUT_FOLDER
     logger.info(f"Completed internight color normalization for {radius_of_extraction}px")
+    return normfactors_to_return
 
 
 def get_normfactor_for_special_star(
     star_no: int, fit_fn: Callable[[float], float]
 ) -> float | None:
     """
-    For of the special LPV stars that don't have a color value we calculate the
-    normfactor by providing color values manually. For how we got these color
-    values ask Prof. Wilkerson. Note that in the IDL code that this was
+    For each of the special LPV stars that don't have a color value we calculate
+    the normfactor by providing color values manually. For how we got these
+    color values ask Prof. Wilkerson. Note that in the IDL code that this was
     implemented in python from the fit_fn was the polynomial fit function from
     the first region of the Signal Ratio vs Color fit. Note **not** brightness
     fit

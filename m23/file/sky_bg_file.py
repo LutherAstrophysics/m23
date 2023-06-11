@@ -23,10 +23,7 @@ class SkyBgFile:
     BackgroundRegionType = Tuple[int, int]
     BGAduPerPixelType = float
     BackgroundDictType = Dict[BackgroundRegionType, BGAduPerPixelType]
-    NormfactorsForVariousRadiiType = Iterable[float]
-    SkyBGDataType = Iterable[
-        Tuple[DateTimeType, BackgroundDictType, NormfactorsForVariousRadiiType]
-    ]
+    SkyBGDataType = Iterable[Tuple[DateTimeType, BackgroundDictType]]
 
     @classmethod
     def generate_file_name(cls, night_date: date, img_duration: float):
@@ -52,7 +49,14 @@ class SkyBgFile:
         if not self.path().is_file():
             raise ValueError("Directory provided, expected file f{self.path()}")
 
-    def create_file(self, sky_bg_data: SkyBGDataType, radius_of_extraction: Iterable[int]):
+    def create_file(
+        self,
+        sky_bg_data: SkyBGDataType,
+        color_normfactors_title: Iterable[str],
+        color_normfactors_values: Iterable[float],
+        brightness_normfactors_title: Iterable[str],
+        brightness_normfactors_values: Iterable[float],
+    ):
         """
         Creates/Updates sky background file based on the `sky_bg_data`
         """
@@ -61,19 +65,31 @@ class SkyBgFile:
             with open(self.path(), "w") as fd:
                 pass
             return
-        normfactors_titles_str = map(lambda x: f"norm_{x}px", radius_of_extraction)
-        normfactors_titles_str = "".join(map("{:<10s}".format, normfactors_titles_str))
+
+        color_normfactors_title_str = " ".join(map("{:<30s}".format, color_normfactors_title))
+        brightness_normfactors_title_str = " ".join(
+            map("{:<30s}".format, brightness_normfactors_title)
+        )
+        color_normfactors_values_str = " ".join(map("{:<30.5f}".format, color_normfactors_values))
+        brightness_normfactors_values_str = " ".join(
+            map("{:<30.5f}".format, brightness_normfactors_values)
+        )
+
         bg_sections = map(lambda x: "_".join(map(str, x)), sky_bg_data[0][1].keys())
         bg_sections_str = "".join(map("{:<10s}".format, bg_sections))
+
         with open(self.path(), "w") as fd:
             fd.write(
                 f"{'Date':<26s}"
                 f"{'Moon_Phase':<16s}"
                 f"{'Moon_Phase_Name':<20s}"
                 f"{'Mean':<10s}{'Median':<10s}"
-                f"{'Std':<10s}{normfactors_titles_str}{bg_sections_str}\n"
+                f"{'Std':<10s}"
+                f"{color_normfactors_title_str}"
+                f"{brightness_normfactors_title_str}"
+                f"{bg_sections_str}\n"
             )
-            for night_datetime, bg_data, normfactors in sky_bg_data:
+            for night_datetime, bg_data in sky_bg_data:
                 bg_data_np = np.array([bg_data[x] for x in bg_data.keys()])
 
                 # We ignore the bogus values before taking the mean and the median
@@ -89,14 +105,16 @@ class SkyBgFile:
                 moon_phase = get_moon_phase(date_time_of_observation)
                 moon_phase_name = get_moon_phase_name(date_time_of_observation)
 
-                normfactors_values = "".join(map("{:<10.5f}".format, normfactors))
                 values_str = "".join(map("{:<10.2f}".format, bg_data_np))
                 fd.write(
                     f"{night_datetime:<26s}"
                     f"{moon_phase:<16.5f}"
                     f"{moon_phase_name:<20s}"
                     f"{mean:<10.2f}{median:<10.2f}"
-                    f"{std:<10.2f}{normfactors_values}{values_str}\n"
+                    f"{std:<10.2f}"
+                    f"{color_normfactors_values_str}"
+                    f"{brightness_normfactors_values_str}"
+                    f"{values_str}\n"
                 )
 
     def __repr__(self) -> str:

@@ -75,9 +75,10 @@ def draw_internight_color_chart(
     section_x_values: Dict[int, Iterable],
     section_y_values: Dict[int, Iterable],
     section_color_fit_fn: Dict[int, Callable[[float], float]],
-) -> None:
+) -> Dict[int, float]:
     """
     Creates and saves color chart for a given night for a particular radius data
+    Returns the median value of each section of the chart
     """
     chart_folder = night / CHARTS_FOLDER_NAME
     night_date = get_date_from_input_night_folder_name(night.name)
@@ -95,12 +96,15 @@ def draw_internight_color_chart(
     plt.plot(all_x_values, all_y_values, "wo", ms=0.5)
     # Plot the curves for each of the three sections
     section_line_colors = ["blue", "green", "red"]
+    median_of_sections = {}
     for index, section in enumerate(sections):
         x = section_x_values[section]
         x_min = np.min(x)
         x_max = np.max(x)
         x_new = np.linspace(x_min, x_max, 300)
         y_new = [section_color_fit_fn[section](i) for i in x_new]
+        # Add the median value for each section to the dictionary
+        median_of_sections[index] = np.median(y_new)
         plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2)
     ax = plt.gca()
     ax.set_xlim([0, np.max(all_x_values) + 3 * np.std(all_x_values)])
@@ -109,6 +113,7 @@ def draw_internight_color_chart(
     plt.xlabel("Color")
     plt.ylabel("Flux Ratio")
     plt.savefig(chart_save_path)
+    return median_of_sections
 
 
 def draw_internight_brightness_chart(
@@ -117,9 +122,10 @@ def draw_internight_brightness_chart(
     section_x_values: Dict[int, Iterable],
     section_y_values: Dict[int, Iterable],
     section_fit_fn: Dict[int, Callable[[float], float]],
-) -> None:
+) -> Dict[int, float]:
     """
     Creates and saves brightness chart for a given night for a particular radius data
+    Returns the median value of each section of the chart
     """
     chart_folder = night / CHARTS_FOLDER_NAME
     night_date = get_date_from_input_night_folder_name(night.name)
@@ -137,15 +143,18 @@ def draw_internight_brightness_chart(
     plt.plot(all_x_values, all_y_values, "wo", ms=0.5)
     # Plot the curves for each of the three sections
     section_line_colors = ["blue", "green", "red"]
+    median_of_sections = {}
     for index, section in enumerate(sections):
         x = section_x_values[section]
         x_min = np.min(x)
         x_max = np.max(x)
         x_new = np.linspace(x_min, x_max, 300)
         y_new = [section_fit_fn[section](i) for i in x_new]
+        median_of_sections[index] = np.median(y_new)
         plt.plot(x_new, y_new, color=section_line_colors[index], linewidth=2)
 
     plt.title(f"{night_date}")
     plt.xlabel("Magnitudes")
     plt.ylabel("Flux Ratio")
     plt.savefig(chart_save_path)
+    return median_of_sections
