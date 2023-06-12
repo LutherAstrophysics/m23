@@ -68,15 +68,34 @@ def get_all_fit_files(folder: Path) -> Iterable[PosixPath]:
 
 def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
     """
-    Return a list `RawImageFile` files in `folder` provided sorted asc. by image number 
+    Return a list `RawImageFile` files in `folder` provided sorted asc. by image number
     Note that only filenames matching the naming convention of RawImageFile are returned
     """
     all_files = [RawImageFile(file.absolute()) for file in folder.glob("*.fit")]
     # Filter files whose filename don't match naming convention
-    all_files = filter(lambda raw_image_file : raw_image_file.is_valid_file_name(), all_files)
+    all_files = filter(lambda raw_image_file: raw_image_file.is_valid_file_name(), all_files)
     # Sort files by image number
     return sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
 
+
+def time_taken_to_capture_and_save_a_raw_file(folder_path: Path) -> int:
+    """
+    Returns the average time taken to capture the raw image.  Note that this
+    may be different from the `image_duration` which is the time of camera
+    exposure. This because it also takes some time to save the fit image.
+    This function looks at the datetime of the first and the last raw image in
+    `folder_path` and calculates the average time taken for an image.
+
+    Raises
+        Exception if no raw image is present in the given folder
+
+    """
+    raw_images: Iterable[RawImageFile] = list(get_raw_images(folder_path))
+    first_img = raw_images[0]
+    last_image = raw_images[-1]
+    no_of_images = len(raw_images)
+    duration = (last_image.datetime() - first_img.datetime()).seconds
+    return duration / no_of_images
 
 
 def get_radius_folder_name(radius: int) -> str:
@@ -133,9 +152,11 @@ def get_log_file_name(night_date: date):
     return f"Night-{night_date}-Processing-log.txt"
 
 
-### Similar to the default version of IDL Median
-### https://github.com/LutherAstrophysics/python-helpers/issues/8
 def customMedian(arr, *args, **kwargs):
+    """
+    Median similar to the default version of IDL Median
+    https://github.com/LutherAstrophysics/python-helpers/issues/8
+    """
     arr = np.array(arr)
     if len(arr) % 2 == 0:
         newArray = np.append(arr, [np.multiply(np.ones(arr[0].shape), np.max(arr))], axis=0)

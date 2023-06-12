@@ -1,8 +1,8 @@
 import logging
 import sys
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
-from typing import List
+from typing import Iterable, List
 
 import numpy as np
 import toml
@@ -22,12 +22,17 @@ from m23.constants import (
     MASTER_DARK_NAME,
     MASTER_FLAT_NAME,
     OUTPUT_CALIBRATION_FOLDER_NAME,
+    SKY_BG_BOX_REGION_SIZE,
+    SKY_BG_FOLDER_NAME,
 )
-from m23.extract import extract_stars
+from m23.exceptions import CouldNotAlignException
+from m23.extract import extract_stars, sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
+from m23.file.alignment_stats_file import AlignmentStatsFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
+from m23.file.sky_bg_file import SkyBgFile
 from m23.internight_normalize import internight_normalize
 from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
@@ -42,6 +47,7 @@ from m23.utils import (
     get_output_folder_name_from_night_date,
     get_radius_folder_name,
     get_raw_images,
+    time_taken_to_capture_and_save_a_raw_file,
 )
 
 
@@ -53,11 +59,11 @@ def normalization_helper(
     night_date: date,
     color_ref_file_path: Path,
     output: Path,
-    logfile_combined_reference_logfile : LogFileCombinedFile
-
+    logfile_combined_reference_logfile: LogFileCombinedFile,
 ):
     """
-    This is a normalization helper function extracted so that it can be reused by the renormalization script
+    This is a normalization helper function extracted so that it can be reused
+    by the renormalization script
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     logger = logging.getLogger("LOGGER_" + str(night_date))
@@ -77,12 +83,154 @@ def normalization_helper(
             img_duration,
             night_date,
         )
+
     draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
+
+    # Generate sky bg file
+    sky_bg_filename = (
+        output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date, img_duration)
+    )
+
     # Internight normalization
-    internight_normalize(output, logfile_combined_reference_logfile, color_ref_file_path, radii_of_extraction)
+    normfactors = internight_normalize(
+        output,
+        logfile_combined_reference_logfile,
+        color_ref_file_path,
+        radii_of_extraction,
+    )
+
+    # Create folder if it doesn't exist
+    sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
+    color_normfactors = {
+        radius: normfactors[radius]["color"].items() for radius in radii_of_extraction
+    }
+    brightness_normfactors = {
+        radius: normfactors[radius]["brightness"].items() for radius in radii_of_extraction
+    }
+
+    color_normfactors_titles = []
+    color_normfactors_values = []
+
+    for radius in color_normfactors:
+        for section, section_value in color_normfactors[radius]:
+            color_normfactors_titles.append(f"norm_{radius}px_color_{section}")
+            color_normfactors_values.append(section_value)
+
+    brightness_normfactors_titles = []
+    brightness_normfactors_values = []
+
+    for radius in brightness_normfactors:
+        for section, section_value in brightness_normfactors[radius]:
+            brightness_normfactors_titles.append(f"norm_{radius}px_brightness{section}")
+            brightness_normfactors_values.append(section_value)
+
+    create_sky_bg_file(
+        SkyBgFile(sky_bg_filename),
+        log_files_to_use,
+        night_date,
+        color_normfactors_titles,
+        color_normfactors_values,
+        brightness_normfactors_titles,
+        brightness_normfactors_values,
+    )
 
 
-def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):
+def create_sky_bg_file(
+    sky_bg_file: SkyBgFile,
+    log_files_to_use: Iterable[LogFileCombinedFile],
+    night_date: date,
+    color_normfactors_title: Iterable[str],
+    color_normfactors_values: Iterable[float],
+    brightness_normfactors_title: Iterable[str],
+    brightness_normfactors_values: Iterable[float],
+):
+    """
+    Creates sky bg data. Note that this isn't performed right after extraction
+    is that we want to re-perform it after re-normalization. If we do it as part
+    of `normalization_helper` which is what both `process_night` and `renorm`
+    use, we wouldn't have to do it twice.
+
+    param: sky_bg_file: SkyBgFile object to use
+    param: log_files_to_use: List of log files to use
+    param: night_date: Date object of the night
+    normfactors: Dictionary of normfactors for various radii of extraction
+
+    """
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+    logger.info("Generating sky background file")
+    bg_data_of_all_images = []
+
+    for index, logfile in enumerate(log_files_to_use):
+        date_time_of_image = logfile.datetime()
+        # Here we find the corresponding aligned combined file first
+        # so we can use that to calculate the sky bg data.
+        aligned_combined_folder = logfile.path().parent.parent / ALIGNED_COMBINED_FOLDER_NAME
+        aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
+            logfile.img_duration(), logfile.img_number()
+        )
+        aligned_combined_file = AlignedCombinedFile(
+            aligned_combined_folder / aligned_combined_file_name
+        )
+        bg_data_of_image = sky_bg_average_for_all_regions(
+            aligned_combined_file.data(), SKY_BG_BOX_REGION_SIZE
+        )
+        # Append tuple of result
+        bg_data_of_all_images.append(
+            (
+                date_time_of_image,
+                bg_data_of_image,
+            )
+        )
+
+    sky_bg_file.create_file(
+        bg_data_of_all_images,
+        color_normfactors_title,
+        color_normfactors_values,
+        brightness_normfactors_title,
+        brightness_normfactors_values,
+    )
+    logger.info("Completed generating sky background file")
+
+
+def get_datetime_to_use(
+    aligned_combined: AlignedCombinedFile,
+    night_config: ConfigInputNight,
+    no_of_raw_images_in_one_combination: int,
+    raw_images_folder: Path,
+) -> str:
+    """
+    Returns the datetime to use in the logfile combined file,
+    based on the a given `config` and `aligned_combine` file
+
+    Returns an empty string if no datetime is available to use
+    """
+
+    # We use the same format of the datetime string as is in the
+    # header of our fit files
+    datetime_format = aligned_combined.date_observed_datetime_format
+
+    # If the datetime option was passed in the header we use that one
+    # Otherwise we use the datetime in the header, if that's present
+    if start := night_config.get("starttime"):
+        duration_of_raw_img = time_taken_to_capture_and_save_a_raw_file(raw_images_folder)
+        img_no = aligned_combined.image_number()
+        time_taken_to_capture_one_combined_image = (
+            duration_of_raw_img * no_of_raw_images_in_one_combination
+        )
+        seconds_elapsed_from_beginning_of_night = (
+            time_taken_to_capture_one_combined_image * (img_no - 1)
+            + time_taken_to_capture_one_combined_image * 0.5
+        )
+        return (start + timedelta(seconds=seconds_elapsed_from_beginning_of_night)).strftime(
+            datetime_format
+        )
+    elif datetime_in_aligned_combined := aligned_combined.datetime():
+        return datetime_in_aligned_combined.strftime(datetime_format)
+    else:
+        return ""
+
+
+def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):  # noqa
     """
     Processes a given night of data based on the settings provided in `config` dict
     """
@@ -96,7 +244,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     radii_of_extraction = config["processing"]["radii_of_extraction"]
 
     log_file_path = output / get_log_file_name(night_date)
-    # Clear file contents if exists, so that reprocessing a night wipes out contents instead of appending to it
+    # Clear file contents if exists, so that reprocessing a night wipes out
+    # contents instead of appending to it
     if log_file_path.exists():
         log_file_path.unlink()
 
@@ -151,13 +300,13 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
         listOfDarkData=darks,
     )
-    logger.info(f"Created master dark")
+    logger.info("Created master dark")
     del darks  # Deleting to free memory as we don't use darks anymore
 
     # Flats
     if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
-        logger.info(f"Using pre-provided masterflat")
+        logger.info("Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
         # Ensure that image dimensions are as specified by rows and cols
@@ -171,12 +320,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             ).absolute(),  # Gets absolute path of first flat file
             listOfDarkData=flats,
         )
-        logger.info(f"Created masterflat")
+        logger.info("Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
     raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
     image_duration = raw_images[0].image_duration()
-    logger.info(f"Processing images")
+    logger.info("Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
     logger.info(f"Using no of images to combine: {no_of_images_to_combine}")
     logger.info(f"Radii of extraction: {radii_of_extraction}")
@@ -187,8 +336,19 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
 
+    # Create a file for storing alignment transformation
+    alignment_stats_file_name = AlignmentStatsFile.generate_file_name(night_date)
+    alignment_stats_file = AlignmentStatsFile(output / alignment_stats_file_name)
+    alignment_stats_file.create_file_and_write_header()
+
     for i in range(no_of_combined_images):
+        # NOTE
+        # It's very easy to get confused between no_of_combined_images
+        # and the no_of_images_to_combine. THe later is the number of raw images
+        # that are combined together to form on aligned combined image
+
         from_index = i * no_of_images_to_combine
+        # Note the to_index is exclusive
         to_index = (i + 1) * no_of_images_to_combine
 
         images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
@@ -212,11 +372,21 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         # We want to discard this set of images if any one image in this set cannot be aligned
         aligned_images_data = []
         for index, image_data in enumerate(images_data):
+            raw_image_to_align = raw_images[from_index + index]
+            raw_image_to_align_name = raw_image_to_align.path().name
             try:
-                aligned_data, _ = image_alignment(image_data, ref_image_path)
+                aligned_data, statistics = image_alignment(image_data, ref_image_path)
                 aligned_images_data.append(aligned_data)
-            except Exception:
-                logger.error(f"Could not align image {raw_images[from_index + index]}")
+                # We add the transformation statistics to the alignment stats
+                # file Information of the file that can't be aligned isn't
+                # written only in the logfile. This is intended so that we can
+                # easily process the alignment stats file if we keep it in a TSV
+                # like format
+
+                alignment_stats_file.add_record(raw_image_to_align_name, statistics)
+                logger.info(f"Aligned {raw_image_to_align_name}")
+            except CouldNotAlignException:
+                logger.error(f"Could not align image {raw_image_to_align}")
                 logger.error(f"Skipping combination {from_index}-{to_index}")
                 break
 
@@ -229,7 +399,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
         # Combination
         combined_images_data = np.sum(aligned_images_data, axis=0)
-        sample_raw_image_file = raw_images[from_index]
+
+        # We take the middle image from the combination as the sample This is
+        # the image whose header will be copied to the combined image fit file
+        midpoint_index = from_index + no_of_images_to_combine // 2
+        sample_raw_image_file = raw_images[midpoint_index]
+
         aligned_combined_image_number = to_index // no_of_images_to_combine
         aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
             image_duration, aligned_combined_image_number
@@ -247,12 +422,18 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_file_combined_file = LogFileCombinedFile(
             LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name
         )
+
+        date_time_to_use = get_datetime_to_use(
+            aligned_combined_file, night, no_of_images_to_combine, NIGHT_INPUT_IMAGES_FOLDER
+        )
+
         extract_stars(
             combined_images_data,
             reference_log_file,
             radii_of_extraction,
             log_file_combined_file,
             aligned_combined_file,
+            date_time_to_use,
         )
         log_files_to_normalize.append(log_file_combined_file)
         logger.info(f"Extraction from combination {from_index}-{to_index} completed")
@@ -266,7 +447,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         night_date,
         color_ref_file_path,
         output,
-        logfile_combined_reference_logfile
+        logfile_combined_reference_logfile,
     )
 
 
