@@ -26,13 +26,12 @@ class SkyBgFile:
     SkyBGDataType = Iterable[Tuple[DateTimeType, BackgroundDictType]]
 
     @classmethod
-    def generate_file_name(cls, night_date: date, img_duration: float):
+    def generate_file_name(cls, night_date: date):
         """
         Returns the file name for the sky background for a night
         param : night_date: Date for the night
-        param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(SKY_BG_FILENAME_DATE_FORMAT)}_m23_{img_duration}sky_bg.txt"
+        return f"{night_date.strftime(SKY_BG_FILENAME_DATE_FORMAT)}_m23_sky_bg.txt"
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:

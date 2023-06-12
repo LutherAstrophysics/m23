@@ -87,9 +87,7 @@ def normalization_helper(
     draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
 
     # Generate sky bg file
-    sky_bg_filename = (
-        output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date, img_duration)
-    )
+    sky_bg_filename = output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date)
 
     # Internight normalization
     normfactors = internight_normalize(
