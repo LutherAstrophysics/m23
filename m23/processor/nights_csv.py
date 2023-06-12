@@ -34,7 +34,7 @@ def create_nights_csv_auxiliary(config: NightsCSVConfig):
     ]
 
     with open(fluxes_file, "w", newline="") as file:
-        writer = csv.writer(file, delimiter="\t")
+        writer = csv.writer(file, delimiter=",")
         writer.writerow(["Star#"] + night_dates)
         for star_no in range(len(all_color_files_data[0])):  # Writes the data of 2510 stars
             star_data = [
