@@ -174,11 +174,14 @@ def create_sky_bg_file(
         bg_data_of_image = sky_bg_average_for_all_regions(
             aligned_combined_file.data(), SKY_BG_BOX_REGION_SIZE
         )
+        image_number = aligned_combined_file.image_number()
+
         # Append tuple of result
         bg_data_of_all_images.append(
             (
                 date_time_of_image,
                 bg_data_of_image,
+                image_number,
             )
         )
 
