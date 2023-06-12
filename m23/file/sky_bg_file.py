@@ -7,6 +7,8 @@ from typing import Dict, Iterable, Tuple
 import numpy as np
 
 from m23.constants import OBSERVATION_DATETIME_FORMAT, SKY_BG_FILENAME_DATE_FORMAT
+from m23.sky import angle_of_elevation
+from m23.sky.moon import moon_distance
 from m23.sky.moon import phase as get_moon_phase_name
 from m23.sky.moon import position as get_moon_phase
 
@@ -83,6 +85,10 @@ class SkyBgFile:
                 f"{'Image_number':<15s}"
                 f"{'Moon_Phase':<16s}"
                 f"{'Moon_Phase_Name':<20s}"
+                f"{'Cluster_Angle_Round':<20s}"
+                f"{'Cluster_Angle':<20s}"
+                f"{'Cluster_Angle_Uncertainty':<30s}"
+                f"{'Moon_Distance':<20s}"
                 f"{'Mean':<10s}{'Median':<10s}"
                 f"{'Std':<10s}"
                 f"{color_normfactors_title_str}"
@@ -106,11 +112,19 @@ class SkyBgFile:
                 moon_phase_name = get_moon_phase_name(date_time_of_observation)
 
                 values_str = "".join(map("{:<10.2f}".format, bg_data_np))
+                cluster_angle, cluster_angle_uncertainty = angle_of_elevation(
+                    date_time_of_observation
+                )  # noqa
+                moon_dist_degrees = moon_distance(date_time_of_observation)
                 fd.write(
                     f"{night_datetime:<26s}"
                     f"{img_number:<15d}"
                     f"{moon_phase:<16.5f}"
                     f"{moon_phase_name:<20s}"
+                    f"{np.round(cluster_angle):<20.0f}"
+                    f"{cluster_angle:<20.1f}"
+                    f"{cluster_angle_uncertainty:<30.1f}"
+                    f"{moon_dist_degrees:<20.2f}"
                     f"{mean:<10.2f}{median:<10.2f}"
                     f"{std:<10.2f}"
                     f"{color_normfactors_values_str}"

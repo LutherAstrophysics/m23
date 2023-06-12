@@ -59,17 +59,13 @@ def phase(d: Union[datetime.date, datetime.datetime]):
 
 
 def get_moon_DE_and_RA(
-    date,
+    date : datetime.datetime,
 ):  # Returns the declination and right ascension of the moon for the given date and time in UTC
     # date parameter is given as a string 'year/month/day hh:mm:ss'
 
     observer = ephem.Observer()  # Decorah's latitude and longitude
     observer.lat = "43.3017"
     observer.lon = "91.79"
-
-    # Royal Greenwich Observatory
-    # observer.lat = '51.4769'
-    # observer.lon = '0.0005'
 
     observer.date = date
     moon = ephem.Moon()
@@ -83,10 +79,16 @@ def get_moon_DE_and_RA(
 
 
 def moon_distance(
-    moon_DE, moon_RA
-):  # Returns the angle distance between the moon and our m23 cluster
+    date : datetime.datetime,
+):
+    """
+    Returns the angle distance (in degrees) between the moon and our m23 cluster
+    Note that the date is UTC date
+    """
+
     # Note that DE is in degrees, RA is in hours
     # To convert RA to degrees, multiply by 15
+    moon_DE, moon_RA = get_moon_DE_and_RA(date)
 
     # M23 declination and right ascension
     cluster_RA = 269.5667
