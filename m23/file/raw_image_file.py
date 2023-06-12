@@ -89,6 +89,13 @@ class RawImageFile:
             self._read()
         return self.__header
 
+    def create_file(self, data: npt.NDArray, copy_header_from) -> None:
+        """
+        Create a fit file based on provided np array `data`.
+        It copies the header information from the `RawImageFile`
+        """
+        fits.writeto(self.path(), data, header=copy_header_from.header())
+
     def __repr__(self):
         return self.__str__()
 

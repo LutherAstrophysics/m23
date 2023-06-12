@@ -26,13 +26,12 @@ class SkyBgFile:
     SkyBGDataType = Iterable[Tuple[DateTimeType, BackgroundDictType]]
 
     @classmethod
-    def generate_file_name(cls, night_date: date, img_duration: float):
+    def generate_file_name(cls, night_date: date):
         """
         Returns the file name for the sky background for a night
         param : night_date: Date for the night
-        param: img_duration : the duration of images taken on the night
         """
-        return f"{night_date.strftime(SKY_BG_FILENAME_DATE_FORMAT)}_m23_{img_duration}sky_bg.txt"
+        return f"{night_date.strftime(SKY_BG_FILENAME_DATE_FORMAT)}_m23_sky_bg.txt"
 
     def __init__(self, path: str | Path) -> None:
         if type(path) == str:
@@ -81,6 +80,7 @@ class SkyBgFile:
         with open(self.path(), "w") as fd:
             fd.write(
                 f"{'Date':<26s}"
+                f"{'Image_number':<15s}"
                 f"{'Moon_Phase':<16s}"
                 f"{'Moon_Phase_Name':<20s}"
                 f"{'Mean':<10s}{'Median':<10s}"
@@ -89,7 +89,7 @@ class SkyBgFile:
                 f"{brightness_normfactors_title_str}"
                 f"{bg_sections_str}\n"
             )
-            for night_datetime, bg_data in sky_bg_data:
+            for night_datetime, bg_data, img_number in sky_bg_data:
                 bg_data_np = np.array([bg_data[x] for x in bg_data.keys()])
 
                 # We ignore the bogus values before taking the mean and the median
@@ -108,6 +108,7 @@ class SkyBgFile:
                 values_str = "".join(map("{:<10.2f}".format, bg_data_np))
                 fd.write(
                     f"{night_datetime:<26s}"
+                    f"{img_number:<15d}"
                     f"{moon_phase:<16.5f}"
                     f"{moon_phase_name:<20s}"
                     f"{mean:<10.2f}{median:<10.2f}"
