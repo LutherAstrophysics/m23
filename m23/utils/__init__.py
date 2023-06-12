@@ -78,6 +78,26 @@ def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
     return sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
 
 
+def time_taken_to_capture_and_save_a_raw_file(folder_path: Path) -> int:
+    """
+    Returns the average time taken to capture the raw image.  Note that this
+    may be different from the `image_duration` which is the time of camera
+    exposure. This because it also takes some time to save the fit image.
+    This function looks at the datetime of the first and the last raw image in
+    `folder_path` and calculates the average time taken for an image.
+
+    Raises
+        Exception if no raw image is present in the given folder
+
+    """
+    raw_images: Iterable[RawImageFile] = list(get_raw_images(folder_path))
+    first_img = raw_images[0]
+    last_image = raw_images[-1]
+    no_of_images = len(raw_images)
+    duration = (last_image.datetime() - first_img.datetime()).seconds
+    return duration / no_of_images
+
+
 def get_radius_folder_name(radius: int) -> str:
     """
     Returns the folder name to use for a given radius pixel of extraction

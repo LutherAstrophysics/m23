@@ -13,6 +13,7 @@ class RawImageFile:
     # Class attributes
     file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
     date_observed_header_name = "DATE-OBS"
+    time_observed_header_name = "TIME-OBS"
     date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT
 
     def __init__(self, file_path: str) -> None:
@@ -42,9 +43,18 @@ class RawImageFile:
         Returns the datetime object of the time observed. Parses the datetime
         field from the header of the image
         """
-        timestr = self.header().get(self.date_observed_header_name)
+        timestr = self.header().get(self.time_observed_header_name)
+        datestr = self.header().get(self.date_observed_header_name)
         if timestr:
-            return datetime.datetime.strptime(timestr, self.date_observed_datetime_format)
+            # If time header is present, construct the datetime from date and time header
+            return datetime.datetime.strptime(
+                f"{datestr}T{timestr}", self.date_observed_datetime_format
+            )
+        else:
+            # If time no time header is present, we assume that both date and
+            # time are present in the date header in format given by
+            # `self.date_observed_datetime_format`
+            return datetime.datetime.strptime(f"{datestr}", self.date_observed_datetime_format)
 
     def is_valid_file_name(self):
         """
@@ -55,7 +65,7 @@ class RawImageFile:
 
     def image_duration(self):
         """
-        Returns the image duration if the filename is valid
+        Returns the image duration from the filename if the filename is valid
         """
         if not self.is_valid_file_name():
             raise ValueError(f"{self.path().name} doesn't match naming conventions")
