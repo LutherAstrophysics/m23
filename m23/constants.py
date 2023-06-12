@@ -19,6 +19,7 @@ OBSERVATION_DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S"
 # Output folder/file name conventions
 CONFIG_FILE_NAME = "config.toml"
 OUTPUT_CALIBRATION_FOLDER_NAME = "Calibration Frames"
+ALIGNED_FOLDER_NAME = "Aligned"
 ALIGNED_COMBINED_FOLDER_NAME = "Aligned Combined"
 LOG_FILES_COMBINED_FOLDER_NAME = "Log Files Combined"
 FLUX_LOGS_COMBINED_FOLDER_NAME = "Flux Logs Combined"

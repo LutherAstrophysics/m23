@@ -72,8 +72,6 @@ def applyCalibration(
     # it does not support float64 We think we are not losing any significant
     # precision with this down casting
 
-    # It looks like Astromagic only likes float16, so better use FitsLiberator.
-
     calibratedImage = np.multiply(flatRatio, subtractedRaw, dtype="float32")
 
     # Unlike current IDL Code we're doing this step to calibrated

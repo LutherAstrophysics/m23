@@ -14,6 +14,7 @@ from m23.calibrate.master_calibrate import makeMasterDark
 from m23.charts import draw_normfactors_chart
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
+    ALIGNED_FOLDER_NAME,
     CONFIG_FILE_NAME,
     FLUX_LOGS_COMBINED_FOLDER_NAME,
     INPUT_CALIBRATION_FOLDER_NAME,
@@ -274,12 +275,14 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     NIGHT_INPUT_IMAGES_FOLDER = NIGHT_INPUT_FOLDER / M23_RAW_IMAGES_FOLDER_NAME
 
     # Define and create relevant output folders for the night being processed
+    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / ALIGNED_FOLDER_NAME
     CALIBRATION_OUTPUT_FOLDER = output / OUTPUT_CALIBRATION_FOLDER_NAME
     ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
     LOG_FILES_COMBINED_OUTPUT_FOLDER = output / LOG_FILES_COMBINED_FOLDER_NAME
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
 
     for folder in [
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER,
         CALIBRATION_OUTPUT_FOLDER,
         ALIGNED_COMBINED_OUTPUT_FOLDER,
         LOG_FILES_COMBINED_OUTPUT_FOLDER,
@@ -384,6 +387,17 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 # easily process the alignment stats file if we keep it in a TSV
                 # like format
 
+                # Note that we're down-scaling the matrix dtype from float to int16 for
+                # support in the image viewing softwares. For the combination step though
+                # we are using the more precise float data. This means that if you read
+                # the data of the aligned images from the fit file and combined them yourself
+                # that is going to be off by a small amount that the data in the aligned
+                # combined image.
+                aligned_image = RawImageFile(
+                    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER / raw_image_to_align_name
+                )
+                aligned_image.create_file(aligned_data.astype("int16"), raw_image_to_align)
+
                 alignment_stats_file.add_record(raw_image_to_align_name, statistics)
                 logger.info(f"Aligned {raw_image_to_align_name}")
             except CouldNotAlignException:
@@ -413,7 +427,16 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         aligned_combined_file = AlignedCombinedFile(
             ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
         )
-        aligned_combined_file.create_file(combined_images_data, sample_raw_image_file)
+        # Image viewing softwares like Astromagic and Fits Liberator don't work
+        # if the image data type is float, for some reason that we don't know.
+        # So we're setting the datatype to int32 which has enough precision for
+        # us. Note int16 is problematic as our combined images ADU are bigger
+        # than 2^16
+        # Note that for extraction though, we use the same, more precise format
+        # that we have
+        aligned_combined_file.create_file(
+            combined_images_data.astype("int32"), sample_raw_image_file
+        )
         logger.info(f"Combined images {from_index}-{to_index}")
 
         # Extraction
