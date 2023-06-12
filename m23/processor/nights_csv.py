@@ -72,7 +72,7 @@ def create_nights_csv_auxiliary(config: NightsCSVConfig):
                     raise Exception(
                         f"file {f} and {sky_bg_files[0]} have different number of columns"
                     )
-                lines_to_write.append(line_to_write)
+                lines_to_write.extend(lines[1:])
 
     with open(sky_bg_file, "w") as fd:
         fd.writelines(lines_to_write)
