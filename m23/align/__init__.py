@@ -47,7 +47,7 @@ def image_alignment(
             detection_sigma=5,
             min_area=5,
         )
-    except ast.MaxIterError:
+    except [ast.MaxIterError, ValueError]:
         raise CouldNotAlignException
 
     aligned_image_data, _ = ast.apply_transform(
