@@ -67,6 +67,7 @@ def draw_normfactors_chart(
         plt.ylabel("Normfactor")
         plt.title(f"{night_date}")
         plt.savefig(chart_file_path)
+        plt.close()  # Important to close the figure
 
 
 def draw_internight_color_chart(
@@ -113,6 +114,7 @@ def draw_internight_color_chart(
     plt.xlabel("Color")
     plt.ylabel("Flux Ratio")
     plt.savefig(chart_save_path)
+    plt.close()  # Important to close the figure
     return median_of_sections
 
 
@@ -157,4 +159,5 @@ def draw_internight_brightness_chart(
     plt.xlabel("Magnitudes")
     plt.ylabel("Flux Ratio")
     plt.savefig(chart_save_path)
+    plt.close()  # Important to close the figure
     return median_of_sections
