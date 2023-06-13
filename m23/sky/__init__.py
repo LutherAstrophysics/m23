@@ -92,5 +92,7 @@ def angle_of_elevation(
         AE = np.round(np.mean(angle_list), 1)
     elif uncertainty >= 0.01:
         AE = np.round(np.mean(angle_list), 2)
+    else: 
+        AE = np.mean(angle_list)
 
     return (AE, uncertainty)
