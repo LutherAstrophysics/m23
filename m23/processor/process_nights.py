@@ -7,25 +7,17 @@ from typing import Iterable, List
 import numpy as np
 import toml
 from astropy.io.fits import getdata
-
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
 from m23.calibrate.master_calibrate import makeMasterDark
 from m23.charts import draw_normfactors_chart
-from m23.constants import (
-    ALIGNED_COMBINED_FOLDER_NAME,
-    ALIGNED_FOLDER_NAME,
-    CONFIG_FILE_NAME,
-    FLUX_LOGS_COMBINED_FOLDER_NAME,
-    INPUT_CALIBRATION_FOLDER_NAME,
-    LOG_FILES_COMBINED_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    MASTER_DARK_NAME,
-    MASTER_FLAT_NAME,
-    OUTPUT_CALIBRATION_FOLDER_NAME,
-    SKY_BG_BOX_REGION_SIZE,
-    SKY_BG_FOLDER_NAME,
-)
+from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
+                           CONFIG_FILE_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME,
+                           INPUT_CALIBRATION_FOLDER_NAME,
+                           LOG_FILES_COMBINED_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME, MASTER_DARK_NAME,
+                           MASTER_FLAT_NAME, OUTPUT_CALIBRATION_FOLDER_NAME,
+                           SKY_BG_BOX_REGION_SIZE, SKY_BG_FOLDER_NAME)
 from m23.exceptions import CouldNotAlignException
 from m23.extract import extract_stars, sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -39,17 +31,12 @@ from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.norm import normalize_log_files
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
-from m23.utils import (
-    fit_data_from_fit_images,
-    get_darks,
-    get_date_from_input_night_folder_name,
-    get_flats,
-    get_log_file_name,
-    get_output_folder_name_from_night_date,
-    get_radius_folder_name,
-    get_raw_images,
-    time_taken_to_capture_and_save_a_raw_file,
-)
+from m23.utils import (fit_data_from_fit_images, get_darks,
+                       get_date_from_input_night_folder_name, get_flats,
+                       get_log_file_name,
+                       get_output_folder_name_from_night_date,
+                       get_radius_folder_name, get_raw_images,
+                       time_taken_to_capture_and_save_a_raw_file)
 
 
 def normalization_helper(
@@ -68,6 +55,10 @@ def normalization_helper(
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     logger = logging.getLogger("LOGGER_" + str(night_date))
+
+    if len(log_files_to_use) < 4:
+        logger.error(f"Less than 4 data points present. Skipping normalization.")
+        return
 
     for radius in radii_of_extraction:
         logger.info(f"Normalizing for radius of extraction {radius} px")
