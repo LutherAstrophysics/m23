@@ -5,7 +5,6 @@ import astroalign as ast
 import numpy as np
 import numpy.typing as npt
 from astropy.io.fits import getdata as getfitsdata
-
 from m23.exceptions import CouldNotAlignException
 
 ScaleType = float
@@ -48,7 +47,7 @@ def image_alignment(
             detection_sigma=5,
             min_area=5,
         )
-    except ValueError:
+    except ast.MaxIterError:
         raise CouldNotAlignException
 
     aligned_image_data, _ = ast.apply_transform(
