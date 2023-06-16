@@ -65,6 +65,7 @@ def draw_normfactors_chart(
         plt.plot(x, y, "b+")
         plt.xlabel("Log file number")
         plt.ylabel("Normfactor")
+        plt.grid()
         plt.title(f"{night_date}")
         plt.savefig(chart_file_path)
         plt.close()  # Important to close the figure
