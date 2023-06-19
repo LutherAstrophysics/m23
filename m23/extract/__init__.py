@@ -4,7 +4,6 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-
 from m23.constants import SKY_BG_BOX_REGION_SIZE
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
@@ -46,7 +45,7 @@ def sky_bg_average_for_all_regions(image_data, region_size):
                 )
             ]
             bg_data[(i, j)] = np.mean(centered_array)
-
+    
     return bg_data
 
 
@@ -150,10 +149,11 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data, sky_
         the first, second, and third element correspond to total star flux, background flux
         and star flux after background subtraction respectively
         """
-        x, y = position
+        x_exact, y_exact = position
+        x, y = np.round(position).astype("int")
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
-        backgroundAverageInStarRegion = sky_backgrounds[(x // regionSize, y // regionSize)]
+        backgroundAverageInStarRegion = sky_backgrounds[(x_exact // regionSize, y_exact // regionSize)]
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
 
         # Convert to zero, in case there's any nan.
@@ -167,7 +167,7 @@ def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data, sky_
         )
 
     stars_fluxes = [
-        fluxSumForStar(np.round(position).astype("int"), radius)
+        fluxSumForStar(position, radius)
         for position in stars_center_in_new_image
     ]
     return stars_fluxes
