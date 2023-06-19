@@ -28,7 +28,7 @@ class AlignmentStatsFile:
         with open(self.path(), "w") as fd:
             fd.write(
                 f"{'Image_Name':<30s}"
-                f"{'Rotation':<10s}"
+                f"{'Rotation':<20s}"
                 f"{'Translation_X':<15s}"
                 f"{'Translation_Y':<15s}"
                 f"{'Scale':<10s}\n"
@@ -42,10 +42,10 @@ class AlignmentStatsFile:
         with open(self.path(), "a") as fd:
             fd.write(
                 f"{image_name:<30}"
-                f"{rotation:<10.2f}"
-                f"{translation_x:<15.2f}"
-                f"{translation_y:<15.2f}"
-                f"{scale:<10.2f}\n"
+                f"{rotation:<20.9f}"
+                f"{translation_x:<15.3f}"
+                f"{translation_y:<15.3f}"
+                f"{scale:<10.3f}\n"
             )
 
     def __repr__(self) -> str:
