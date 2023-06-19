@@ -1,18 +1,16 @@
 import os
 import re
 from datetime import date, datetime
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path, PosixPath
 from typing import Iterable, List
 
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata
-from numpy.typing import DTypeLike
-
-from m23.constants import (
-    INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
-    OUTPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
-)
+from m23.constants import (INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
+                           OUTPUT_NIGHT_FOLDER_NAME_DATE_FORMAT)
 from m23.file.raw_image_file import RawImageFile
+from numpy.typing import DTypeLike
 
 # local imports
 from .rename import rename
@@ -150,6 +148,14 @@ def fit_data_from_fit_images(images: Iterable[str | Path]) -> List[DTypeLike]:
 
 def get_log_file_name(night_date: date):
     return f"Night-{night_date}-Processing-log.txt"
+
+
+def half_round_up_to_int(num : float):
+    # Python and IDL round up half numbers differently
+    # In python round(1.5) is 2 while round(2.5) is 2
+    # while in IDL all half numbers are rounded up
+    # This function mimics IDL behaviour
+    return int(Decimal(num).to_integral_value(rounding=ROUND_HALF_UP))
 
 
 def customMedian(arr, *args, **kwargs):
