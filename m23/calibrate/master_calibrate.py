@@ -1,5 +1,4 @@
 import numpy as np
-
 from m23.trans import createFitFileWithSameHeader
 from m23.utils import customMedian, fitDataFromFitImages
 
@@ -38,22 +37,25 @@ def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, list
 #
 # we generate the masterDark by "taking median of the dark frames"
 #   --Richard Berry, James Burnell
-def makeMasterDark(saveAs, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None):
+def makeMasterDark(saveAs=None, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None):
     if listOfDarkNames:
         listOfDarkData = fitDataFromFitImages(listOfDarkNames)
 
     if not listOfDarkNames and not listOfDarkData:
         raise Exception("Neither Dark data nor names were provided")
 
-    if not headerToCopyFromName and listOfDarkNames:
-        headerToCopyFromName = listOfDarkNames[0]
-    elif not headerToCopyFromName and not listOfDarkNames:
-        raise Exception("Filename to copy header from not provided")
-
     masterDarkData = getMedianOfMatrices(listOfDarkData)
     # listOfDarks[0] is the file whose header we're copying to
     #  save in masterDark
-    createFitFileWithSameHeader(masterDarkData, saveAs, headerToCopyFromName)
+
+    # Create the file only if filename to save as is provided
+    if saveAs is not None:
+        if not headerToCopyFromName and listOfDarkNames:
+            headerToCopyFromName = listOfDarkNames[0]
+        elif not headerToCopyFromName and not listOfDarkNames:
+            raise Exception("Filename to copy header from not provided")
+
+        createFitFileWithSameHeader(masterDarkData, saveAs, headerToCopyFromName)
 
     return masterDarkData
 
@@ -96,14 +98,12 @@ def makeMasterFlat(
     listOfFlatData = [
         flatData * firstFlatMedian / customMedian(flatData) for flatData in listOfFlatData
     ]
-
     # the we take the median of the scaled flats
     combinedFlats = getMedianOfMatrices(listOfFlatData)
     masterFlatData = combinedFlats - masterDarkData
 
     # convert flat data to matrix of ints
     masterFlatData = np.array(masterFlatData, dtype="int")
-
     # listOfFlats[0] is the file whose header we're copying to
     #  save in masterDark
     createFitFileWithSameHeader(masterFlatData, saveAs, headerToCopyFromName)

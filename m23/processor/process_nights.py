@@ -1,4 +1,5 @@
 import logging
+import shutil
 import sys
 from datetime import date, timedelta
 from pathlib import Path
@@ -9,7 +10,7 @@ import toml
 from astropy.io.fits import getdata
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
-from m23.calibrate.master_calibrate import makeMasterDark
+from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
 from m23.charts import draw_normfactors_chart
 from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
                            CONFIG_FILE_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME,
@@ -301,6 +302,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Flats
     if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
+        # Copy the masteflat provided to the calibration frames
+        masterflat_path = Path(night["masterflat"])
+        shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
         logger.info("Using pre-provided masterflat")
     else:
         flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
@@ -308,12 +312,13 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         # If there's extra noise cols or rows, we crop them
         flats = [crop(matrix, rows, cols) for matrix in flats]
 
-        master_flat_data = makeMasterDark(
+        master_flat_data = makeMasterFlat(
             saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_FLAT_NAME,
+            masterDarkData=master_dark_data,
             headerToCopyFromName=next(
                 get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)
             ).absolute(),  # Gets absolute path of first flat file
-            listOfDarkData=flats,
+            listOfFlatData=flats,
         )
         logger.info("Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
