@@ -18,7 +18,8 @@ from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
                            LOG_FILES_COMBINED_FOLDER_NAME,
                            M23_RAW_IMAGES_FOLDER_NAME, MASTER_DARK_NAME,
                            MASTER_FLAT_NAME, OUTPUT_CALIBRATION_FOLDER_NAME,
-                           SKY_BG_BOX_REGION_SIZE, SKY_BG_FOLDER_NAME)
+                           RAW_CALIBRATED_FOLDER_NAME, SKY_BG_BOX_REGION_SIZE,
+                           SKY_BG_FOLDER_NAME)
 from m23.exceptions import CouldNotAlignException
 from m23.extract import extract_stars, sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -258,6 +259,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
     color_ref_file_path = config["reference"]["color"]
+    
+    save_aligned_images = config["output"]["save_aligned"]
+    save_calibrated_images = config["output"]["save_calibrated"]
+
     reference_log_file = ReferenceLogFile(ref_file_path)
     logfile_combined_reference_logfile = LogFileCombinedFile(config["reference"]["logfile"])
 
@@ -272,10 +277,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
     LOG_FILES_COMBINED_OUTPUT_FOLDER = output / LOG_FILES_COMBINED_FOLDER_NAME
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
+    RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
 
     for folder in [
         JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER,
         CALIBRATION_OUTPUT_FOLDER,
+        RAW_CALIBRATED_OUTPUT_FOLDER,
         ALIGNED_COMBINED_OUTPUT_FOLDER,
         LOG_FILES_COMBINED_OUTPUT_FOLDER,
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
@@ -363,6 +370,14 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             listOfImagesData=images_data,
         )
 
+        if save_calibrated_images:
+            for index, raw_image_index in enumerate(range(from_index, to_index)):
+                raw_img = raw_images[raw_image_index]
+                calibrated_image = RawImageFile(RAW_CALIBRATED_OUTPUT_FOLDER / raw_img.path().name)
+                calibrated_image.create_file(images_data[index], raw_img)
+                logger.info("Saving calibrated image. {raw_image_index}")
+
+
         # Fill out the cropped regions with value of 1
         # Note, it's important to fill after the calibration step
         if len(crop_region) > 0:
@@ -392,7 +407,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 aligned_image = RawImageFile(
                     JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER / raw_image_to_align_name
                 )
-                aligned_image.create_file(aligned_data.astype("int16"), raw_image_to_align)
+
+                if save_aligned_images:
+                    aligned_image.create_file(aligned_data.astype("int16"), raw_image_to_align)
 
                 alignment_stats_file.add_record(raw_image_to_align_name, statistics)
                 logger.info(f"Aligned {raw_image_to_align_name}")

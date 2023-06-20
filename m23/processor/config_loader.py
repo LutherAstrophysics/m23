@@ -6,22 +6,15 @@ from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
 
 import toml
-from typing_extensions import NotRequired
-
-from m23.constants import (
-    CAMERA_CHANGE_2022_DATE,
-    INPUT_CALIBRATION_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    TYPICAL_NEW_CAMERA_CROP_REGION,
-)
+from m23.constants import (CAMERA_CHANGE_2022_DATE,
+                           INPUT_CALIBRATION_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME,
+                           TYPICAL_NEW_CAMERA_CROP_REGION)
 from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
-from m23.utils import (
-    get_darks,
-    get_date_from_input_night_folder_name,
-    get_flats,
-    get_raw_images,
-)
+from m23.utils import (get_darks, get_date_from_input_night_folder_name,
+                       get_flats, get_raw_images)
+from typing_extensions import NotRequired
 
 
 # TYPE related to Config object described by the configuration file
@@ -56,6 +49,8 @@ class ConfigReference(TypedDict):
 
 class ConfigOutput(TypedDict):
     path: str | Path
+    save_aligned: NotRequired[bool]
+    save_calibrated: NotRequired[bool]
 
 
 class ConfigDateTime(TypedDict):
@@ -99,6 +94,18 @@ def create_processing_config(config_dict: Config) -> Config:
     # Convert output path to Path object
     if type(config_dict["output"]["path"]) == str:
         config_dict["output"]["path"] = Path(config_dict["output"]["path"])
+
+    # Add a boolean specifying whether or not to save aligned and calibrated images.
+    if config_dict["output"].get("save_aligned"):
+        config_dict["output"]["save_aligned"] = True 
+    else:
+        config_dict["output"]["save_aligned"] = False
+
+    if config_dict["output"].get("save_calibrated"):
+        config_dict["output"]["save_calibrated"] = True 
+    else:
+        config_dict["output"]["save_calibrated"] = False
+
 
     # Convert reference file/img to Path object
     if type(config_dict["reference"]["file"]) == str:
@@ -358,6 +365,26 @@ def validate_datetime(time_obj):
         raise InvalidDatetimeInConfig
 
 
+def verify_optional_output_options(output_options : Dict[str, any]):
+    valid_keys = ["save_aligned", "save_calibrated"]
+    for key in output_options.keys():
+        if key not in valid_keys:
+            sys.stderr.write(
+                f"""Found invalid key {key} in output options configuration.
+                Valid keys are: {valid_keys}"""
+                )
+            return False
+    if save_aligned := output_options.get("save_aligned"):
+        if not isinstance(save_aligned, bool):
+            sys.stderr.write(f"Expected (true/false) instance for save_aligned option found {save_aligned}\n")
+            return False
+    if save_calibrated := output_options.get("save_calibrated"):
+        if not isinstance(save_aligned, bool):
+            sys.stderr.write(f"Expected (true/false) instance for save_calibrated option found {save_calibrated}\n")
+            return False
+    return True
+
+
 def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None:
     """
     This method reads data processing configuration from the file path
@@ -384,9 +411,10 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 "color": str(color_ref_file),
             },
             "input": {"nights": list(list_of_nights)},
-            "output": {"path": str(_)},
+            "output": {"path": str(_), **optional_output_options},
         } if (
             verify_optional_image_options(optional_image_options)
+            and verify_optional_output_options(optional_output_options)
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)
             and validate_reference_files(
