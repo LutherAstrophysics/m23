@@ -3,16 +3,18 @@ from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
 
 import numpy as np
-from scipy.optimize import curve_fit
-
-from m23.charts import draw_internight_brightness_chart, draw_internight_color_chart
-from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
+from m23.charts import (draw_internight_brightness_chart,
+                        draw_internight_color_chart)
+from m23.constants import (COLOR_NORMALIZED_FOLDER_NAME,
+                           FLUX_LOGS_COMBINED_FOLDER_NAME)
 from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.ri_color_file import RIColorFile
-from m23.utils import get_date_from_input_night_folder_name, get_radius_folder_name
+from m23.utils import (get_date_from_input_night_folder_name,
+                       get_radius_folder_name)
 from m23.utils.flux_to_magnitude import flux_to_magnitude
+from scipy.optimize import curve_fit
 
 # Note that this code is implemented based on the internight normalization in IDL
 # https://github.com/LutherAstrophysics/idl-files/blob/39dfa1c0c6d03d64020c42583bbcaa94655d69cc/inter_night_normalization_345.pro
@@ -108,26 +110,33 @@ def internight_normalize_auxiliary(  # noqa
     flux_logs_files = list(filter(lambda x: x.is_valid_file_name(), flux_logs_files))
 
     color_data_file = RIColorFile(color_file)
+    
+    # Messy hackery used instead of just reading the attendance float value 
+    # to mimick IDL
+    is_star_attendance_over_half : Dict[int, bool]= {}
 
-    # This dictionary holds the data for each
-    # Star's median ADU, normalization factor and normalized ADU
-    data_dict: ColorNormalizedFile.Data_Dict_Type = {
-        log_file.star_number(): ColorNormalizedFile.StarData(
-            # Median flux value
-            log_file.specialized_median_for_internight_normalization(),
-            np.nan,  # Normalized median
-            np.nan,  # Norm factor
-            # Star color in color ref file
-            color_data_file.get_star_color(log_file.star_number()),
-            np.nan,  # Actual color value used
-            log_file.attendance(),  # Attendance of the star for the night
-            logfile_combined_reference_file.get_star_data(log_file.star_number()).radii_adu[
-                radius_of_extraction
-            ]
-            or np.nan,
-        )
-        for log_file in flux_logs_files
-    }
+    data_dict: ColorNormalizedFile.Data_Dict_Type = {}
+    
+    for log_file in flux_logs_files:
+        # This dictionary holds the data for each
+        # Star's median ADU, normalization factor and normalized ADU
+        star_number = log_file.star_number()
+        data_dict[star_number] = ColorNormalizedFile.StarData(
+                # Median flux value
+                log_file.specialized_median_for_internight_normalization(),
+                np.nan,  # Normalized median
+                np.nan,  # Norm factor
+                # Star color in color ref file
+                color_data_file.get_star_color(star_number),
+                np.nan,  # Actual color value used
+                log_file.attendance(),  # Attendance of the star for the night
+                logfile_combined_reference_file.get_star_data(star_number).radii_adu[
+                    radius_of_extraction
+                ]
+                or np.nan,
+            )
+        is_star_attendance_over_half[star_number] = log_file.is_attendance_over_half()
+
     last_star_no = 2508  # Note not 2510 as 2509/10 don't have data in ref file
 
     # We calculate the ratio of signal in reference file data and the special
@@ -138,7 +147,8 @@ def internight_normalize_auxiliary(  # noqa
     for star_no in range(1, last_star_no + 1):
         star_data = data_dict[star_no]
         # Only calculate the ratio for stars with >= 50% attendance for the night
-        if star_data.attendance >= 0.5:
+        if is_star_attendance_over_half[star_no]:
+        # if star_data.attendance >= 0.5:
             # Only include this star if it has a non-zero median flux
             ratio = star_data.reference_log_adu / star_data.median_flux
             stars_signal_ratio[star_no] = ratio
@@ -174,8 +184,8 @@ def internight_normalize_auxiliary(  # noqa
             stars_color_section_number[star_no] = 2
         elif star_color_value > 1.063 and star_color_value <= 7:
             stars_color_section_number[star_no] = 3
-        # Otherwise we don't include the star in the color_section number
-
+    
+    # Otherwise we don't include the star in the color_section number
     # We now remove outliers points from signal-ratio vs r-i graph.
     # Essentially, this program works by taking a 3rd degree polynomial curve
     # fit for each of the 3 intervals. Then, it calculates how far each point is
@@ -203,10 +213,11 @@ def internight_normalize_auxiliary(  # noqa
         # Signal ratios
         y_values = [stars_signal_ratio[star_no] for star_no in stars_to_include]
 
+        
         # Sort by x
         x_sort_indices = np.argsort(x_values)
-        x_values - np.array(x_values)[x_sort_indices]
-        y_values - np.array(y_values)[x_sort_indices]
+        x_values = np.array(x_values)[x_sort_indices]
+        y_values = np.array(y_values)[x_sort_indices]
         stars_to_include = np.array(stars_to_include)[x_sort_indices]
 
         # These lines of code check to make sure the first or last data point in

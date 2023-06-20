@@ -5,7 +5,6 @@ from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
-
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
@@ -68,7 +67,18 @@ class FluxLogCombinedFile:
         data_points = len(self.data())
         positive_value_data_points = len(self.valid_data())
         return positive_value_data_points / data_points
-
+    
+    def is_attendance_over_half(self) -> bool:
+        """
+        Returns whether the attedance is over half using the same
+        method as the IDL code does. Note that this code isn't exactly
+        correct because of the way it does rounding.
+        """
+        data_points = len(self.data())
+        positive_value_data_points = len(self.valid_data())
+        # Note the usage of integer division mimics IDL although mere float division might be better.
+        return positive_value_data_points >= (data_points // 2) 
+    
     # Accessors
 
     def read_file_data(self):
