@@ -11,7 +11,7 @@ from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.ri_color_file import RIColorFile
-from m23.utils import (get_date_from_input_night_folder_name,
+from m23.utils import (customMedian, get_date_from_input_night_folder_name,
                        get_radius_folder_name)
 from m23.utils.flux_to_magnitude import flux_to_magnitude
 from scipy.optimize import curve_fit
@@ -391,7 +391,12 @@ def internight_normalize_auxiliary(  # noqa
     region_3_x = [stars_magnitudes[star] for star in region_3_stars]
     region_3_y = [stars_signal_ratio[star] for star in region_3_stars]
     # For region 3, we just return the median of y values
-    magnitude_fit_fn[3] = lambda x: np.median(region_3_y)
+
+    # magnitude_fit_fn[3] = lambda x: np.median(region_3_y)
+    # We're using IDL like median here for getting results close to IDL's, 
+    # but np.median is better
+    magnitude_fit_fn[3] = lambda x: customMedian(region_3_y)
+
     # Create and save the brightness chart
     normfactors_to_return["brightness"] = draw_internight_brightness_chart(
         night,
@@ -400,7 +405,7 @@ def internight_normalize_auxiliary(  # noqa
         {1: region_1_y, 2: region_2_y, 3: region_3_y},
         magnitude_fit_fn,
     )
-
+    
     # Write normfactors for all stars
     for star_no in sorted(data_dict.keys()):
         star_data = data_dict[star_no]
