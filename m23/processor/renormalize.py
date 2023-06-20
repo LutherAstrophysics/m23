@@ -4,7 +4,6 @@ from pathlib import Path
 
 from m23.constants import FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
-from m23.file.reference_log_file import ReferenceLogFile
 from m23.processor.process_nights import normalization_helper
 from m23.utils import get_date_from_input_night_folder_name, get_log_file_name
 
@@ -42,7 +41,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         # Create log files combined folder if it doesn't yet exist
         FLUX_LOGS_COMBINED_FOLDER.mkdir(exist_ok=True)
 
-        reference_log_file = ReferenceLogFile(
+        reference_log_file = LogFileCombinedFile(
             renormalize_dict["reference"]["file"],
         )
         logfile_combined_reference_logfile = LogFileCombinedFile(

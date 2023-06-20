@@ -5,9 +5,10 @@ from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
+
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
+from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
-from m23.file.reference_log_file import ReferenceLogFile
 
 
 # Note that FluxLogCombined is the one that we have for multiple
@@ -249,7 +250,7 @@ class FluxLogCombinedFile:
         y_positions: Iterable[float],
         normfactors: Iterable[float],
         date_times: Iterable[str],
-        reference_logfile: ReferenceLogFile,
+        reference_logfile: LogFileCombinedFile,
     ):
         """
         Creates/Updates Flux Log Combined file
