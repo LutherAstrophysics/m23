@@ -5,7 +5,6 @@ from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
-
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -90,11 +89,11 @@ class FluxLogCombinedFile:
             self.__all_adus = np.array(self.__data[:, 0], dtype="float")
 
             # These might be made public future but are unstable
-            # thus not available as API at the moment
-            self.__all_x_values = np.array(self.__data[:, 1], dtype="float")
-            self.__all_y_values = np.array(self.__data[:, 2], dtype="float")
-            self.__all_normfactors = np.array(self.__data[:, 3], dtype="float")
-            self.__all_dates = np.array(self.__data[:, 4])
+            # # thus not available as API at the moment
+            # self.__all_x_values = np.array(self.__data[:, 1], dtype="float")
+            # self.__all_y_values = np.array(self.__data[:, 2], dtype="float")
+            # self.__all_normfactors = np.array(self.__data[:, 3], dtype="float")
+            # self.__all_dates = np.array(self.__data[:, 4])
 
             # Remove nan and values < 0
             self.__valid_adus = self.__all_adus[self.__all_adus > 0]
