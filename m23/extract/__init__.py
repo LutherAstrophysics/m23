@@ -4,10 +4,10 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-
 from m23.constants import SKY_BG_BOX_REGION_SIZE
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.file.reference_log_file import ReferenceLogFile
 from m23.matrix import blockRegions
 from m23.utils import half_round_up_to_int
 
@@ -41,7 +41,7 @@ def sky_bg_average_for_all_regions(image_data, region_size):
             sorted_data = sorted_data[non_zero_indices]
 
             centered_array = sorted_data[
-                int(0.45 * len(sorted_data)) : int(0.55 * len(sorted_data)) + 1
+                int(.45 * len(sorted_data)) : int(.55 * len(sorted_data)) + 1
             ]
             bg_data[(i, j)] = np.mean(centered_array)
 
@@ -50,7 +50,7 @@ def sky_bg_average_for_all_regions(image_data, region_size):
 
 def extract_stars(
     image_data: npt.NDArray,
-    reference_log_file: LogFileCombinedFile,
+    reference_log_file: ReferenceLogFile,
     radii_of_extraction,
     log_file_combined_file: LogFileCombinedFile,
     aligned_combined_file: AlignedCombinedFile,
@@ -101,8 +101,9 @@ def extract_stars(
     )
 
 
-def newStarCenters(imageData, reference_log_file: LogFileCombinedFile):
-    no_of_stars = len(reference_log_file)
+def newStarCenters(imageData, reference_log_file: ReferenceLogFile):
+
+    no_of_stars = len(reference_log_file)    
 
     def centerFinder(star_no):
         x, y = reference_log_file.get_star_xy(star_no)
@@ -113,15 +114,9 @@ def newStarCenters(imageData, reference_log_file: LogFileCombinedFile):
         for col in range(-5, 6):
             for row in range(-5, 6):
                 if math.ceil(math.sqrt((col**2) + (row**2))) <= 5:
-                    WghtSum += imageData[half_round_up_to_int(y) + row][
-                        half_round_up_to_int(x) + col
-                    ]
-                    colWghtSum += imageData[half_round_up_to_int(y) + row][
-                        half_round_up_to_int(x) + col
-                    ] * (x + col)
-                    rowWghtSum += imageData[half_round_up_to_int(y) + row][
-                        half_round_up_to_int(x) + col
-                    ] * (y + row)
+                    WghtSum += imageData[half_round_up_to_int(y) + row][half_round_up_to_int(x) + col]
+                    colWghtSum += imageData[half_round_up_to_int(y) + row][half_round_up_to_int(x) + col] * (x + col)
+                    rowWghtSum += imageData[half_round_up_to_int(y) + row][half_round_up_to_int(x) + col] * (y + row)
 
         if WghtSum > 0:
             xWght = colWghtSum / WghtSum
@@ -132,12 +127,13 @@ def newStarCenters(imageData, reference_log_file: LogFileCombinedFile):
 
         return yWght, xWght
 
-    return [centerFinder(star_no) for star_no in range(1, no_of_stars + 1)]
+    return [
+        centerFinder(star_no)
+        for star_no in range(1, no_of_stars + 1)
+    ]
 
 
-def flux_log_for_radius(
-    radius: int, stars_center_in_new_image, image_data, sky_backgrounds, ref: LogFileCombinedFile
-):
+def flux_log_for_radius(radius: int, stars_center_in_new_image, image_data, sky_backgrounds, ref : ReferenceLogFile):
     """
     We need to optimize this code to work more efficiently with the caller
     function i.e extract_stars
@@ -159,11 +155,9 @@ def flux_log_for_radius(
         x, y = np.round(position).astype("int")
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
-        backgroundAverageInStarRegion = sky_backgrounds[
-            (x_exact // regionSize, y_exact // regionSize)
-        ]
+        backgroundAverageInStarRegion = sky_backgrounds[(x_exact // regionSize, y_exact // regionSize)]
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
-
+        
         # Convert to zero, in case there's any nan.
         # This ensures that two log files correspond to same star number as they are
         # or after reading with something like getLinesWithNumbersFromFile
@@ -173,6 +167,7 @@ def flux_log_for_radius(
             np.nan_to_num(backgroundAverageInStarRegion),
             np.nan_to_num(subtractedStarFlux),
         )
+
 
     stars_fluxes = [
         fluxSumForStar(position, radius, index + 1)
@@ -200,12 +195,12 @@ def fwhm(data, xweight, yweight, aduPerPixel):
     for axis in range(-5, 6):
         col_sum += data[half_round_up_to_int(xweight) + axis, half_round_up_to_int(yweight)]
         row_sum += data[half_round_up_to_int(xweight), half_round_up_to_int(yweight) + axis]
-        weighted_col_sum += (
-            data[half_round_up_to_int(xweight) + axis, half_round_up_to_int(yweight)] - aduPerPixel
-        ) * ((half_round_up_to_int(xweight) + axis) - xweight) ** 2
-        weighted_row_sum += (
-            data[half_round_up_to_int(xweight), half_round_up_to_int(yweight) + axis] - aduPerPixel
-        ) * ((half_round_up_to_int(yweight) + axis) - yweight) ** 2
+        weighted_col_sum += (data[half_round_up_to_int(xweight) + axis, half_round_up_to_int(yweight)] - aduPerPixel) * (
+            (half_round_up_to_int(xweight) + axis) - xweight
+        ) ** 2
+        weighted_row_sum += (data[half_round_up_to_int(xweight), half_round_up_to_int(yweight) + axis] - aduPerPixel) * (
+            (half_round_up_to_int(yweight) + axis) - yweight
+        ) ** 2
     col_sum = col_sum - (aduPerPixel * 11)
     row_sum = row_sum - (aduPerPixel * 11)
     xFWHM = 2.355 * np.sqrt(weighted_col_sum / (col_sum - 1))

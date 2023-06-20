@@ -9,12 +9,13 @@ from m23.constants import INTRA_NIGHT_IMPACT_THRESHOLD_PIXELS
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
+from m23.file.reference_log_file import ReferenceLogFile
 
 from .get_line import get_star_to_ignore_bit_vector
 
 
 def normalize_log_files(  # noqa
-    reference_log_file: LogFileCombinedFile,
+    reference_log_file: ReferenceLogFile,
     log_files_to_normalize: List[LogFileCombinedFile],
     output_folder: Path,
     radius: int,
