@@ -13,6 +13,7 @@ from m23.utils import (
     get_darks,
     get_date_from_input_night_folder_name,
     get_flats,
+    sorted_by_number,
 )
 
 
@@ -26,7 +27,8 @@ def generate_masterflat_auxiliary(config: MasterflatGeneratorConfig) -> None:
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     crop_region = config["image"].get("crop_region", [])
     NIGHT_INPUT_CALIBRATION_FOLDER = config["input"] / INPUT_CALIBRATION_FOLDER_NAME
-    flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
+    # Note the order is important when generating masterflat
+    flats = fit_data_from_fit_images(sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)))
     darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER))
     night_date = get_date_from_input_night_folder_name(config["input"])
 

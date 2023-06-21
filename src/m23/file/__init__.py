@@ -7,7 +7,7 @@ def getLinesWithNumbersFromFile(fileName):
         allLines = [line.strip() for line in fd.readlines()]
         return list(
             filter(
-                lambda line: re.search("\d+", line) and not re.search("[a-zA-Z]", line),
+                lambda line: re.search(r"\d+", line) and not re.search("[a-zA-Z]", line),
                 allLines,
             )
         )
@@ -18,7 +18,7 @@ def line_str_contains_numbers_and_non_alphabets(line_str: str) -> bool:
     Check if the `line_str` contains at least one digit and non alphabetical
     characters
     """
-    return re.search("\d+", line_str) and not re.search("[a-zA-Z]", line_str)
+    return re.search(r"\d+", line_str) and not re.search(r"[a-zA-Z]", line_str)
 
 
 def formatWindowsPath(p: WindowsPath):

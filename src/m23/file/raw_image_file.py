@@ -11,7 +11,7 @@ from m23.constants import OBSERVATION_DATETIME_FORMAT
 
 class RawImageFile:
     # Class attributes
-    file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
+    file_name_re = re.compile(r"m23_(\d+\.?\d*)-(\d+).fit")
     date_observed_header_name = "DATE-OBS"
     time_observed_header_name = "TIME-OBS"
     date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT

@@ -51,6 +51,7 @@ from m23.utils import (
     get_output_folder_name_from_night_date,
     get_radius_folder_name,
     get_raw_images,
+    sorted_by_number,
     time_taken_to_capture_and_save_a_raw_file,
 )
 
@@ -328,7 +329,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
         logger.info("Using pre-provided masterflat")
     else:
-        flats = fit_data_from_fit_images(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
+        # Note the order is important when generating masterflat
+        flats = fit_data_from_fit_images(sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)))
         # Ensure that image dimensions are as specified by rows and cols
         # If there's extra noise cols or rows, we crop them
         flats = [crop(matrix, rows, cols) for matrix in flats]

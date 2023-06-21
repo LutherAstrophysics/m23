@@ -1,7 +1,7 @@
 import numpy as np
 
 from m23.trans import createFitFileWithSameHeader
-from m23.utils import customMedian, fitDataFromFitImages
+from m23.utils import customMedian, fitDataFromFitImages, sorted_by_number
 
 # This code is a direct implementation of steps
 # mentioned in Handbook of Astronomical Image `Processing by
@@ -84,6 +84,7 @@ def makeMasterFlat(
     #
 
     if listOfFlatNames:
+        listOfFlatNames = sorted_by_number(listOfFlatNames)
         listOfFlatData = fitDataFromFitImages(listOfFlatNames)
 
     if not listOfFlatNames and not listOfFlatData:
