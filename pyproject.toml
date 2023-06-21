@@ -1,6 +1,6 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "m23"
@@ -16,4 +16,10 @@ dependencies = [
     'opencv-python==4.7.0.68',
     'matplotlib==3.7.0',
     'ephem==4.1.4'
+]
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "--ignore=idea"
 ]
