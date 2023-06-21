@@ -23,7 +23,6 @@ from m23.constants import (
     LOG_FILES_COMBINED_FOLDER_NAME,
     M23_RAW_IMAGES_FOLDER_NAME,
     MASTER_DARK_NAME,
-    MASTER_FLAT_NAME,
     OUTPUT_CALIBRATION_FOLDER_NAME,
     RAW_CALIBRATED_FOLDER_NAME,
     SKY_BG_BOX_REGION_SIZE,
@@ -34,6 +33,7 @@ from m23.extract import extract_stars, sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.alignment_stats_file import AlignmentStatsFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.file.masterflat_file import MasterflatFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
 from m23.file.sky_bg_file import SkyBgFile
@@ -166,7 +166,7 @@ def create_sky_bg_file(
     logger.info("Generating sky background file")
     bg_data_of_all_images = []
 
-    for index, logfile in enumerate(log_files_to_use):
+    for logfile in enumerate(log_files_to_use):
         date_time_of_image = logfile.datetime()
         # Here we find the corresponding aligned combined file first
         # so we can use that to calculate the sky bg data.
@@ -334,7 +334,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         flats = [crop(matrix, rows, cols) for matrix in flats]
 
         master_flat_data = makeMasterFlat(
-            saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_FLAT_NAME,
+            saveAs=CALIBRATION_OUTPUT_FOLDER / MasterflatFile.generate_file_name(night_date),
             masterDarkData=master_dark_data,
             headerToCopyFromName=next(
                 get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)
