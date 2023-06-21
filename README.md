@@ -254,6 +254,15 @@ python -m pip install m23==x.y.z
 
 where `x.y.z` is a valid version number. The list of all available version numbers can be viewed at <https://pypi.org/project/m23/#history>.
 
+### Running Tests
+
+If you're developing this library, adding features and doing other things,
+you'll want to run the unittest to try to catch any unintended mistakes you
+might have made. In order to run the tests, first install the library by running
+`pip install .` in your terminal form the root directory of project. Then invoke
+the tests by running merely `pytest`. You should have already run `pip install -
+r requirements.txt` before running the tests.
+
 ### Contributing
 
 This library has bugs, like most software and needs your valuable contribution.
