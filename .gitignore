@@ -185,3 +185,5 @@ docs
 !tests/**
 
 idea/*
+
+tests/__pycache__
