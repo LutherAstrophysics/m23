@@ -9,6 +9,7 @@ import numpy as np
 import toml
 from astropy.io.fits import getdata
 
+from m23 import __version__
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
 from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
@@ -267,7 +268,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     ch2 = logging.StreamHandler(sys.stdout)
     ch2.setFormatter(formatter)
     logger.addHandler(ch2)  # Write to stdout
-    logger.info(f"Starting processing for {night_date}")
+    logger.info(f"Starting processing for {night_date} with m23 version: {__version__}")
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
