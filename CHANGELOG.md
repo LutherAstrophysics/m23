@@ -2,6 +2,22 @@
 
 <!--next-version-placeholder-->
 
+## v1.1.0 (2023-06-21)
+
+### Feature
+
+* Write the version number of the m23 in logfile first thing ([`25de6f1`](https://github.com/LutherAstrophysics/m23/commit/25de6f1da66ad56b4d2e5c790b1f54b547dcf4aa))
+* Add __version__ variable ([`8b29c9d`](https://github.com/LutherAstrophysics/m23/commit/8b29c9dedcee5fa7138890c9183b2f40a1073739))
+
+### Fix
+
+* Typo in version variable ([`be40d4a`](https://github.com/LutherAstrophysics/m23/commit/be40d4a93c06c75dfc48e4d3d1ed90d95478951b))
+
+### Documentation
+
+* Add release info in contributing section ([`f963e88`](https://github.com/LutherAstrophysics/m23/commit/f963e882e1f09e0867eb64026d5ec9b085a9fb19))
+* Mention optional `save_aligned` and `save_combined` options ([`39173cf`](https://github.com/LutherAstrophysics/m23/commit/39173cff6a0a387a7950a524d59940f46e45ccbb))
+
 ## v1.0.0 (2023-06-21)
 
 
