@@ -179,5 +179,9 @@ usage/processing/my_automate*.py
 usage/processing/my_renormalize_all*.py
 usage/processing/my_renormalize_generator*.py
 
-test*
+test*.py
 docs
+
+!tests/**
+
+idea/*

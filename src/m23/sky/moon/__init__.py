@@ -59,7 +59,7 @@ def phase(d: Union[datetime.date, datetime.datetime]):
 
 
 def get_moon_DE_and_RA(
-    date : datetime.datetime,
+    date: datetime.datetime,
 ):  # Returns the declination and right ascension of the moon for the given date and time in UTC
     # date parameter is given as a string 'year/month/day hh:mm:ss'
 
@@ -79,7 +79,7 @@ def get_moon_DE_and_RA(
 
 
 def moon_distance(
-    date : datetime.datetime,
+    date: datetime.datetime,
 ):
     """
     Returns the angle distance (in degrees) between the moon and our m23 cluster
