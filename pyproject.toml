@@ -24,6 +24,7 @@ version_toml = "pyproject.toml:project.version"
 version_source = "tag"
 commit_version_number = true
 build_command = "pip install build && python -m build"
+upload_to_release = true
 
 [tool.pytest.ini_options]
 adopts = [
