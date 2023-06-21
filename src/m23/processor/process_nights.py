@@ -389,7 +389,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 raw_img = raw_images[raw_image_index]
                 calibrated_image = RawImageFile(RAW_CALIBRATED_OUTPUT_FOLDER / raw_img.path().name)
                 calibrated_image.create_file(images_data[index], raw_img)
-                logger.info("Saving calibrated image. {raw_image_index}")
+                logger.info(f"Saving calibrated image. {raw_image_index}")
 
         # Fill out the cropped regions with value of 1
         # Note, it's important to fill after the calibration step
