@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.0 (2023-06-21)
+
+### Feature
+
+* Add date to the masterflat filename ([`30a86d4`](https://github.com/LutherAstrophysics/m23/commit/30a86d4288fe94dc4dd6d44490d5991326663081))
+
+### Fix
+
+* Add missing f-string ([`0014fe4`](https://github.com/LutherAstrophysics/m23/commit/0014fe4b2dbf713487992b968589472087e1d50d))
+
 ## v1.1.0 (2023-06-21)
 
 ### Feature
