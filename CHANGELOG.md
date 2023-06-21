@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.1 (2023-06-21)
+
+### Fix
+
+* Masterflat generation bug ([`4c47ca2`](https://github.com/LutherAstrophysics/m23/commit/4c47ca27ae812a95dc164896fd3e67fda0498acd))
+
 ## v1.2.0 (2023-06-21)
 
 ### Feature
