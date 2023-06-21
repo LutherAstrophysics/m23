@@ -5,6 +5,7 @@ from typing import Iterable
 
 import numpy as np
 import numpy.typing as npt
+
 from m23.constants import FLUX_LOG_COMBINED_FILENAME_DATE_FORMAT
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -25,7 +26,7 @@ class FluxLogCombinedFile:
 
     # Class attributes
     header_rows = 6  # Specifies the first x rows that don't contain header information
-    file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt")
+    file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{1,4})_flux\.txt")  # noqa
     header_columns = ["ADU", "X", "Y", "Normfactors", "DateTime"]
 
     def __init__(self, path: str | Path) -> None:
@@ -67,7 +68,7 @@ class FluxLogCombinedFile:
         data_points = len(self.data())
         positive_value_data_points = len(self.valid_data())
         return positive_value_data_points / data_points
-    
+
     def is_attendance_over_half(self) -> bool:
         """
         Returns whether the attedance is over half using the same
@@ -76,9 +77,10 @@ class FluxLogCombinedFile:
         """
         data_points = len(self.data())
         positive_value_data_points = len(self.valid_data())
-        # Note the usage of integer division mimics IDL although mere float division might be better.
-        return positive_value_data_points >= (data_points // 2) 
-    
+        # Note the usage of integer division mimics IDL although mere float
+        # division might be better.
+        return positive_value_data_points >= (data_points // 2)
+
     # Accessors
 
     def read_file_data(self):

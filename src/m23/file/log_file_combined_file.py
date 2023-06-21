@@ -6,6 +6,7 @@ from typing import Dict, Iterable
 
 import numpy as np
 import numpy.typing as npt
+
 from m23.constants import OBSERVATION_DATETIME_FORMAT
 from m23.file.aligned_combined_file import AlignedCombinedFile
 
@@ -183,7 +184,7 @@ class LogFileCombinedFile:
     def data(self):
         if not self.__is_read:
             self._read()
-        # Return the copy of the data so that the a caller 
+        # Return the copy of the data so that the a caller
         # doesn't get affected by another misbehaving caller.
         return np.copy(self.__data)
 

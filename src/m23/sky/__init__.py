@@ -4,9 +4,7 @@ from typing import Tuple
 import numpy as np
 
 
-def angle_of_elevation(
-    date : datetime.datetime, object="M23"
-) -> Tuple[float, float]:
+def angle_of_elevation(date: datetime.datetime, object="M23") -> Tuple[float, float]:
     """
     Returns the angle of elevation of the interested sky object with its
     uncertainty The date and time is given in UTC.
@@ -92,7 +90,7 @@ def angle_of_elevation(
         AE = np.round(np.mean(angle_list), 1)
     elif uncertainty >= 0.01:
         AE = np.round(np.mean(angle_list), 2)
-    else: 
+    else:
         AE = np.mean(angle_list)
 
     return (AE, uncertainty)

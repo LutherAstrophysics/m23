@@ -7,10 +7,13 @@ from typing import Iterable, List
 
 import numpy as np
 from astropy.io.fits import getdata as getfitsdata
-from m23.constants import (INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
-                           OUTPUT_NIGHT_FOLDER_NAME_DATE_FORMAT)
-from m23.file.raw_image_file import RawImageFile
 from numpy.typing import DTypeLike
+
+from m23.constants import (
+    INPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
+    OUTPUT_NIGHT_FOLDER_NAME_DATE_FORMAT,
+)
+from m23.file.raw_image_file import RawImageFile
 
 # local imports
 from .rename import rename
@@ -150,7 +153,7 @@ def get_log_file_name(night_date: date):
     return f"Night-{night_date}-Processing-log.txt"
 
 
-def half_round_up_to_int(num : float):
+def half_round_up_to_int(num: float):
     # Python and IDL round up half numbers differently
     # In python round(1.5) is 2 while round(2.5) is 2
     # while in IDL all half numbers are rounded up

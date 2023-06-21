@@ -1,4 +1,5 @@
 import numpy as np
+
 from m23.trans import createFitFileWithSameHeader
 from m23.utils import customMedian, fitDataFromFitImages
 
@@ -37,7 +38,9 @@ def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, list
 #
 # we generate the masterDark by "taking median of the dark frames"
 #   --Richard Berry, James Burnell
-def makeMasterDark(saveAs=None, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None):
+def makeMasterDark(
+    saveAs=None, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None
+):
     if listOfDarkNames:
         listOfDarkData = fitDataFromFitImages(listOfDarkNames)
 
