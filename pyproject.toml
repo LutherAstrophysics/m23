@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "m23"
-readme = "README.txt"
+readme = "README.md"
 requires-python = ">=3.10"
 version = "0.10.0"
 dependencies = [
@@ -22,6 +22,7 @@ dependencies = [
 branch = "main"
 version_toml = "pyproject.toml:project.version"
 version_source = "tag"
+build_command = "pip install build && python -m build"
 
 [tool.pytest.ini_options]
 adopts = [
