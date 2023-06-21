@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.10.1 (2023-06-21)
+
+### Fix
+
+* Update build ([`1a7f770`](https://github.com/LutherAstrophysics/m23/commit/1a7f770bb4aa6285c5f3d76546aeebffdf79efd4))
+
 ## v0.10.0 (2023-06-21)
 
 ### Feature
