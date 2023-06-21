@@ -45,3 +45,6 @@ color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 [output]
 path = "D://xxx"
+# The options below are optional and default to false if not specified
+save_aligned = false
+save_calibrated = false
