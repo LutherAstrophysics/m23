@@ -269,3 +269,22 @@ r requirements.txt` before running the tests.
 ### Contributing
 
 This library has bugs, like most software and needs your valuable contribution.
+This project uses semantic versioning meaning that the version names are
+determined based on the work automatically rather than the author manually
+changing them. We use [python semantic
+release](https://python-semantic-release.readthedocs.io/en/latest/) for that.
+All you need to do is to write commit messages in a certain format, and the
+releases will be created automatically for you by the github actions and those
+releases published to github release as well as pypi. Navigate to the github
+actions tab to check the status of your release or if something failed. Your
+commit message must be followed by one of the few special keywords:
+
+1. "chore" for chore tasks
+1. "docs" for documentation related commits
+1. "feat" for new feature
+1. "fix" for bugfix
+
+Note that if any of your commits make breaking changes, your commit message must
+also contain the phrase "BREAKING CHANGE". This will trigger a major version
+update. See some of the previous commit messages for more information and feel
+free too ask if you have confusion.
