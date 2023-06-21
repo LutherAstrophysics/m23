@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v0.10.0 (2023-06-21)
+
+### Feature
+
+* Spellfix ([`c4062b8`](https://github.com/LutherAstrophysics/m23/commit/c4062b878d03cc9d69e9a5cf6db1038ba10efce7))
+
 ## v0.10.1 (2023-06-21)
 
 ### Fix
