@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## v0.11.0 (2023-06-21)
+
+### Feature
+
+* Upload release to github releases in addition to other places ([`a8e89b9`](https://github.com/LutherAstrophysics/m23/commit/a8e89b90b011069ce6a851eb52e0a9cf6eb3d00e))
+
+### Fix
+
+* Update fix typo in ci action env var name ([`5e8ef1a`](https://github.com/LutherAstrophysics/m23/commit/5e8ef1a241e091b685d5d379ccecceeb5072d244))
+* Update github ci ([`9ba5482`](https://github.com/LutherAstrophysics/m23/commit/9ba54820fd5c60bd61e98bf9c07ff9ff54abcc67))
+
 ## v0.10.1 (2023-06-21)
 
 ### Fix
