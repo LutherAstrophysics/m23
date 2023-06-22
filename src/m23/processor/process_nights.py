@@ -324,13 +324,15 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Flats
     if night.get("masterflat"):
         master_flat_data = getdata(night["masterflat"])
-        # Copy the masteflat provided to the calibration frames
+        # Copy the masterflat provided to the calibration frames
         masterflat_path = Path(night["masterflat"])
         shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
         logger.info("Using pre-provided masterflat")
     else:
         # Note the order is important when generating masterflat
-        flats = fit_data_from_fit_images(sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)))
+        flats = fit_data_from_fit_images(
+            sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
+        )  # noqa
         # Ensure that image dimensions are as specified by rows and cols
         # If there's extra noise cols or rows, we crop them
         flats = [crop(matrix, rows, cols) for matrix in flats]

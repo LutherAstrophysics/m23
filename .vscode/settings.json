@@ -62,6 +62,7 @@
     "savetxt",
     "scipy",
     "setuptools",
+    "starttime",
     "tuti",
     "venv",
     "writeto",
