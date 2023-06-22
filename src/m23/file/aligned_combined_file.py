@@ -12,7 +12,7 @@ from m23.file.raw_image_file import RawImageFile
 
 class AlignedCombinedFile:
     # Class attributes
-    file_name_re = re.compile("m23_(\d+\.?\d*)-(\d+).fit")
+    file_name_re = re.compile(r"m23_(\d+\.?\d*)[-_](\d+).fit")
     date_observed_header_name = "DATE-OBS"
     time_observed_header_name = "TIME-OBS"
     date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT
