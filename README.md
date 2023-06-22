@@ -236,12 +236,6 @@ it is recommended that you upgrade the package by running the following command 
 python -m pip install --upgrade m23
 ```
 
-### Developer notes
-
-If you're making changes to this package, here are a few things to note.
-
-1. To publish the package to pypi, make sure you update the version number in [./pyproject.toml](./pyproject.toml) and then commit your changes. Then create a release from the this repos github homepage. This should trigger the github workflow that builds uploads the package to
-   pypi.
 
 ### If things go wrong
 
