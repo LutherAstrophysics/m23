@@ -167,7 +167,7 @@ def create_sky_bg_file(
     logger.info("Generating sky background file")
     bg_data_of_all_images = []
 
-    for logfile in enumerate(log_files_to_use):
+    for logfile in log_files_to_use:
         date_time_of_image = logfile.datetime()
         # Here we find the corresponding aligned combined file first
         # so we can use that to calculate the sky bg data.
