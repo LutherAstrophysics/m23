@@ -284,6 +284,9 @@ commit message must be followed by one of the few special keywords:
 1. "feat" for new feature
 1. "fix" for bugfix
 
+and couple others:
+![screenshot of summary of valid commitizen commits](https://raw.githubusercontent.com/commitizen/cz-cli/master/meta/screenshots/add-commit.png)
+
 Note that if any of your commits make breaking changes, your commit message must
 also contain the phrase "BREAKING CHANGE". This will trigger a major version
 update. See some of the previous commit messages for more information and feel
