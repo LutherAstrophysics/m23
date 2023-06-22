@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.2.2 (2023-06-22)
+
+### Fix
+
+* Error during sky bg generation ([`2cd4b47`](https://github.com/LutherAstrophysics/m23/commit/2cd4b47f7b4bd4b3f0bc03a6b995920c57be61fa))
+
+### Documentation
+
+* Add photo illustrating commit subjects ([`c2819c6`](https://github.com/LutherAstrophysics/m23/commit/c2819c67846b4e218575b1d8e8c46a5528c7fa56))
+
 ## v1.2.1 (2023-06-21)
 
 ### Fix
