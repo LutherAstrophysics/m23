@@ -14,7 +14,7 @@ from m23.sky.moon import position as get_moon_phase
 
 
 class SkyBgFile:
-    file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)_sky_bg\.txt")
+    file_name_re = re.compile(r"(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)_sky_bg\.txt")
     date_observed_datetime_format = OBSERVATION_DATETIME_FORMAT
 
     # We divide up the sky into several square sections (currently, sized 64px)
