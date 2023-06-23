@@ -174,11 +174,11 @@ def customMedian(arr, *args, **kwargs):
         return np.median(arr, *args, **kwargs)
 
 
-def sorted_by_number(lst : Iterable[Union[str, Path]]) -> Iterable[Union[str, Path]]:
+def sorted_by_number(lst: Iterable[Union[str, Path]]) -> Iterable[Union[str, Path]]:
     """
     Returns sorted list of `lst` where sorting is done in ascending order by the
     the first number present in the string. If no string is present, falls back
-    to alphabetic sorting 
+    to alphabetic sorting
     """
     # Note that this step is important if the `lst` passed is a generator
     # This is because, after we've read it once, it would be empty
@@ -189,14 +189,11 @@ def sorted_by_number(lst : Iterable[Union[str, Path]]) -> Iterable[Union[str, Pa
     lst_path_normalized = [x if isinstance(x, str) else x.name for x in lst]
     # Sort by alphabet (secondary)
     alphabet_sorted = sorted(enumerate(lst_path_normalized), key=lambda x: x[1])
-    # Sort by first number present in the 
-    MATCHER = re.compile(r'\D*(\d*).*')
-    foo = zip(*list(sorted(alphabet_sorted, 
-           key= lambda x: int(MATCHER.match(x[1])[1] or 0)
-           )))
+    # Sort by first number present in the
+    MATCHER = re.compile(r"\D*(\d*).*")
+    foo = zip(*list(sorted(alphabet_sorted, key=lambda x: int(MATCHER.match(x[1])[1] or 0))))
     indices, _ = foo
     return [lst[i] for i in indices]
-
 
 
 __all__ = [
@@ -205,5 +202,5 @@ __all__ = [
     "rename",
     "get_closet_date",
     "raw_data_name_format",
-    "sorted_by_number"
+    "sorted_by_number",
 ]
