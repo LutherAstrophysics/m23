@@ -174,7 +174,10 @@ def flux_log_for_radius(
         # data matrix and in the reference file are flipped.
         y_exact, x_exact = ref.get_star_xy(star_no)
 
-        x, y = np.round(position).astype("int")  # floor
+        # IDL like round
+        x, y = position
+        x, y = half_round_up_to_int(x), half_round_up_to_int(y)
+
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
         backgroundAverageInStarRegion = sky_backgrounds[
