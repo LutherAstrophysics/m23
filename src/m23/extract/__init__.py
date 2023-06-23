@@ -44,7 +44,14 @@ def sky_bg_average_for_all_regions(image_data, region_size):
             centered_array = sorted_data[
                 int(0.45 * len(sorted_data)) : int(0.55 * len(sorted_data)) + 1
             ]
-            bg_data[(i, j)] = np.mean(centered_array)
+
+            # If the data just contains zeros than this will mean that after the
+            # zero removal step, our array will be empty and the mean of empty
+            # array is nan, we would rather want to write it as 0
+            if len(centered_array) == 0:
+                bg_data[(i, j)] = 0
+            else:
+                bg_data[(i, j)] = np.mean(centered_array)
 
     return bg_data
 
