@@ -148,16 +148,26 @@ def flux_log_for_radius(
 
     def fluxSumForStar(position, radius, star_no) -> Tuple[int]:
         """
-        This function returns the flux of of a star at specified `position` using
-        `radius` as radius of extraction. Note that this tuple a three-tuple where
-        the first, second, and third element correspond to total star flux, background flux
-        and star flux after background subtraction respectively
+        This function returns the flux of of a star at specified `position`
+        using `radius` as radius of extraction. Note that this returns a
+        three-tuple where the first, second, and third element correspond to
+        total star flux, background flux and star flux after background
+        subtraction respectively
         """
-        # x_exact, y_exact = position
+        # Since we always want a star to fall to the same sky background box, we
+        # calculate which star box it falls into by taking the position from the
+        # reference file not its weighted X, weighted Y that might change.
+
+        # A better method would be to take the average of surrounding boxes
+        # instead because if the sky background noise gets improved because of
+        # equipment change, we'll see a step in new data because of how
+        # difference of much background we were subtracting previously vs now.
+
+        # Note that the reason y, x are reversed is because our x, y in image
+        # data matrix and in the reference file are flipped.
         y_exact, x_exact = ref.get_star_xy(star_no)
 
-        # Mimic IDL floor
-        x, y = np.round(position).astype("int")
+        x, y = np.round(position).astype("int")  # floor
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
         backgroundAverageInStarRegion = sky_backgrounds[
