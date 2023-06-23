@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.0 (2023-06-22)
+
+### Feature
+
+* Enhance aligned combined file format to matcher alternate harmless patterns ([`38b0375`](https://github.com/LutherAstrophysics/m23/commit/38b03750b3450577cd3cfefe5d653396a544f767))
+
+### Documentation
+
+* Update README.md ([`1766966`](https://github.com/LutherAstrophysics/m23/commit/176696654e1b1cf0c1e4ef717c85f7818eb993a2))
+
 ## v1.2.2 (2023-06-22)
 
 ### Fix
