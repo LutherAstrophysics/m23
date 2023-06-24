@@ -252,17 +252,17 @@ def get_star_background_boxes(
     x, y = position_in_ref
 
     # Use surrounding boxes for sky background calculation
-    # b1 = x - threshold, y
-    # b2 = x + threshold, y
-    # b3 = x, y + threshold
-    # b4 = x, y - threshold
+    b1 = x - threshold, y
+    b2 = x + threshold, y
+    b3 = x, y + threshold
+    b4 = x, y - threshold
 
     # In order to use just the box that the star falls under for
     # sky background, uncomment the followings:
-    b1 = x, y
-    b2 = x, y
-    b3 = x, y
-    b4 = x, y
+    # b1 = x, y
+    # b2 = x, y
+    # b3 = x, y
+    # b4 = x, y
 
     boxes = []
     for box in [b1, b2, b3, b4]:
