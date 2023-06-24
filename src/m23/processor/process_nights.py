@@ -415,7 +415,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 # easily process the alignment stats file if we keep it in a TSV
                 # like format
 
-                # Note that we're down-scaling the matrix dtype from float to int16 for
+                # Note that we're down-scaling the matrix dtype from float to int32 for
                 # support in the image viewing softwares. For the combination step though
                 # we are using the more precise float data. This means that if you read
                 # the data of the aligned images from the fit file and combined them yourself
@@ -426,7 +426,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 )
 
                 if save_aligned_images:
-                    aligned_image.create_file(aligned_data.astype("int16"), raw_image_to_align)
+                    aligned_image.create_file(aligned_data.astype("int32"), raw_image_to_align)
 
                 alignment_stats_file.add_record(raw_image_to_align_name, statistics)
                 logger.info(f"Aligned {raw_image_to_align_name}")
@@ -460,10 +460,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         # Image viewing softwares like Astromagic and Fits Liberator don't work
         # if the image data type is float, for some reason that we don't know.
         # So we're setting the datatype to int32 which has enough precision for
-        # us. Note int16 is problematic as our combined images ADU are bigger
-        # than 2^16
-        # Note that for extraction though, we use the same, more precise format
-        # that we have
+        # us.
         aligned_combined_file.create_file(
             combined_images_data.astype("int32"), sample_raw_image_file
         )
