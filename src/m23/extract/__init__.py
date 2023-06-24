@@ -1,6 +1,6 @@
 import math
 from functools import cache
-from typing import Tuple
+from typing import Dict, Iterable, Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -180,9 +180,11 @@ def flux_log_for_radius(
 
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
-        backgroundAverageInStarRegion = sky_backgrounds[
-            (x_exact // regionSize, y_exact // regionSize)
-        ]
+
+        backgroundAverageInStarRegion = calculate_star_sky_adu(
+            ref.get_star_xy(star_no), sky_backgrounds, box_width=regionSize
+        )
+
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
 
         # Convert to zero, in case there's any nan.
@@ -233,3 +235,65 @@ def fwhm(data, xweight, yweight, aduPerPixel):
     yFWHM = 2.355 * np.sqrt(weighted_row_sum / (row_sum - 1))
     average_FWHM = np.mean([xFWHM, yFWHM])
     return xFWHM, yFWHM, average_FWHM
+
+
+def get_star_background_boxes(
+    position_in_ref: Tuple[float, float], box_width: float
+) -> Iterable[Tuple[int, int]]:
+    """
+    Returns the sky background boxes that influence the star's brightness.
+    @param position_in_ref:
+        tuple of x, y position in the reference file. Important to provide position
+        in reference and not weighted as these boxes have to be the same for all nights
+    @param: width of the sky background box
+    returns list of box positions
+    """
+    threshold = 20
+    x, y = position_in_ref
+
+    # Use surrounding boxes for sky background calculation
+    # b1 = x - threshold, y
+    # b2 = x + threshold, y
+    # b3 = x, y + threshold
+    # b4 = x, y - threshold
+
+    # In order to use just the box that the star falls under for
+    # sky background, uncomment the followings:
+    b1 = x, y
+    b2 = x, y
+    b3 = x, y
+    b4 = x, y
+
+    boxes = []
+    for box in [b1, b2, b3, b4]:
+        bx, by = box
+        if bx < 0:
+            bx = 0
+        if bx >= 1024:
+            bx = 1023
+        if by < 0:
+            by = 0
+        if by >= 1024:
+            by = 1023
+        # Cols are assumed as X, rows Y by IDL convention
+        row = by // box_width
+        col = bx // box_width
+        boxes.append((row, col))
+    return boxes
+
+
+def calculate_star_sky_adu(
+    star_position_in_ref: Tuple[float, float],
+    sky_backgrounds: Dict[Tuple[int, int], float],
+    box_width: int,
+) -> float:
+    """
+    @param star_position_in_ref: x, y position of the star in ref
+    @sky_background: Average sky background per pixel in all different sky
+    background boxes
+
+    Return the average star background per pixel for the star
+    """
+    boxes = get_star_background_boxes(star_position_in_ref, box_width)
+    sky_bg_in_boxes = list(map(sky_backgrounds.get, boxes))
+    return np.mean(sky_bg_in_boxes)

@@ -69,10 +69,12 @@
     "XFWHM",
     "xlabel",
     "xlim",
+    "xweight",
     "yaspin",
     "YFWHM",
     "ylabel",
-    "ylim"
+    "ylim",
+    "yweight"
   ],
   "files.associations": {
     "**/**/*.toml": "plaintext"
