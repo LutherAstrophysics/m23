@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v1.3.1 (2023-06-24)
+
+### Fix
+
+* Use correct datatype when saving aligned images ([`386cf38`](https://github.com/LutherAstrophysics/m23/commit/386cf3854771c600dd785dfaf5c39962b4ae69c8))
+* Use IDL like round during extraction ([`2fc9c35`](https://github.com/LutherAstrophysics/m23/commit/2fc9c3546ad852e6e191a84e7a6589ebe4dc9530))
+* Allow sky bg to be 0 ([`6b98aa2`](https://github.com/LutherAstrophysics/m23/commit/6b98aa20acb2ba86831dd5b1f900b3a8f3f632bf))
+
+### Documentation
+
+* Extraction ([`be3e805`](https://github.com/LutherAstrophysics/m23/commit/be3e805b4a515ee2fea0b7561ea09974b4acdf01))
+
 ## v1.3.0 (2023-06-22)
 
 ### Feature
