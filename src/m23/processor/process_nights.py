@@ -198,6 +198,8 @@ def create_sky_bg_file(
         color_normfactors_values,
         brightness_normfactors_title,
         brightness_normfactors_values,
+        log_files_to_use[0].img_number(),
+        log_files_to_use[-1].img_number(),
     )
     logger.info("Completed generating sky background file")
 

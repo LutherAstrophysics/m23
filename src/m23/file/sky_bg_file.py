@@ -57,6 +57,8 @@ class SkyBgFile:
         color_normfactors_values: Iterable[float],
         brightness_normfactors_title: Iterable[str],
         brightness_normfactors_values: Iterable[float],
+        first_img_number: int,
+        last_img_number: int,
     ):
         """
         Creates/Updates sky background file based on the `sky_bg_data`
@@ -83,6 +85,8 @@ class SkyBgFile:
             fd.write(
                 f"{'Date':<26s}"
                 f"{'Image_number':<15s}"
+                f"{'First_img':<15s}"  # Img number of the first logfile combined used
+                f"{'Last_img':<15s}"  # Img number of the last logfile combined used
                 f"{'Moon_Phase':<16s}"
                 f"{'Moon_Phase_Name':<20s}"
                 f"{'Cluster_Angle_Round':<20s}"
@@ -119,6 +123,8 @@ class SkyBgFile:
                 fd.write(
                     f"{night_datetime:<26s}"
                     f"{img_number:<15d}"
+                    f"{first_img_number:<15d}"
+                    f"{last_img_number:<15d}"
                     f"{moon_phase:<16.5f}"
                     f"{moon_phase_name:<20s}"
                     f"{np.round(cluster_angle):<20.0f}"
