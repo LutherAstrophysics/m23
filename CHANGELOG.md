@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.7.0 (2023-06-25)
+
+### Feature
+
+* Use multiprocessing to run `ailgn_combine_extract` in parallel ([`9cbc641`](https://github.com/LutherAstrophysics/m23/commit/9cbc64178e2195034f11812ecd255de9c260e720))
+
+### Fix
+
+* Exception in `draw_normfactors_chart` when radii of extraction is different than available radius folders ([`4ce585c`](https://github.com/LutherAstrophysics/m23/commit/4ce585c12ab2f1c667e6b07b4c0480ad92c91737))
+
 ## v1.6.1 (2023-06-25)
 
 ### Fix
