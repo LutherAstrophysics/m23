@@ -3,7 +3,6 @@ from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
-from logger_tt import setup_logging
 
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
@@ -39,7 +38,6 @@ def align_combined_extract(
     image_duration,
     log_files_to_normalize_queue,
 ):
-    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     # Define relevant input folders for the night being processed
