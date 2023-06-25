@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.0 (2023-06-25)
+
+### Feature
+
+* Use multiprocessing while running renormalization of multiple nights ([`28acbf6`](https://github.com/LutherAstrophysics/m23/commit/28acbf6cb97b3a84584c51a57853454b940da383))
+
 ## v1.7.0 (2023-06-25)
 
 ### Feature
