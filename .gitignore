@@ -165,6 +165,7 @@ cython_debug/
 .DS_STORE
 
 *.fit
+!**/reference/*.fit
 m23/calibrate/m23_7.0-0607.xy
 *.xy
 
