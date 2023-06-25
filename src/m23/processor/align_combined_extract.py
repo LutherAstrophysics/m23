@@ -1,3 +1,4 @@
+import logging
 from datetime import timedelta
 from pathlib import Path
 
@@ -33,11 +34,12 @@ def align_combined_extract(
     raw_images,
     master_dark_data,
     master_flat_data,
-    logger,
     alignment_stats_file,
     image_duration,
     log_files_to_normalize_queue,
 ):
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]
     NIGHT_INPUT_IMAGES_FOLDER = NIGHT_INPUT_FOLDER / M23_RAW_IMAGES_FOLDER_NAME

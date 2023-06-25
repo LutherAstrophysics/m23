@@ -341,7 +341,6 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                     raw_images,
                     master_dark_data,
                     master_flat_data,
-                    logger,
                     alignment_stats_file,
                     image_duration,
                     log_files_to_normalize_queue,
