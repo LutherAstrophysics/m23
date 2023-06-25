@@ -11,6 +11,7 @@ from m23.sky import angle_of_elevation
 from m23.sky.moon import moon_distance
 from m23.sky.moon import phase as get_moon_phase_name
 from m23.sky.moon import position as get_moon_phase
+from m23.utils import half_round_up_to_int
 
 
 class SkyBgFile:
@@ -127,7 +128,7 @@ class SkyBgFile:
                     f"{last_img_number:<15d}"
                     f"{moon_phase:<16.5f}"
                     f"{moon_phase_name:<20s}"
-                    f"{np.round(cluster_angle):<20.0f}"
+                    f"{half_round_up_to_int(cluster_angle):<20.0f}"
                     f"{cluster_angle:<20.1f}"
                     f"{cluster_angle_uncertainty:<30.1f}"
                     f"{moon_dist_degrees:<20.2f}"
