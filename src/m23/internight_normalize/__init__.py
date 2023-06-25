@@ -139,7 +139,7 @@ def internight_normalize_auxiliary(  # noqa
         )
         is_star_attendance_over_half[star_number] = log_file.is_attendance_over_half()
 
-    last_star_no = 2508  # Note not 2510 as 2509/10 don't have data in ref file
+    last_star_no = 2510
 
     # We calculate the ratio of signal in reference file data and the special
     # median signal for a star for the night. We do this for each stars with
