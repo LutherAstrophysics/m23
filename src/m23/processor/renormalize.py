@@ -2,6 +2,9 @@ import logging
 import sys
 from pathlib import Path
 
+import multiprocess as mp
+
+from m23 import __version__
 from m23.constants import FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -15,7 +18,7 @@ from .renormalize_config_loader import (
 
 
 def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
-    for night in renormalize_dict["input"]["nights"]:
+    def night_renorm_mapper(night):
         NIGHT_FOLDER = night["path"]
         night_date = get_date_from_input_night_folder_name(NIGHT_FOLDER.name)
         log_file_path = NIGHT_FOLDER / get_log_file_name(night_date)
@@ -35,7 +38,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         first_image = night["first_logfile_number"]
         last_image = night["last_logfile_number"]
         logger.info(
-            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image}"  # noqa ES501
+            f"Running renormalization for radii {radii_of_extraction}. Img: {first_image}-{last_image} with m23 version: {__version__}"  # noqa ES501
         )
 
         FLUX_LOGS_COMBINED_FOLDER: Path = NIGHT_FOLDER / FLUX_LOGS_COMBINED_FOLDER_NAME
@@ -66,6 +69,10 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             NIGHT_FOLDER,
             logfile_combined_reference_logfile,
         )
+
+    with mp.Pool() as p:
+        print("foobar using pool")
+        p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
 
 
 def renormalize(file_path: str):

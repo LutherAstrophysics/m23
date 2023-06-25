@@ -287,3 +287,13 @@ Note that if any of your commits make breaking changes, your commit message must
 also contain the phrase "BREAKING CHANGE". This will trigger a major version
 update. See some of the previous commit messages for more information and feel
 free too ask if you have confusion.
+
+### Known issues
+
+We use multiprocessing to parallelize processing of our data. In macOS, we encounter
+a this issue described in [so post](https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr). The post gives a solution as summarized below.
+
+```sh
+echo "export OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES" >> ~/.zshrc
+. ~/.zshrc
+```
