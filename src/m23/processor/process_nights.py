@@ -8,25 +8,17 @@ from typing import Iterable, List
 import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
-from logger_tt import setup_logging
-
 from m23 import __version__
 from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
 from m23.charts import draw_normfactors_chart
-from m23.constants import (
-    ALIGNED_COMBINED_FOLDER_NAME,
-    ALIGNED_FOLDER_NAME,
-    CONFIG_FILE_NAME,
-    FLUX_LOGS_COMBINED_FOLDER_NAME,
-    INPUT_CALIBRATION_FOLDER_NAME,
-    LOG_FILES_COMBINED_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    MASTER_DARK_NAME,
-    OUTPUT_CALIBRATION_FOLDER_NAME,
-    RAW_CALIBRATED_FOLDER_NAME,
-    SKY_BG_BOX_REGION_SIZE,
-    SKY_BG_FOLDER_NAME,
-)
+from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
+                           CONFIG_FILE_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME,
+                           INPUT_CALIBRATION_FOLDER_NAME,
+                           LOG_FILES_COMBINED_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME, MASTER_DARK_NAME,
+                           OUTPUT_CALIBRATION_FOLDER_NAME,
+                           RAW_CALIBRATED_FOLDER_NAME, SKY_BG_BOX_REGION_SIZE,
+                           SKY_BG_FOLDER_NAME)
 from m23.extract import sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.alignment_stats_file import AlignmentStatsFile
@@ -40,17 +32,12 @@ from m23.matrix import crop
 from m23.norm import normalize_log_files
 from m23.processor.align_combined_extract import align_combined_extract
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
-from m23.utils import (
-    fit_data_from_fit_images,
-    get_darks,
-    get_date_from_input_night_folder_name,
-    get_flats,
-    get_log_file_name,
-    get_output_folder_name_from_night_date,
-    get_radius_folder_name,
-    get_raw_images,
-    sorted_by_number,
-)
+from m23.utils import (fit_data_from_fit_images, get_darks,
+                       get_date_from_input_night_folder_name, get_flats,
+                       get_log_file_name,
+                       get_output_folder_name_from_night_date,
+                       get_radius_folder_name, get_raw_images,
+                       sorted_by_number)
 
 
 def normalization_helper(
@@ -68,7 +55,6 @@ def normalization_helper(
     by the renormalization script
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
-    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     if len(log_files_to_use) < 4:
@@ -168,7 +154,6 @@ def create_sky_bg_file(
     normfactors: Dictionary of normfactors for various radii of extraction
 
     """
-    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.info("Generating sky background file")
     bg_data_of_all_images = []
@@ -230,7 +215,6 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     if log_file_path.exists():
         log_file_path.unlink()
 
-    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")

@@ -17,7 +17,7 @@ dependencies = [
     'matplotlib==3.7.0',
     'ephem==4.1.4',
     'multiprocess==0.70.14',
-    logger-tt==1.7.3
+    'logger-tt==1.7.3'
 ]
 
 [tool.semantic_release]

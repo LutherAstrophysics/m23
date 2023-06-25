@@ -4,16 +4,12 @@ from pathlib import Path
 
 import numpy as np
 from logger_tt import setup_logging
-
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
-from m23.constants import (
-    ALIGNED_COMBINED_FOLDER_NAME,
-    ALIGNED_FOLDER_NAME,
-    LOG_FILES_COMBINED_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    RAW_CALIBRATED_FOLDER_NAME,
-)
+from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
+                           LOG_FILES_COMBINED_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME,
+                           RAW_CALIBRATED_FOLDER_NAME)
 from m23.exceptions import CouldNotAlignException
 from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -25,6 +21,7 @@ from m23.matrix.fill import fillMatrix
 from m23.processor.config_loader import Config, ConfigInputNight
 from m23.utils import time_taken_to_capture_and_save_a_raw_file
 
+setup_logging(use_multiprocessing=True)
 
 def align_combined_extract(
     config: Config,
@@ -39,7 +36,6 @@ def align_combined_extract(
     image_duration,
     log_files_to_normalize_queue,
 ):
-    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     # Define relevant input folders for the night being processed
