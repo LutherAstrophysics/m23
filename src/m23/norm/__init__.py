@@ -14,6 +14,15 @@ from m23.file.reference_log_file import ReferenceLogFile
 from .get_line import get_star_to_ignore_bit_vector
 
 
+class NormalizationTechniques:
+    # Normalization linear means that we normalize with respect to 20% 40% 60%
+    # and 80% image of the night
+    LINEAR = "LINEAR"
+    # Elevation means that we normalize to some images (1-4) from within a night
+    # that have the same cluster angle (within 1 degree)
+    ELEVATION = "ELEVATION"
+
+
 def normalize_log_files(  # noqa
     reference_log_file: ReferenceLogFile,
     log_files_to_normalize: List[LogFileCombinedFile],
@@ -40,11 +49,9 @@ def normalize_log_files(  # noqa
     log_files_to_normalize.sort(key=lambda log_file: log_file.img_number())
     no_of_files = len(log_files_to_normalize)
 
-    # Normalization is done with reference to images 20%, 40%, 60% and 80%
-    # throughout night The indices here are the index of the images from the
-    # night to which to normalize.  Note, we aren't normalizing with reference
-    # to the ref file
-    indices_to_normalize_to = np.linspace(0, no_of_files, 6, dtype="int")[1:-1]
+    indices_to_normalize_to = get_indices_to_normalize_to(
+        log_files_to_normalize, NormalizationTechniques.LINEAR
+    )
     array_of_logfiles_of_array_of_adus = []  # This is an array of arrays
 
     # This holds the normalization factor for each log_file to use
@@ -102,12 +109,11 @@ def normalize_log_files(  # noqa
 
         array_of_logfiles_of_array_of_adus.append(adu_of_current_log_file)
 
-    # Now for each log file we calculate its normfactor
-    # For each logfile, its normfactor is the median of normfactors of the stars
-    # in that image.
-    # For a star, its normfactor in a logfile is sum of adus in reference log
-    # files divided by 4 * its adu. Note that reference log files mean the 4
-    # sample log files taken from within the night.
+    # Now for each log file we calculate its normfactor For each logfile, its
+    # normfactor is the median of normfactors of the stars in that image.  For a
+    # star, its normfactor in a logfile is sum of adus in reference log files
+    # divided by 4 * its adu. Note that reference log files mean the 4 sample
+    # log files taken from within the night.
     reference_log_files = []
     for index, log_file in enumerate(array_of_logfiles_of_array_of_adus):
         if index in indices_to_normalize_to:
@@ -184,3 +190,15 @@ def normalize_log_files(  # noqa
         )
 
     return all_norm_factors
+
+
+def get_indices_to_normalize_to(log_files, technique):
+    if technique == NormalizationTechniques.LINEAR:
+        # Normalization is done with reference to images 20%, 40%, 60% and 80%
+        # throughout night The indices here are the index of the images from the
+        # night to which to normalize.
+        return np.linspace(0, len(log_files), 6, dtype="int")[1:-1]
+    elif technique == NormalizationTechniques.ELEVATION:
+        pass
+    else:
+        raise Exception(f"Intranight {technique} not recognized")
