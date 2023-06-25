@@ -5,13 +5,10 @@ from datetime import date, timedelta
 from pathlib import Path
 from typing import Iterable, List
 
-import numpy as np
 import toml
 from astropy.io.fits import getdata
 
 from m23 import __version__
-from m23.align import image_alignment
-from m23.calibrate.calibration import calibrateImages
 from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
 from m23.charts import draw_normfactors_chart
 from m23.constants import (
@@ -28,8 +25,7 @@ from m23.constants import (
     SKY_BG_BOX_REGION_SIZE,
     SKY_BG_FOLDER_NAME,
 )
-from m23.exceptions import CouldNotAlignException
-from m23.extract import extract_stars, sky_bg_average_for_all_regions
+from m23.extract import sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.alignment_stats_file import AlignmentStatsFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
@@ -39,8 +35,8 @@ from m23.file.reference_log_file import ReferenceLogFile
 from m23.file.sky_bg_file import SkyBgFile
 from m23.internight_normalize import internight_normalize
 from m23.matrix import crop
-from m23.matrix.fill import fillMatrix
 from m23.norm import normalize_log_files
+from m23.processor.align_combined_extract import align_combined_extract
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
 from m23.utils import (
     fit_data_from_fit_images,
@@ -276,12 +272,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     logger.addHandler(ch2)  # Write to stdout
     logger.info(f"Starting processing for {night_date} with m23 version: {__version__}")
 
-    ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
     color_ref_file_path = config["reference"]["color"]
-
-    save_aligned_images = config["output"]["save_aligned"]
-    save_calibrated_images = config["output"]["save_calibrated"]
 
     reference_log_file = ReferenceLogFile(ref_file_path)
     logfile_combined_reference_logfile = LogFileCombinedFile(config["reference"]["logfile"])
@@ -310,8 +302,6 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         if folder.exists():
             [file.unlink() for file in folder.glob("*") if file.is_file()]  # Remove existing files
         folder.mkdir(exist_ok=True)
-
-    crop_region = config["image"]["crop_region"]
 
     # Darks
     darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER))
@@ -380,119 +370,20 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         from_index = i * no_of_images_to_combine
         # Note the to_index is exclusive
         to_index = (i + 1) * no_of_images_to_combine
-
-        images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
-        # Ensure that image dimensions are as specified by rows and cols
-        # If there's extra noise cols or rows, we crop them
-        images_data = [crop(matrix, rows, cols) for matrix in images_data]
-
-        # Calibrate images
-        images_data = calibrateImages(
-            masterDarkData=master_dark_data,
-            masterFlatData=master_flat_data,
-            listOfImagesData=images_data,
+        align_combined_extract(
+            config,
+            night,
+            output,
+            night_date,
+            from_index,
+            to_index,
+            raw_images,
+            master_dark_data,
+            master_flat_data,
+            logger,
+            alignment_stats_file,
+            image_duration,
         )
-
-        if save_calibrated_images:
-            for index, raw_image_index in enumerate(range(from_index, to_index)):
-                raw_img = raw_images[raw_image_index]
-                calibrated_image = RawImageFile(RAW_CALIBRATED_OUTPUT_FOLDER / raw_img.path().name)
-                calibrated_image.create_file(images_data[index], raw_img)
-                logger.info(f"Saving calibrated image. {raw_image_index}")
-
-        # Fill out the cropped regions with value of 1
-        # Note, it's important to fill after the calibration step
-        if len(crop_region) > 0:
-            images_data = [fillMatrix(matrix, crop_region, 1) for matrix in images_data]
-
-        # Alignment
-        # We want to discard this set of images if any one image in this set cannot be aligned
-        aligned_images_data = []
-        for index, image_data in enumerate(images_data):
-            raw_image_to_align = raw_images[from_index + index]
-            raw_image_to_align_name = raw_image_to_align.path().name
-            try:
-                aligned_data, statistics = image_alignment(image_data, ref_image_path)
-                aligned_images_data.append(aligned_data)
-                # We add the transformation statistics to the alignment stats
-                # file Information of the file that can't be aligned isn't
-                # written only in the logfile. This is intended so that we can
-                # easily process the alignment stats file if we keep it in a TSV
-                # like format
-
-                # Note that we're down-scaling the matrix dtype from float to int32 for
-                # support in the image viewing softwares. For the combination step though
-                # we are using the more precise float data. This means that if you read
-                # the data of the aligned images from the fit file and combined them yourself
-                # that is going to be off by a small amount that the data in the aligned
-                # combined image.
-                aligned_image = RawImageFile(
-                    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER / raw_image_to_align_name
-                )
-
-                if save_aligned_images:
-                    aligned_image.create_file(aligned_data.astype("int32"), raw_image_to_align)
-
-                alignment_stats_file.add_record(raw_image_to_align_name, statistics)
-                logger.info(f"Aligned {raw_image_to_align_name}")
-            except CouldNotAlignException:
-                logger.error(f"Could not align image {raw_image_to_align}")
-                logger.error(f"Skipping combination {from_index}-{to_index}")
-                break
-
-        del images_data  # Delete unused object to free up memory
-
-        # We proceed to next set of images if the alignment wasn't successful for any one
-        # image in the combination set. We now this by checking no of aligned images.
-        if len(aligned_images_data) < no_of_images_to_combine:
-            continue
-
-        # Combination
-        combined_images_data = np.sum(aligned_images_data, axis=0)
-
-        # We take the middle image from the combination as the sample This is
-        # the image whose header will be copied to the combined image fit file
-        midpoint_index = from_index + no_of_images_to_combine // 2
-        sample_raw_image_file = raw_images[midpoint_index]
-
-        aligned_combined_image_number = to_index // no_of_images_to_combine
-        aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
-            image_duration, aligned_combined_image_number
-        )
-        aligned_combined_file = AlignedCombinedFile(
-            ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
-        )
-        # Image viewing softwares like Astromagic and Fits Liberator don't work
-        # if the image data type is float, for some reason that we don't know.
-        # So we're setting the datatype to int32 which has enough precision for
-        # us.
-        aligned_combined_file.create_file(
-            combined_images_data.astype("int32"), sample_raw_image_file
-        )
-        logger.info(f"Combined images {from_index}-{to_index}")
-
-        # Extraction
-        log_file_combined_file_name = LogFileCombinedFile.generate_file_name(
-            night_date, aligned_combined_image_number, image_duration
-        )
-        log_file_combined_file = LogFileCombinedFile(
-            LOG_FILES_COMBINED_OUTPUT_FOLDER / log_file_combined_file_name
-        )
-
-        date_time_to_use = get_datetime_to_use(
-            aligned_combined_file, night, no_of_images_to_combine, NIGHT_INPUT_IMAGES_FOLDER
-        )
-
-        extract_stars(
-            combined_images_data,
-            reference_log_file,
-            radii_of_extraction,
-            log_file_combined_file,
-            aligned_combined_file,
-            date_time_to_use,
-        )
-        log_files_to_normalize.append(log_file_combined_file)
-        logger.info(f"Extraction from combination {from_index}-{to_index} completed")
 
     # Intranight + Internight Normalization
     normalization_helper(
