@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.6 (2023-06-25)
+
+### Fix
+
+* Use 75% of CPU at max ([`fb8cdc7`](https://github.com/LutherAstrophysics/m23/commit/fb8cdc7e8ca5af9d48498dd8cc3a49002ec84523))
+
 ## v1.8.5 (2023-06-25)
 
 ### Fix
