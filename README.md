@@ -35,11 +35,12 @@ Examples for configuration file for process command provided here are named Brow
 and Rainbow. (B)rown comes before (R)ainbow so the file [./brown.tml](./brown.toml) denotes
 the configuration for processing pre new camera (< June 16 2022) data.
 
+**NOTE FOR NEW CAMERA (>=2022) DATA**
 [./rainbow.toml](./rainbow.toml) is an example configuration file for
 processing data after the new camera (>= June 16 2022)
 
-A sample configuration file (for old camera images) looks like this. For example of new camera
-configuration file see [./rainbow.toml](./rainbow.toml).
+**OLD CAMERA EXAMPLE**
+A sample configuration file (for old camera images) looks like this.
 
 ```
 # This is a comment
@@ -54,13 +55,14 @@ no_of_images_to_combine = 10
 radii_of_extraction = [3, 4, 5]
 
 
-[reference]
-# The image file is an actual fit image while the reffile refers to the stats file for that image
-image = "C://Data Processing/Reference/RefImage.fit"
-file = "C://Data Processing/Reference/reffile.txt"
+## Optional, default will be used if you don't define
+# [reference]
+## The image file is an actual fit image while the reffile refers to the stats file for that image
+# image = "C://Data Processing/Reference/RefImage.fit"
+# file = "C://Data Processing/Reference/reffile.txt"
 # Logfile means log file combined file. This sample log file is what internight normalization normalizes against
-logfile = "C://Data Processing/Reference/logfile.txt"
-color = "C://Data Processing/Reference/color_mean_RI.txt"
+# logfile = "C://Data Processing/Reference/logfile.txt"
+# color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
 [input]
@@ -119,10 +121,11 @@ inter-night normalization.
 radii_of_extraction = [3, 4, 5,]
 
 
-[reference]
-file = "C://Data Processing/Reference/refile.txt"
-logfile = "C://Data Processing/Reference/logfile.txt"
-color = "C://Data Processing/Reference/color_mean_RI.txt"
+# Optional, defaults will be used if you don't define
+# [reference]
+# file = "C://Data Processing/Reference/refile.txt"
+# logfile = "C://Data Processing/Reference/logfile.txt"
+# color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
 [input]
@@ -235,7 +238,6 @@ it is recommended that you upgrade the package by running the following command 
 ```
 python -m pip install --upgrade m23
 ```
-
 
 ### If things go wrong
 

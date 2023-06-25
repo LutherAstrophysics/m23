@@ -1,50 +1,46 @@
+# This is a comment
 [image]
-rows = 2048
-columns = 2048
-# New camera images (>= June 16 2022) have vignetting ring effect which we crop.
-# Array of crop regions. The last and first co-ordinate are joined to make an enclosing region
-crop_region = [
-    [[0, 448], [0, 0], [492, 0], [210, 181]], 
-    [[0, 1600], [0, 2048], [480, 2048], [210, 1867]],
-    [[1400, 2048], [2048, 2048], [2048, 1500], [1834, 1830]],
-    [[1508, 0], [1852, 241], [2048, 521], [2048, 0]]
-]
+rows = 1024
+columns = 1024
+crop_region = [] # We don't crop old camera images < June 16 2022
 
 
 [processing]
 no_of_images_to_combine = 10
-radii_of_extraction = [3, 4, 5,]
+radii_of_extraction = [3, 4, 5]
 
 
-[reference]
-# The image file is an actual fit image while the reffile refers to the stats file for that image
-image = "C://Data Processing/Reference/RefImage.fit" 
-file = "C://Data Processing/Reference/reffile.txt"
-logfile = "C://Data Processing/Reference/logfile.txt"
-color = "C://Data Processing/Reference/color_mean_RI.txt"
+## Optional, default will be used if you don't define
+# [reference]
+## The image file is an actual fit image while the reffile refers to the stats file for that image
+# image = "C://Data Processing/Reference/RefImage.fit"
+# file = "C://Data Processing/Reference/reffile.txt"
+# Logfile means log file combined file. This sample log file is what internight normalization normalizes against
+# logfile = "C://Data Processing/Reference/logfile.txt"
+# color = "C://Data Processing/Reference/color_mean_RI.txt"
 
 
 [input]
 
     [[input.nights]]
-    path = "F://Summer 2022/September 4, 2022"
-    masterflat = "C://Data Processing/2022/Python Processed/September 12 2022/masterflat.fit"
+    path = "F://Summer 2019/September 4, 2019"
+    masterflat = "C://Data Processing/2019/Python Processed/September 12 2019/masterflat.fit"
 
     [[input.nights]]
-    path = "F://Summer 2022/September 9, 2022"
-    # Because we haven't provided masterflat, this night must have flats to use 
-    
+    path = "F://Summer 2019/September 9, 2019"
+    # Because we haven't provided masterflat, this night must have flats to use
+
     # Note that the starttime is optional and you must ONLY specify this if you
-    # want to use it instead of date/time from the headers of the fit files. 
+    # want to use it instead of date/time from the headers of the fit files.
     # starttime = 2010-10-20T10:20:50
 
     [[input.nights]]
-    path = "F://Summer 2022/September 8, 2022"
-    # Because we haven't provided masterflat, this night must have flats to use 
+    path = "F://Summer 2019/September 8, 2019"
+    # Because we haven't provided masterflat, this night must have flats to use
 
 
 [output]
-path = "D://xxx"
+path = "C://Data Processing/2019 Python Processed"
 # The options below are optional and default to false if not specified
 save_aligned = false
 save_calibrated = false
