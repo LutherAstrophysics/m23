@@ -73,6 +73,8 @@ def normalization_helper(
         logger.error("Less than 4 data points present. Skipping normalization.")
         return
 
+    intranight_norm_results = {}
+
     for radius in radii_of_extraction:
         logger.info(f"Normalizing for radius of extraction {radius} px")
         RADIUS_FOLDER = FLUX_LOGS_COMBINED_OUTPUT_FOLDER / get_radius_folder_name(radius)
@@ -88,8 +90,11 @@ def normalization_helper(
             img_duration,
             night_date,
         )
+        intranight_norm_results[radius] = intranight_norm_result
 
-    draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent)
+    draw_normfactors_chart(
+        log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent, radii_of_extraction
+    )
 
     # Generate sky bg file
     sky_bg_filename = output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date)
@@ -135,7 +140,7 @@ def normalization_helper(
         color_normfactors_values,
         brightness_normfactors_titles,
         brightness_normfactors_values,
-        intranight_norm_result.get("normalized_cluster_angle"),
+        intranight_norm_results[radii_of_extraction[0]].get("normalized_cluster_angle"),
     )
 
 
@@ -321,6 +326,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     alignment_stats_file = AlignmentStatsFile(output / alignment_stats_file_name)
     alignment_stats_file.create_file_and_write_header()
 
+    # We use multiprocessing to run alignment/combination/extraction in parallel
     with mp.Manager() as manager:
         log_files_to_normalize_queue = manager.Queue()
         with mp.Pool() as p:
@@ -343,10 +349,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
             p.map(align_combine_extract_mapper, range(no_of_combined_images))
 
-    log_files_to_normalize: List[LogFileCombinedFile] = []
-    while not log_files_to_normalize_queue.empty():
-        log_file: LogFileCombinedFile = log_files_to_normalize_queue.get()
-        log_files_to_normalize.append(log_file)
+        log_files_to_normalize: List[LogFileCombinedFile] = []
+        while not log_files_to_normalize_queue.empty():
+            log_file: LogFileCombinedFile = log_files_to_normalize_queue.get()
+            log_files_to_normalize.append(log_file)
 
     # Intranight + Internight Normalization
     normalization_helper(

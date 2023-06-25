@@ -9,11 +9,13 @@ from matplotlib import pyplot as plt
 from m23.constants import CHARTS_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
-from m23.utils import get_date_from_input_night_folder_name
+from m23.utils import get_date_from_input_night_folder_name, get_radius_folder_name
 
 
 def draw_normfactors_chart(
-    log_files_used: Iterable[LogFileCombinedFile], night_folder: Path
+    log_files_used: Iterable[LogFileCombinedFile],
+    night_folder: Path,
+    radii_of_extraction: Iterable[int],
 ) -> None:
     """
     Draws normfactors vs image number chart for for a provided `night_folder`
@@ -34,8 +36,11 @@ def draw_normfactors_chart(
     night_date = get_date_from_input_night_folder_name(night_folder.name)
     chart_folder = night_folder / CHARTS_FOLDER_NAME
     chart_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist
+    valid_folder_names = list(map(get_radius_folder_name, radii_of_extraction))
 
     for radius_folder in flux_log_combined_folder.glob("*Radius*"):
+        if radius_folder.name not in valid_folder_names:
+            continue
         normfactor_files = list(radius_folder.glob("*normfactor*"))
         if len(normfactor_files) != 1:
             sys.stderr.write(
@@ -50,7 +55,12 @@ def draw_normfactors_chart(
             sys.stderr.write(
                 "Make sure you're providing exactly the same number of logfiles as there are normfactor values\n"  # noqa
             )
-            raise ValueError("Mismatch between number of logfiles and the normfactors")
+            raise ValueError(
+                f"""Mismatch between number of logfiles and the normfactors.
+                Found logfiles: {len(log_files_used)}
+                Found normfactors: {len(normfactor_data)}
+                """
+            )
         for index, log_file in enumerate(log_files_used):
             log_file_number_to_normfactor_map[log_file.img_number()] = normfactor_data[index]
 
