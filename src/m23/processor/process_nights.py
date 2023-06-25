@@ -84,7 +84,7 @@ def normalization_helper(
         for file in RADIUS_FOLDER.glob("*"):
             if file.is_file():
                 file.unlink()  # Remove each file in the folder
-        normalize_log_files(
+        intranight_norm_result = normalize_log_files(
             reference_log_file,
             log_files_to_use,
             RADIUS_FOLDER,
@@ -139,6 +139,7 @@ def normalization_helper(
         color_normfactors_values,
         brightness_normfactors_titles,
         brightness_normfactors_values,
+        intranight_norm_result.get("normalized_cluster_angle"),
     )
 
 
@@ -150,6 +151,7 @@ def create_sky_bg_file(
     color_normfactors_values: Iterable[float],
     brightness_normfactors_title: Iterable[str],
     brightness_normfactors_values: Iterable[float],
+    normalized_cluster_angle: int,
 ):
     """
     Creates sky bg data. Note that this isn't performed right after extraction
@@ -200,6 +202,7 @@ def create_sky_bg_file(
         brightness_normfactors_values,
         log_files_to_use[0].img_number(),
         log_files_to_use[-1].img_number(),
+        normalized_cluster_angle,
     )
     logger.info("Completed generating sky background file")
 

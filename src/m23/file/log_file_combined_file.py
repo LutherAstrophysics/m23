@@ -2,13 +2,14 @@ import re
 from collections import namedtuple
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Iterable
+from typing import Dict, Iterable, Tuple
 
 import numpy as np
 import numpy.typing as npt
 
 from m23.constants import OBSERVATION_DATETIME_FORMAT
 from m23.file.aligned_combined_file import AlignedCombinedFile
+from m23.sky import angle_of_elevation
 
 
 # Note that LogFileCombined is the one that that has the data for aligned combined
@@ -22,8 +23,8 @@ class LogFileCombinedFile:
     sky_adu_column = 5
     x_column = 0
     y_column = 1
-    file_name_re = re.compile("(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{3})\.txt")
-    star_adu_radius_re = re.compile("Star ADU (\d+)")
+    file_name_re = re.compile(r"(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{3})\.txt")
+    star_adu_radius_re = re.compile(r"Star ADU (\d+)")
 
     StarLogfileCombinedData = namedtuple(
         "StarLogfileCombinedData",
@@ -49,6 +50,7 @@ class LogFileCombinedFile:
         self.__header = None
         self.__data = None
         self.__title_row = None
+        self.__cluster_angle = None
 
     def _read(self):
         with self.__path.open() as fd:
@@ -75,6 +77,22 @@ class LogFileCombinedFile:
     def _get_column_number_for_adu_radius(self, radius: int):
         titles = self._title_row()
         return titles.index(self._adu_radius_header_name(radius))
+
+    def get_cluster_angle_with_uncertainty(self) -> Tuple[float, float]:
+        """
+        Return the cluster angle along with uncertainty of measurement of the
+        time the image was taken
+        """
+        if not self.__cluster_angle:
+            self.__cluster_angle = angle_of_elevation(
+                datetime.strptime(self.datetime(), OBSERVATION_DATETIME_FORMAT)
+            )
+        # Note that cluster angle contains the angle as well as uncertainty
+        return self.__cluster_angle
+
+    def get_cluster_angle(self) -> float:
+        """Return the cluster angle of the time the image was taken"""
+        return self.get_cluster_angle_with_uncertainty()[0]
 
     def is_valid_file_name(self) -> bool:
         """

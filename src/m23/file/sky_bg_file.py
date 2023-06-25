@@ -60,6 +60,7 @@ class SkyBgFile:
         brightness_normfactors_values: Iterable[float],
         first_img_number: int,
         last_img_number: int,
+        normalized_cluster_angle: int,
     ):
         """
         Creates/Updates sky background file based on the `sky_bg_data`
@@ -90,6 +91,7 @@ class SkyBgFile:
                 f"{'Last_img':<15s}"  # Img number of the last logfile combined used
                 f"{'Moon_Phase':<16s}"
                 f"{'Moon_Phase_Name':<20s}"
+                f"{'Normalized_cluster_angle':<30s}"
                 f"{'Cluster_Angle_Round':<20s}"
                 f"{'Cluster_Angle':<20s}"
                 f"{'Cluster_Angle_Uncertainty':<30s}"
@@ -128,6 +130,7 @@ class SkyBgFile:
                     f"{last_img_number:<15d}"
                     f"{moon_phase:<16.5f}"
                     f"{moon_phase_name:<20s}"
+                    f"{normalized_cluster_angle:<30d}"
                     f"{half_round_up_to_int(cluster_angle):<20.0f}"
                     f"{cluster_angle:<20.1f}"
                     f"{cluster_angle_uncertainty:<30.1f}"

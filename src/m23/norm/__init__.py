@@ -1,15 +1,17 @@
 import math
 from datetime import date
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List, Tuple, TypedDict
 
 import numpy as np
+from typing_extensions import NotRequired
 
 from m23.constants import INTRA_NIGHT_IMPACT_THRESHOLD_PIXELS
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
 from m23.file.reference_log_file import ReferenceLogFile
+from m23.utils import half_round_up_to_int
 
 from .get_line import get_star_to_ignore_bit_vector
 
@@ -23,6 +25,11 @@ class NormalizationTechniques:
     ELEVATION = "ELEVATION"
 
 
+class IntranightNormalizationResult(TypedDict):
+    normfactors: Iterable[float]
+    normalized_cluster_angle: NotRequired[float]
+
+
 def normalize_log_files(  # noqa
     reference_log_file: ReferenceLogFile,
     log_files_to_normalize: List[LogFileCombinedFile],
@@ -30,7 +37,7 @@ def normalize_log_files(  # noqa
     radius: int,
     img_duration: float,
     night_date: date,
-) -> Iterable[float]:
+) -> IntranightNormalizationResult:
     """
     This function normalizes (intra night *not* inter night) the
     LogFilesCombined files provided.  Note that the normalization **isn't** done
@@ -189,7 +196,20 @@ def normalize_log_files(  # noqa
             reference_log_file,
         )
 
-    return all_norm_factors
+    return {
+        "normfactors": all_norm_factors,
+        "normalized_cluster_angle": get_cluster_angle_to_normalize_by_log_files(
+            log_files_to_normalize
+        ),
+    }
+
+
+def get_cluster_angle_to_normalize_by_log_files(log_files) -> float:
+    angles_and_file_numbers = []
+    for logfile in log_files:
+        angles_and_file_numbers.append((logfile.get_cluster_angle(), logfile.img_number()))
+    angle = get_cluster_angle_to_normalize_to(angles_and_file_numbers)
+    return angle
 
 
 def get_indices_to_normalize_to(log_files, technique):
@@ -199,6 +219,86 @@ def get_indices_to_normalize_to(log_files, technique):
         # night to which to normalize.
         return np.linspace(0, len(log_files), 6, dtype="int")[1:-1]
     elif technique == NormalizationTechniques.ELEVATION:
-        pass
+        angle = get_cluster_angle_to_normalize_by_log_files(log_files)
+        indices = []
+        for index, logfile in range(len(log_files)):
+            if half_round_up_to_int(logfile.get_cluster_angle()) == angle:
+                indices.append(index)
+        if len(indices) < 4:
+            return indices
+        else:
+            return indices[np.linspace(0, len(indices), 6, dtype="int")[1:-1]]
     else:
         raise Exception(f"Intranight {technique} not recognized")
+
+
+def get_cluster_angle_to_normalize_to(
+    angles_and_file_number_exact: Iterable[Tuple[float, int]]
+) -> int:
+    """
+    @param: angles_and_file_number: An iterable of tuple of angle and image number
+    @returns: cluster angle to normalize to
+
+    Note that we want to choose a cluster angle that's present the most in the
+    night.  If there are more than one angles, we choose the one that spread out
+    as far as possible into the night. If there's are more than one contenders
+    present, we choose the one that's closest to the middle of the night.
+    """
+
+    # Rounded version
+    angles_and_file_number = list(
+        map(lambda x: (half_round_up_to_int(x[0]), x[1]), angles_and_file_number_exact)
+    )
+
+    angles, file_numbers = zip(*angles_and_file_number)
+
+    file_numbers = sorted(file_numbers)
+    first_file_number = file_numbers[0]
+    last_file_number = file_numbers[-1]
+
+    # Create a dictionary that holds count of each angle
+    angles_count_dict = {angle: 0 for angle in set(angles)}
+    for angle in angles:
+        angles_count_dict[angle] += 1
+
+    angles_count_sorted = sorted(angles_count_dict.items(), key=lambda x: x[1], reverse=True)
+    max_count = angles_count_sorted[0][1]
+
+    # Angles have have max count (there could be multiple) are stored as candidates
+    candidates_angles = list(
+        map(lambda x: x[0], (filter(lambda x: x[1] == max_count, angles_count_sorted)))
+    )
+
+    if len(candidates_angles) == 1:
+        return candidates_angles[0]
+
+    # Find a candidate that has the most spread
+    candidates_spread = {}
+    candidates_first_file_number = {}
+    for candidate in candidates_angles:
+        by_candidate = sorted(
+            filter(lambda x: x[0] == candidate, angles_and_file_number), key=lambda x: x[1]
+        )
+        first_file_by_candidate = by_candidate[0][1]
+        candidates_first_file_number[candidate] = first_file_by_candidate
+        last_file_by_candidate = by_candidate[-1][1]
+        candidates_spread[candidate] = last_file_by_candidate - first_file_by_candidate
+
+    # Find the candidate with most spread
+    candidates_spread_sorted = sorted(candidates_spread.items(), key=lambda x: x[1], reverse=True)
+    max_spread = candidates_spread_sorted[0][1]
+
+    candidates_with_max_spread = list(
+        map(lambda x: x[0], filter(lambda x: x[1] == max_spread, candidates_spread_sorted))
+    )
+
+    if len(candidates_with_max_spread) == 1:
+        return candidates_with_max_spread[0]
+
+    # Return the candidate whose first image is the closest to the middle of the night
+    return sorted(
+        candidates_with_max_spread,
+        key=lambda x: abs(
+            0.5 - (candidates_first_file_number[x] / (last_file_number - first_file_number))
+        ),
+    )[0]
