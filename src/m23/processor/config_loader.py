@@ -16,6 +16,7 @@ from m23.constants import (
 )
 from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.reference import get_reference_files_dict
 from m23.utils import (
     get_darks,
     get_date_from_input_night_folder_name,
@@ -404,7 +405,9 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
     """
     if not file_path.exists() or not file_path.exists():
         raise FileNotFoundError("Cannot find configuration file")
-    match configuration := toml.load(file_path):
+    configuration = toml.load(file_path)
+    load_configuration_with_necessary_reference_files(configuration)
+    match configuration:
         case {
             "image": {
                 "rows": int(_),
@@ -445,3 +448,19 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 "Stopping because the provided configuration file"
                 + " doesn't match the required format.\n"
             )
+
+
+def load_configuration_with_necessary_reference_files(configuration, pop=None):
+    # Users need not define reference files optional
+    reference_files_dict = get_reference_files_dict()
+    if user_defined_reference := configuration.get("reference"):
+        # If user defines any reference file, that takes precedence
+        # over files configured to be used as default
+        for key in reference_files_dict:
+            if key not in user_defined_reference:
+                user_defined_reference[key] = reference_files_dict[key]
+    else:
+        configuration["reference"] = reference_files_dict
+    if pop:
+        for item_to_pop in pop:
+            configuration["reference"].pop(item_to_pop)

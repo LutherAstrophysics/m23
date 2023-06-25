@@ -11,6 +11,7 @@ from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.processor.config_loader import (
     is_night_name_valid,
     is_valid_radii_of_extraction,
+    load_configuration_with_necessary_reference_files,
 )
 from m23.utils import get_image_number_in_log_file_combined_file
 
@@ -204,7 +205,9 @@ def validate_renormalize_config_file(
     """
     if not file_path.exists() or not file_path.exists():
         raise FileNotFoundError("Cannot find configuration file")
-    match toml.load(file_path):
+    configuration = toml.load(file_path)
+    load_configuration_with_necessary_reference_files(configuration, pop=("image",))
+    match configuration:
         case {
             "processing": {"radii_of_extraction": list(_)},
             "input": {"nights": list(_)},
