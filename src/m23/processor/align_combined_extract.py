@@ -127,8 +127,6 @@ def align_combined_extract(
             logger.error(f"Skipping combination {from_index}-{to_index}")
             break
 
-    del images_data  # Delete unused object to free up memory
-
     # We proceed to next set of images if the alignment wasn't successful for any one
     # image in the combination set. We now this by checking no of aligned images.
     if len(aligned_images_data) < no_of_images_to_combine:
