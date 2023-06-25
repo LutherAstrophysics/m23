@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.1 (2023-06-25)
+
+### Fix
+
+* Handle case for nan FWHM in extraction ([`954fcb7`](https://github.com/LutherAstrophysics/m23/commit/954fcb7bcbf44cc838de4c45c7fa7942b4cbafba))
+* Prevent deleting image data for process safety ([`a200d7f`](https://github.com/LutherAstrophysics/m23/commit/a200d7fdce3dca2c7fd04a489b39911fe95b33bc))
+
 ## v1.8.0 (2023-06-25)
 
 ### Feature
