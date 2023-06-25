@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.4 (2023-06-25)
+
+### Fix
+
+* Multiprocessing logging in windows ([`4851295`](https://github.com/LutherAstrophysics/m23/commit/4851295a6a5b008779ecc904fc3b33c572124cd7))
+* Enhance windows logging support for multiprocessing ([`524cdbb`](https://github.com/LutherAstrophysics/m23/commit/524cdbbf419e1bfa959475999f05e27ede7bb667))
+
 ## v1.8.3 (2023-06-25)
 
 ### Fix
