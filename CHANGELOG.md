@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.5 (2023-06-25)
+
+### Fix
+
+* Use multiprocessing to use different CPUs to process different nights ([`f761a5b`](https://github.com/LutherAstrophysics/m23/commit/f761a5b797416f45c30b6d3591dd25d2a3c2b2af))
+
 ## v1.8.4 (2023-06-25)
 
 ### Fix
