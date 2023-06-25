@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.0 (2023-06-25)
+
+### Feature
+
+* Add 2509 and 2510 in ref files ([`30cc695`](https://github.com/LutherAstrophysics/m23/commit/30cc695790326bc47b55980fdc5e2b134cc0065b))
+
+### Documentation
+
+* Mention in readme about reference files section as optional ([`089291d`](https://github.com/LutherAstrophysics/m23/commit/089291d030622cc7a291a773446b1e4b0b901740))
+
 ## v1.5.0 (2023-06-25)
 
 ### Feature
