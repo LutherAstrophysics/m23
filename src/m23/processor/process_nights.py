@@ -1,10 +1,11 @@
 import logging
 import shutil
 import sys
-from datetime import date, timedelta
+from datetime import date
 from pathlib import Path
 from typing import Iterable, List
 
+import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
 
@@ -48,7 +49,6 @@ from m23.utils import (
     get_radius_folder_name,
     get_raw_images,
     sorted_by_number,
-    time_taken_to_capture_and_save_a_raw_file,
 )
 
 
@@ -203,44 +203,6 @@ def create_sky_bg_file(
     logger.info("Completed generating sky background file")
 
 
-def get_datetime_to_use(
-    aligned_combined: AlignedCombinedFile,
-    night_config: ConfigInputNight,
-    no_of_raw_images_in_one_combination: int,
-    raw_images_folder: Path,
-) -> str:
-    """
-    Returns the datetime to use in the logfile combined file,
-    based on the a given `config` and `aligned_combine` file
-
-    Returns an empty string if no datetime is available to use
-    """
-
-    # We use the same format of the datetime string as is in the
-    # header of our fit files
-    datetime_format = aligned_combined.date_observed_datetime_format
-
-    # If the datetime option was passed in the header we use that one
-    # Otherwise we use the datetime in the header, if that's present
-    if start := night_config.get("starttime"):
-        duration_of_raw_img = time_taken_to_capture_and_save_a_raw_file(raw_images_folder)
-        img_no = aligned_combined.image_number()
-        time_taken_to_capture_one_combined_image = (
-            duration_of_raw_img * no_of_raw_images_in_one_combination
-        )
-        seconds_elapsed_from_beginning_of_night = (
-            time_taken_to_capture_one_combined_image * (img_no - 1)
-            + time_taken_to_capture_one_combined_image * 0.5
-        )
-        return (start + timedelta(seconds=seconds_elapsed_from_beginning_of_night)).strftime(
-            datetime_format
-        )
-    elif datetime_in_aligned_combined := aligned_combined.datetime():
-        return datetime_in_aligned_combined.strftime(datetime_format)
-    else:
-        return ""
-
-
 def process_night(night: ConfigInputNight, config: Config, output: Path, night_date: date):  # noqa
     """
     Processes a given night of data based on the settings provided in `config` dict
@@ -354,36 +316,37 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Note the subtle typing difference between no_of_combined_images and no_of_images_to_combine
     no_of_combined_images = len(raw_images) // no_of_images_to_combine
 
-    log_files_to_normalize: List[LogFileCombinedFile] = []
-
     # Create a file for storing alignment transformation
     alignment_stats_file_name = AlignmentStatsFile.generate_file_name(night_date)
     alignment_stats_file = AlignmentStatsFile(output / alignment_stats_file_name)
     alignment_stats_file.create_file_and_write_header()
 
-    for i in range(no_of_combined_images):
-        # NOTE
-        # It's very easy to get confused between no_of_combined_images
-        # and the no_of_images_to_combine. THe later is the number of raw images
-        # that are combined together to form on aligned combined image
+    with mp.Manager() as manager:
+        log_files_to_normalize_queue = manager.Queue()
+        with mp.Pool() as p:
 
-        from_index = i * no_of_images_to_combine
-        # Note the to_index is exclusive
-        to_index = (i + 1) * no_of_images_to_combine
-        align_combined_extract(
-            config,
-            night,
-            output,
-            night_date,
-            from_index,
-            to_index,
-            raw_images,
-            master_dark_data,
-            master_flat_data,
-            logger,
-            alignment_stats_file,
-            image_duration,
-        )
+            def align_combine_extract_mapper(nth_combined_image):
+                align_combined_extract(
+                    config,
+                    night,
+                    output,
+                    night_date,
+                    nth_combined_image,
+                    raw_images,
+                    master_dark_data,
+                    master_flat_data,
+                    logger,
+                    alignment_stats_file,
+                    image_duration,
+                    log_files_to_normalize_queue,
+                )
+
+            p.map(align_combine_extract_mapper, range(no_of_combined_images))
+
+    log_files_to_normalize: List[LogFileCombinedFile] = []
+    while not log_files_to_normalize_queue.empty():
+        log_file: LogFileCombinedFile = log_files_to_normalize_queue.get()
+        log_files_to_normalize.append(log_file)
 
     # Intranight + Internight Normalization
     normalization_helper(

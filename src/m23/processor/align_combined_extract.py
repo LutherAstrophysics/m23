@@ -29,14 +29,14 @@ def align_combined_extract(
     night: ConfigInputNight,
     output: Path,
     night_date,
-    from_index,
-    to_index,
+    nth_combined_image,
     raw_images,
     master_dark_data,
     master_flat_data,
     logger,
     alignment_stats_file,
     image_duration,
+    log_files_to_normalize_queue,
 ):
     # Define relevant input folders for the night being processed
     NIGHT_INPUT_FOLDER: Path = night["path"]
@@ -55,11 +55,13 @@ def align_combined_extract(
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
 
     crop_region = config["image"]["crop_region"]
-
     save_aligned_images = config["output"]["save_aligned"]
     save_calibrated_images = config["output"]["save_calibrated"]
-
     radii_of_extraction = config["processing"]["radii_of_extraction"]
+
+    from_index = nth_combined_image * no_of_images_to_combine
+    # Note the to_index is exclusive
+    to_index = (nth_combined_image + 1) * no_of_images_to_combine
 
     # NOTE
     # It's very easy to get confused between no_of_combined_images
@@ -174,7 +176,8 @@ def align_combined_extract(
         aligned_combined_file,
         date_time_to_use,
     )
-    # log_files_to_normalize.append(log_file_combined_file)
+
+    log_files_to_normalize_queue.put(log_file_combined_file)
     logger.info(f"Extraction from combination {from_index}-{to_index} completed")
 
 

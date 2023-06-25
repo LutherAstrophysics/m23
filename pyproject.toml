@@ -15,7 +15,8 @@ dependencies = [
     'typing_extensions==4.4.0',
     'opencv-python==4.7.0.68',
     'matplotlib==3.7.0',
-    'ephem==4.1.4'
+    'ephem==4.1.4',
+    'multiprocess==0.70.14'
 ]
 
 [tool.semantic_release]
