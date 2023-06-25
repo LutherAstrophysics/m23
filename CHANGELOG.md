@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.2 (2023-06-25)
+
+### Fix
+
+* Use matplotlib in headless mode ([`bbb4bc2`](https://github.com/LutherAstrophysics/m23/commit/bbb4bc26a0be694d848a639fdf7402a3fd3c8e04))
+
 ## v1.8.1 (2023-06-25)
 
 ### Fix
