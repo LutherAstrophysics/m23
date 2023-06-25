@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.6.1 (2023-06-25)
+
+### Fix
+
+* Include reference fit image as part of the package ([`5d6d766`](https://github.com/LutherAstrophysics/m23/commit/5d6d76600cf08ff22efdd13e9894e7cc453d01e3))
+
 ## v1.6.0 (2023-06-25)
 
 ### Feature
