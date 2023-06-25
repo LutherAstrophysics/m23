@@ -215,7 +215,7 @@ def validate_renormalize_config_file(
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:
-            sys.stderr.write("Stopping because the provided configuration file has issues.\n")
+            sys.stderr.write("Invalid format.\n")
 
 
 if __name__ == "__main__":

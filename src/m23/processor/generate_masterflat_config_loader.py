@@ -132,4 +132,4 @@ def validate_generate_masterflat_config_file(
         } as masterflat_generator_config if is_valid(masterflat_generator_config):
             on_success(sanity_check(create_enhanced_config(masterflat_generator_config)))
         case _:
-            sys.stderr.write("Stopping because the provided configuration file has issues.\n")
+            sys.stderr.write("Invalid format.\n")

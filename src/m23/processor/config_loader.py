@@ -342,7 +342,7 @@ def validate_reference_files(
     color_path = Path(color_ref_file)
     logfile_path = Path(logfile)
     if not (img_path.exists() and img_path.is_file() and img_path.suffix == ".fit"):
-        sys.stderr.write("Make sure that the reference exists and has .fit extension")
+        sys.stderr.write("Make sure that the reference image exists and has .fit extension\n")
         return False
     if not (file_path.exists() and file_path.is_file() and file_path.suffix == ".txt"):
         sys.stderr.write("Make sure that the reference file exists and has .txt extension\n")
@@ -444,10 +444,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             # correctly declared
             on_success(sanity_check(create_processing_config(configuration)))
         case _:
-            sys.stderr.write(
-                "Stopping because the provided configuration file"
-                + " doesn't match the required format.\n"
-            )
+            sys.stderr.write("Invalid format.\n")
 
 
 def load_configuration_with_necessary_reference_files(configuration, pop=None):
