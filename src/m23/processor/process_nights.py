@@ -1,4 +1,5 @@
 import logging
+import os
 import shutil
 import sys
 from datetime import date
@@ -8,17 +9,24 @@ from typing import Iterable, List
 import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
+
 from m23 import __version__
 from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
 from m23.charts import draw_normfactors_chart
-from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
-                           CONFIG_FILE_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME,
-                           INPUT_CALIBRATION_FOLDER_NAME,
-                           LOG_FILES_COMBINED_FOLDER_NAME,
-                           M23_RAW_IMAGES_FOLDER_NAME, MASTER_DARK_NAME,
-                           OUTPUT_CALIBRATION_FOLDER_NAME,
-                           RAW_CALIBRATED_FOLDER_NAME, SKY_BG_BOX_REGION_SIZE,
-                           SKY_BG_FOLDER_NAME)
+from m23.constants import (
+    ALIGNED_COMBINED_FOLDER_NAME,
+    ALIGNED_FOLDER_NAME,
+    CONFIG_FILE_NAME,
+    FLUX_LOGS_COMBINED_FOLDER_NAME,
+    INPUT_CALIBRATION_FOLDER_NAME,
+    LOG_FILES_COMBINED_FOLDER_NAME,
+    M23_RAW_IMAGES_FOLDER_NAME,
+    MASTER_DARK_NAME,
+    OUTPUT_CALIBRATION_FOLDER_NAME,
+    RAW_CALIBRATED_FOLDER_NAME,
+    SKY_BG_BOX_REGION_SIZE,
+    SKY_BG_FOLDER_NAME,
+)
 from m23.extract import sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.alignment_stats_file import AlignmentStatsFile
@@ -32,12 +40,17 @@ from m23.matrix import crop
 from m23.norm import normalize_log_files
 from m23.processor.align_combined_extract import align_combined_extract
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
-from m23.utils import (fit_data_from_fit_images, get_darks,
-                       get_date_from_input_night_folder_name, get_flats,
-                       get_log_file_name,
-                       get_output_folder_name_from_night_date,
-                       get_radius_folder_name, get_raw_images,
-                       sorted_by_number)
+from m23.utils import (
+    fit_data_from_fit_images,
+    get_darks,
+    get_date_from_input_night_folder_name,
+    get_flats,
+    get_log_file_name,
+    get_output_folder_name_from_night_date,
+    get_radius_folder_name,
+    get_raw_images,
+    sorted_by_number,
+)
 
 
 def normalization_helper(
@@ -353,7 +366,7 @@ def start_data_processing_auxiliary(config: Config):
     OUTPUT_PATH: Path = config["output"]["path"]
     # If directory doesn't exist create directory including necessary parent directories.
     OUTPUT_PATH.mkdir(parents=True, exist_ok=True)
-    
+
     def process_nights_mapper(night):
         night_path: Path = night["path"]
         night_date = get_date_from_input_night_folder_name(night_path.name)
@@ -362,7 +375,7 @@ def start_data_processing_auxiliary(config: Config):
         OUTPUT_NIGHT_FOLDER.mkdir(exist_ok=True)
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
 
-    with mp.Pool() as p:
+    with mp.Pool(int(os.cpu_count() * 0.75)) as p:  # Use 75% CPU
         p.map(process_nights_mapper, config["input"]["nights"])
 
 

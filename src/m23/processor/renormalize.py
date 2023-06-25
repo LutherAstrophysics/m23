@@ -1,4 +1,5 @@
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -70,7 +71,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             logfile_combined_reference_logfile,
         )
 
-    with mp.Pool() as p:
+    with mp.Pool(int(os.cpu_count() * 0.75)) as p:  # Use 75% CPU
         p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
 
 
