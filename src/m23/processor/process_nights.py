@@ -5,7 +5,6 @@ from datetime import date
 from pathlib import Path
 from typing import Iterable, List
 
-import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
 
@@ -326,32 +325,21 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     alignment_stats_file = AlignmentStatsFile(output / alignment_stats_file_name)
     alignment_stats_file.create_file_and_write_header()
 
-    # We use multiprocessing to run alignment/combination/extraction in parallel
-    with mp.Manager() as manager:
-        log_files_to_normalize_queue = manager.Queue()
-        with mp.Pool() as p:
-
-            def align_combine_extract_mapper(nth_combined_image):
-                align_combined_extract(
-                    config,
-                    night,
-                    output,
-                    night_date,
-                    nth_combined_image,
-                    raw_images,
-                    master_dark_data,
-                    master_flat_data,
-                    alignment_stats_file,
-                    image_duration,
-                    log_files_to_normalize_queue,
-                )
-
-            p.map(align_combine_extract_mapper, range(no_of_combined_images))
-
-        log_files_to_normalize: List[LogFileCombinedFile] = []
-        while not log_files_to_normalize_queue.empty():
-            log_file: LogFileCombinedFile = log_files_to_normalize_queue.get()
-            log_files_to_normalize.append(log_file)
+    log_files_to_normalize: List[LogFileCombinedFile] = []
+    for nth_combined_image in range(no_of_combined_images):
+        align_combined_extract(
+            config,
+            night,
+            output,
+            night_date,
+            nth_combined_image,
+            raw_images,
+            master_dark_data,
+            master_flat_data,
+            alignment_stats_file,
+            image_duration,
+            log_files_to_normalize,
+        )
 
     # Intranight + Internight Normalization
     normalization_helper(

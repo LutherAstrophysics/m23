@@ -36,7 +36,7 @@ def align_combined_extract(
     master_flat_data,
     alignment_stats_file,
     image_duration,
-    log_files_to_normalize_queue,
+    log_files_to_normalize,
 ):
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
@@ -177,7 +177,7 @@ def align_combined_extract(
         date_time_to_use,
     )
 
-    log_files_to_normalize_queue.put(log_file_combined_file)
+    log_files_to_normalize.append(log_file_combined_file)
     logger.info(f"Extraction from combination {from_index}-{to_index} completed")
 
 
