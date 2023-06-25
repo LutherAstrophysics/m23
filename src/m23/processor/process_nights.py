@@ -8,6 +8,7 @@ from typing import Iterable, List
 import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
+from logger_tt import setup_logging
 
 from m23 import __version__
 from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
@@ -67,6 +68,7 @@ def normalization_helper(
     by the renormalization script
     """
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
+    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     if len(log_files_to_use) < 4:
@@ -166,6 +168,7 @@ def create_sky_bg_file(
     normfactors: Dictionary of normfactors for various radii of extraction
 
     """
+    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.info("Generating sky background file")
     bg_data_of_all_images = []
@@ -227,6 +230,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     if log_file_path.exists():
         log_file_path.unlink()
 
+    setup_logging(use_multiprocessing=True)
     logger = logging.getLogger("LOGGER_" + str(night_date))
     logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
