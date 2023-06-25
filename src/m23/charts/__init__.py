@@ -1,4 +1,9 @@
-import itertools
+import matplotlib
+
+# Use non interactive backend
+matplotlib.use("agg")
+
+import itertools  # noqa
 import sys
 from pathlib import Path
 from typing import Callable, Dict, Iterable

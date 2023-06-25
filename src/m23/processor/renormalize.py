@@ -71,7 +71,6 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         )
 
     with mp.Pool() as p:
-        print("foobar using pool")
         p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
 
 

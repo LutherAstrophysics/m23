@@ -232,11 +232,11 @@ def fwhm(data, xweight, yweight, aduPerPixel):
     col_sum = col_sum - (aduPerPixel * 11)
     row_sum = row_sum - (aduPerPixel * 11)
 
-    if weighted_col_sum < 0 or col_sum == 1:
+    if weighted_col_sum < 0 or col_sum <= 1:
         xFWHM = 0
     else:
         xFWHM = 2.355 * np.sqrt(weighted_col_sum / (col_sum - 1))
-    if weighted_row_sum < 0 or row_sum == 1:
+    if weighted_row_sum < 0 or row_sum <= 1:
         yFWHM = 0
     else:
         yFWHM = 2.355 * np.sqrt(weighted_row_sum / (row_sum - 1))
