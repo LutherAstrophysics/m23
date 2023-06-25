@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.3 (2023-06-25)
+
+### Fix
+
+* Enhance logging ([`7cb23d5`](https://github.com/LutherAstrophysics/m23/commit/7cb23d57e2114794e755dfdcd2de45b6444ed2ff))
+
 ## v1.8.2 (2023-06-25)
 
 ### Fix
