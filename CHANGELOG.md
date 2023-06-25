@@ -2,6 +2,17 @@
 
 <!--next-version-placeholder-->
 
+## v1.5.0 (2023-06-25)
+
+### Feature
+
+* Update intranight normalization to normalize to similar elevation images ([`c0dae10`](https://github.com/LutherAstrophysics/m23/commit/c0dae104876d7dcb0ba23be29a2fea9134dee883))
+* Make reference files optional ([`84f28d8`](https://github.com/LutherAstrophysics/m23/commit/84f28d8bbc10548400ce570b42c6826342aae94b))
+
+### Fix
+
+* Use natural round in sky bg file ([`bd1f43d`](https://github.com/LutherAstrophysics/m23/commit/bd1f43d94d62c7049f4e67c3e068aaef39520598))
+
 ## v1.4.0 (2023-06-24)
 
 ### Feature
