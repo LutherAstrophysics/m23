@@ -235,7 +235,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_file_path.unlink()
 
     logger = logging.getLogger("LOGGER_" + str(night_date))
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ch = logging.FileHandler(log_file_path)
     ch.setFormatter(formatter)
