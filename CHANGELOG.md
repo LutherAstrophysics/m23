@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.4 (2023-06-26)
+
+### Fix
+
+* Set appropriate log level ([`8ad5bbd`](https://github.com/LutherAstrophysics/m23/commit/8ad5bbdd0b6488140a44e0e2dcc8b298d8ef5a85))
+
 ## v1.9.3 (2023-06-26)
 
 ### Performance
