@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 name = "m23"
 readme = "README.md"
 requires-python = ">=3.10"
-version = "1.9.2"
+version = "1.9.3"
 dependencies = [
     "numpy==1.24.2",
     'toml==0.10.2',
