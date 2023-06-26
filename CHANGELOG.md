@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.7 (2023-06-26)
+
+### Fix
+
+* Catch exception during internight normalization ([`4988a5c`](https://github.com/LutherAstrophysics/m23/commit/4988a5c082e899eb946e9cbf6e8f693f9ed34771))
+
 ## v1.8.6 (2023-06-25)
 
 ### Fix
