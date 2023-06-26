@@ -27,7 +27,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         radii_of_extraction = renormalize_dict["processing"]["radii_of_extraction"]
 
         logger = logging.getLogger("LOGGER_" + str(night_date))
-        logger.setLevel(logging.NOTSET)
+        logger.setLevel(logging.DEBUG)
         formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         ch = logging.FileHandler(log_file_path)
         ch.setFormatter(formatter)

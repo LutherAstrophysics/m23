@@ -220,6 +220,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     Processes a given night of data based on the settings provided in `config` dict
     """
     # Save the config file used to do the current data processing
+    print("GODDAMN")
     CONFIG_PATH = output / CONFIG_FILE_NAME
     with CONFIG_PATH.open("w+") as fd:
         toml.dump(config, fd)
@@ -235,7 +236,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_file_path.unlink()
 
     logger = logging.getLogger("LOGGER_" + str(night_date))
-    logger.setLevel(logging.NOTSET)
+    logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ch = logging.FileHandler(log_file_path)
     ch.setFormatter(formatter)
