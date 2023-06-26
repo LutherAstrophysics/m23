@@ -78,7 +78,7 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             logger.debug(tb)
             return
 
-    with mp.Pool(int(os.cpu_count() * 0.75)) as p:  # Use 75% CPU
+    with mp.Pool(int(os.cpu_count() * 0.6)) as p:  # Use 75% CPU
         p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
 
 

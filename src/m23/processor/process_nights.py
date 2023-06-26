@@ -396,7 +396,7 @@ def start_data_processing_auxiliary(config: Config):
         OUTPUT_NIGHT_FOLDER.mkdir(exist_ok=True)
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
 
-    with mp.Pool(int(os.cpu_count() * 0.75)) as p:  # Use 75% CPU
+    with mp.Pool(int(os.cpu_count() * 0.6)) as p:  # Use 75% CPU
         p.map(process_nights_mapper, config["input"]["nights"])
 
 
