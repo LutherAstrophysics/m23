@@ -220,7 +220,6 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     Processes a given night of data based on the settings provided in `config` dict
     """
     # Save the config file used to do the current data processing
-    print("GODDAMN")
     CONFIG_PATH = output / CONFIG_FILE_NAME
     with CONFIG_PATH.open("w+") as fd:
         toml.dump(config, fd)
