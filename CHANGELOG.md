@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.10.0 (2023-06-26)
+
+### Feature
+
+* Perform intranight normalization to same cluster angle ([`d6ce7d0`](https://github.com/LutherAstrophysics/m23/commit/d6ce7d084461df33dd72793368088d7c9c37ab7b))
+
 ## v1.9.4 (2023-06-26)
 
 ### Fix
