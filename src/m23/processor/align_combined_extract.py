@@ -195,7 +195,7 @@ def align_combined_extract(
 
     logger.info(f"Extraction from combination {from_index}-{to_index} completed")
     log_files_to_normalize.append(log_file_combined_file)
-    logger.info(f"Adding logfile {log_files_to_normalize} to the list of log files to use")
+    logger.info(f"Adding logfile {log_file_combined_file} to the list of log files to use")
 
 
 def get_datetime_to_use(
