@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.3 (2023-06-26)
+
+### Performance
+
+* Decrease processor usage ([`33b6443`](https://github.com/LutherAstrophysics/m23/commit/33b6443ab9586475d1f5cc14f5004d213e224c43))
+
 ## v1.9.2 (2023-06-26)
 
 ### Fix
