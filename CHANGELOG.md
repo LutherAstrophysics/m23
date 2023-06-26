@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.2 (2023-06-26)
+
+### Fix
+
+* Typo ([`909aed0`](https://github.com/LutherAstrophysics/m23/commit/909aed0f459fb0b22050c37a1194db1d59011271))
+
 ## v1.9.1 (2023-06-26)
 
 ### Fix
