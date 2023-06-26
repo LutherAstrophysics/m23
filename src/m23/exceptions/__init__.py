@@ -8,3 +8,7 @@ class InvalidDatetimeInConfig(ConfigException):
 
 class CouldNotAlignException(Exception):
     pass
+
+
+class InternightException(Exception):
+    pass

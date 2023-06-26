@@ -1,4 +1,5 @@
 import logging
+import traceback
 from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
 
@@ -7,6 +8,7 @@ from scipy.optimize import curve_fit
 
 from m23.charts import draw_internight_brightness_chart, draw_internight_color_chart
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
+from m23.exceptions import InternightException
 from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
@@ -276,9 +278,16 @@ def internight_normalize_auxiliary(  # noqa
     y_diff_min = y_diff_mean - 5 * y_diff_std
     y_diff_max = y_diff_mean + 5 * y_diff_std
     y_no_of_bins = 10  # We want to use 10 bins, like IDL code
-    bin_frequencies, bins_edges = np.histogram(
-        y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins
-    )
+    try:
+        bin_frequencies, bins_edges = np.histogram(
+            y_differences, range=[y_diff_min, y_diff_max], bins=y_no_of_bins
+        )
+    except ValueError:
+        tb = traceback.format_exc()
+        logger.error("Internight norm encountered exception in making histogram of residuals")
+        logger.debug(tb)
+        raise InternightException
+
     bins_mid_values = []
     for index, current_value in enumerate(bins_edges[:-1]):
         next_value = bins_edges[index + 1]

@@ -27,6 +27,7 @@ from m23.constants import (
     SKY_BG_BOX_REGION_SIZE,
     SKY_BG_FOLDER_NAME,
 )
+from m23.exceptions import InternightException
 from m23.extract import sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.alignment_stats_file import AlignmentStatsFile
@@ -53,7 +54,7 @@ from m23.utils import (
 )
 
 
-def normalization_helper(
+def normalization_helper(  # noqa
     radii_of_extraction: List[int],
     reference_log_file: ReferenceLogFile,
     log_files_to_use: List[LogFileCombinedFile],
@@ -101,12 +102,16 @@ def normalization_helper(
     sky_bg_filename = output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date)
 
     # Internight normalization
-    normfactors = internight_normalize(
-        output,
-        logfile_combined_reference_logfile,
-        color_ref_file_path,
-        radii_of_extraction,
-    )
+    try:
+        normfactors = internight_normalize(
+            output,
+            logfile_combined_reference_logfile,
+            color_ref_file_path,
+            radii_of_extraction,
+        )
+    except InternightException:
+        logger.error("Returning in middle of internight normalization")
+        return
 
     # Create folder if it doesn't exist
     sky_bg_filename.parent.mkdir(parents=True, exist_ok=True)
