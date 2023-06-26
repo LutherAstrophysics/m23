@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.1 (2023-06-26)
+
+### Fix
+
+* Style ([`360fe7c`](https://github.com/LutherAstrophysics/m23/commit/360fe7cf767222e323a5acfd7582644e11aad1ee))
+
 ## v1.9.0 (2023-06-26)
 
 ### Feature
