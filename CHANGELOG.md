@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.10.1 (2023-06-26)
+
+### Fix
+
+* Intranight normalization elevation method ([`a8e1c75`](https://github.com/LutherAstrophysics/m23/commit/a8e1c75fad9c1cfa44a4f6154aaef4e3e6a9caa8))
+
 ## v1.10.0 (2023-06-26)
 
 ### Feature
