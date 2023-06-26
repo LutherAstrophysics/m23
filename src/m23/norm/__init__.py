@@ -1,3 +1,4 @@
+import logging
 import math
 from datetime import date
 from pathlib import Path
@@ -53,12 +54,18 @@ def normalize_log_files(  # noqa
     # We are sorting the log files so that we know what's the first logfile
     # we are using and what's the last. This data is needed written in header
     # of all flux log combined files that we create
+    logger = logging.getLogger("LOGGER_" + str(night_date))
+
     log_files_to_normalize.sort(key=lambda log_file: log_file.img_number())
     no_of_files = len(log_files_to_normalize)
 
     indices_to_normalize_to = get_indices_to_normalize_to(
-        log_files_to_normalize, NormalizationTechniques.ELEVATION
+        log_files_to_normalize, NormalizationTechniques.ELEVATION, night_date
     )
+    log_file_names = list(map(lambda x: x.path().name, log_files_to_normalize))
+    log_files_to_normalize_to_str = np.array(log_file_names).take(indices_to_normalize_to)
+    logger.info(f"Logfiles to normalize wit respect to {log_files_to_normalize_to_str}")
+
     array_of_logfiles_of_array_of_adus = []  # This is an array of arrays
 
     # This holds the normalization factor for each log_file to use
@@ -212,7 +219,8 @@ def get_cluster_angle_to_normalize_by_log_files(log_files) -> float:
     return angle
 
 
-def get_indices_to_normalize_to(log_files, technique):
+def get_indices_to_normalize_to(log_files, technique, night_date):
+    logger = logging.getLogger("LOGGER_" + str(night_date))
     if technique == NormalizationTechniques.LINEAR:
         # Normalization is done with reference to images 20%, 40%, 60% and 80%
         # throughout night The indices here are the index of the images from the
@@ -220,14 +228,16 @@ def get_indices_to_normalize_to(log_files, technique):
         return np.linspace(0, len(log_files), 6, dtype="int")[1:-1]
     elif technique == NormalizationTechniques.ELEVATION:
         angle = get_cluster_angle_to_normalize_by_log_files(log_files)
+        logger.info(f"Cluster angle to normalized to {angle}")
         indices = []
-        for index, logfile in range(len(log_files)):
+        for index, logfile in enumerate(log_files):
             if half_round_up_to_int(logfile.get_cluster_angle()) == angle:
                 indices.append(index)
         if len(indices) < 4:
             return indices
         else:
-            return indices[np.linspace(0, len(indices), 6, dtype="int")[1:-1]]
+            indices_of_indices = np.linspace(0, len(indices), 6, dtype="int")[1:-1]
+            return np.array(indices).take(indices_of_indices)
     else:
         raise Exception(f"Intranight {technique} not recognized")
 

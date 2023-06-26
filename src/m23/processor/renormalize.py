@@ -72,9 +72,10 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
                 NIGHT_FOLDER,
                 logfile_combined_reference_logfile,
             )
-        except Exception:
+        except Exception as e:
             tb = traceback.format_exc()
             logger.error("Exception during normalization/sky_bg generation")
+            logger.error(e)
             logger.debug(tb)
             return
 
