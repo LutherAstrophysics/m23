@@ -2,6 +2,7 @@ import logging
 import os
 import shutil
 import sys
+import traceback
 from datetime import date
 from pathlib import Path
 from typing import Iterable, List
@@ -334,31 +335,43 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
     for nth_combined_image in range(no_of_combined_images):
-        align_combined_extract(
-            config,
-            night,
-            output,
-            night_date,
-            nth_combined_image,
-            raw_images,
-            master_dark_data,
-            master_flat_data,
-            alignment_stats_file,
-            image_duration,
-            log_files_to_normalize,
-        )
+        try:
+            align_combined_extract(
+                config,
+                night,
+                output,
+                night_date,
+                nth_combined_image,
+                raw_images,
+                master_dark_data,
+                master_flat_data,
+                alignment_stats_file,
+                image_duration,
+                log_files_to_normalize,
+            )
+        except Exception:
+            tb = traceback.format_exc()
+            logger.error("Exception during alignment combination extraction")
+            logger.debug(tb)
+            return
 
     # Intranight + Internight Normalization
-    normalization_helper(
-        radii_of_extraction,
-        reference_log_file,
-        log_files_to_normalize,
-        image_duration,
-        night_date,
-        color_ref_file_path,
-        output,
-        logfile_combined_reference_logfile,
-    )
+    try:
+        normalization_helper(
+            radii_of_extraction,
+            reference_log_file,
+            log_files_to_normalize,
+            image_duration,
+            night_date,
+            color_ref_file_path,
+            output,
+            logfile_combined_reference_logfile,
+        )
+    except Exception:
+        tb = traceback.format_exc()
+        logger.error("Exception during normalization/sky_bg generation")
+        logger.debug(tb)
+        return
 
 
 def start_data_processing_auxiliary(config: Config):

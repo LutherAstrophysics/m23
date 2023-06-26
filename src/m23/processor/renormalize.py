@@ -1,6 +1,7 @@
 import logging
 import os
 import sys
+import traceback
 from pathlib import Path
 
 import multiprocess as mp
@@ -60,16 +61,22 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
         img_duration = log_files_to_use[0].img_duration()
 
         # Perform intranight normalization then internight normalization
-        normalization_helper(
-            radii_of_extraction,
-            reference_log_file,
-            log_files_to_use,
-            img_duration,
-            night_date,
-            color_ref_file_path,
-            NIGHT_FOLDER,
-            logfile_combined_reference_logfile,
-        )
+        try:
+            normalization_helper(
+                radii_of_extraction,
+                reference_log_file,
+                log_files_to_use,
+                img_duration,
+                night_date,
+                color_ref_file_path,
+                NIGHT_FOLDER,
+                logfile_combined_reference_logfile,
+            )
+        except Exception:
+            tb = traceback.format_exc()
+            logger.error("Exception during normalization/sky_bg generation")
+            logger.debug(tb)
+            return
 
     with mp.Pool(int(os.cpu_count() * 0.75)) as p:  # Use 75% CPU
         p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
