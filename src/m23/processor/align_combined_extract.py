@@ -67,7 +67,7 @@ def align_combined_extract(
 
     # NOTE
     # It's very easy to get confused between no_of_combined_images
-    # and the no_of_images_to_combine. THe later is the number of raw images
+    # and the no_of_images_to_combine. The later is the number of raw images
     # that are combined together to form on aligned combined image
 
     images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
@@ -124,28 +124,42 @@ def align_combined_extract(
 
             alignment_stats_file.add_record(raw_image_to_align_name, statistics)
             logger.info(f"Aligned {raw_image_to_align_name}")
-        except CouldNotAlignException:
+        except CouldNotAlignException as e:
             logger.error(f"Could not align image {raw_image_to_align}")
             logger.error(f"Skipping combination {from_index}-{to_index}")
+            logger.error(f"{e}")
+            break
+        except Exception as e:
+            logger.error(f"Could not align image {raw_image_to_align}")
+            logger.error(f"Skipping combination {from_index}-{to_index}")
+            logger.error(f"{e}")
             break
 
     # We proceed to next set of images if the alignment wasn't successful for any one
     # image in the combination set. We now this by checking no of aligned images.
     if len(aligned_images_data) < no_of_images_to_combine:
+        logger.warning(
+            f"Length of aligned images {len(aligned_images_data)}. No of images to combined: {no_of_images_to_combine}"  # noqa
+        )
+        logger.warning("Skipping align-combine-extract")
         return
 
     # Combination
     combined_images_data = np.sum(aligned_images_data, axis=0)
+    logger.info("Combined")
 
     # We take the middle image from the combination as the sample This is
     # the image whose header will be copied to the combined image fit file
     midpoint_index = from_index + no_of_images_to_combine // 2
     sample_raw_image_file = raw_images[midpoint_index]
+    logger.info(f"Using {sample_raw_image_file} as sample")
 
     aligned_combined_image_number = to_index // no_of_images_to_combine
+    logger.info(f"Aligned combined image number {aligned_combined_image_number}")
     aligned_combined_file_name = AlignedCombinedFile.generate_file_name(
         image_duration, aligned_combined_image_number
     )
+    logger.info(f"Aligned combined image name {aligned_combined_file_name}")
     aligned_combined_file = AlignedCombinedFile(
         ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
     )
@@ -154,6 +168,7 @@ def align_combined_extract(
     # So we're setting the datatype to int32 which has enough precision for
     # us.
     aligned_combined_file.create_file(combined_images_data.astype("int32"), sample_raw_image_file)
+    logger.info(f"Set {aligned_combined_file_name} dtype to int32")
     logger.info(f"Combined images {from_index}-{to_index}")
 
     # Extraction
@@ -167,6 +182,7 @@ def align_combined_extract(
     date_time_to_use = get_datetime_to_use(
         aligned_combined_file, night, no_of_images_to_combine, NIGHT_INPUT_IMAGES_FOLDER
     )
+    logger.info(f"Using datetime {date_time_to_use} for extraction")
 
     extract_stars(
         combined_images_data,
@@ -177,8 +193,9 @@ def align_combined_extract(
         date_time_to_use,
     )
 
-    log_files_to_normalize.append(log_file_combined_file)
     logger.info(f"Extraction from combination {from_index}-{to_index} completed")
+    log_files_to_normalize.append(log_file_combined_file)
+    logger.info(f"Adding logfile {log_files_to_normalize} to the list of log files to use")
 
 
 def get_datetime_to_use(

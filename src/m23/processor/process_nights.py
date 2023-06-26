@@ -220,6 +220,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     Processes a given night of data based on the settings provided in `config` dict
     """
     # Save the config file used to do the current data processing
+    print("GODDAMN")
     CONFIG_PATH = output / CONFIG_FILE_NAME
     with CONFIG_PATH.open("w+") as fd:
         toml.dump(config, fd)
@@ -235,7 +236,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         log_file_path.unlink()
 
     logger = logging.getLogger("LOGGER_" + str(night_date))
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
     formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
     ch = logging.FileHandler(log_file_path)
     ch.setFormatter(formatter)
@@ -332,6 +333,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     alignment_stats_file_name = AlignmentStatsFile.generate_file_name(night_date)
     alignment_stats_file = AlignmentStatsFile(output / alignment_stats_file_name)
     alignment_stats_file.create_file_and_write_header()
+    logger.info("Created alignment stats file")
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
     for nth_combined_image in range(no_of_combined_images):
@@ -349,10 +351,11 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                 image_duration,
                 log_files_to_normalize,
             )
-        except Exception:
+        except Exception as e:
             tb = traceback.format_exc()
             logger.error("Exception during alignment combination extraction")
-            logger.debug(tb)
+            logger.error(e)
+            logger.error(tb)
             return
 
     # Intranight + Internight Normalization
@@ -367,9 +370,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             output,
             logfile_combined_reference_logfile,
         )
-    except Exception:
+    except Exception as e:
         tb = traceback.format_exc()
         logger.error("Exception during normalization/sky_bg generation")
+        logger.error(e)
         logger.debug(tb)
         return
 
