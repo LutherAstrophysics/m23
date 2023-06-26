@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.9.0 (2023-06-26)
+
+### Feature
+
+* Use extensive logging ([`60afdaf`](https://github.com/LutherAstrophysics/m23/commit/60afdaf00e3bbea2f14265912b0d7d1cf61d3688))
+
 ## v1.8.8 (2023-06-26)
 
 ### Fix
