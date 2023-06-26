@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.8.8 (2023-06-26)
+
+### Fix
+
+* Catch any exception encoutered during processing a night, log it and move to next ([`3fca7cb`](https://github.com/LutherAstrophysics/m23/commit/3fca7cbefe3942c17210e0b25d3cca4cebdcf908))
+
 ## v1.8.7 (2023-06-26)
 
 ### Fix
