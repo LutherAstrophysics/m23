@@ -57,7 +57,7 @@ def normalize_log_files(  # noqa
     no_of_files = len(log_files_to_normalize)
 
     indices_to_normalize_to = get_indices_to_normalize_to(
-        log_files_to_normalize, NormalizationTechniques.LINEAR
+        log_files_to_normalize, NormalizationTechniques.ELEVATION
     )
     array_of_logfiles_of_array_of_adus = []  # This is an array of arrays
 
