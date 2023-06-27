@@ -151,7 +151,7 @@ def internight_normalize_auxiliary(  # noqa
     for star_no in range(1, last_star_no + 1):
         star_data = data_dict[star_no]
         # Only calculate the ratio for stars with >= 50% attendance for the night
-        if is_star_attendance_over_half[star_no]:
+        if is_star_attendance_over_half[star_no] and not np.isnan(star_data.median_flux):
             # if star_data.attendance >= 0.5:
             # Only include this star if it has a non-zero median flux
             ratio = star_data.reference_log_adu / star_data.median_flux
