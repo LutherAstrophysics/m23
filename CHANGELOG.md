@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.0 (2023-06-27)
+
+### Feature
+
+* Add support for reading from tab separated logfile combined files ([`12b84e7`](https://github.com/LutherAstrophysics/m23/commit/12b84e78c7e94295b06b90899a553afc5017571c))
+
+### Fix
+
+* Internight bug when some stars didnt have good fluxes after intranight ([`ecdaa8d`](https://github.com/LutherAstrophysics/m23/commit/ecdaa8d7aa1e169218a9c54d4a5e5c0223b68e1c))
+
 ## v1.10.1 (2023-06-26)
 
 ### Fix
