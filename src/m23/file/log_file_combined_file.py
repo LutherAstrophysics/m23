@@ -58,6 +58,9 @@ class LogFileCombinedFile:
             # Save the title row
             # We split the title row by gap of more than two spaces
             self.__title_row = re.split(r"\s{2,}", lines[self.data_titles_row_zero_index])
+            # Try splitting on tab if not split on spaces
+            if len(self.__title_row) == 1:
+                self.__title_row = re.split(r"\t", lines[self.data_titles_row_zero_index])
             self.__header = lines[: self.header_rows]
             lines = lines[self.header_rows :]  # Skip headers - 1
             # Create a 2d list
