@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.4 (2023-06-28)
+
+### Fix
+
+* Handle milliseconds in date-obs in fit header ([`f304ccc`](https://github.com/LutherAstrophysics/m23/commit/f304cccc76bdf6de98a217864200b4b09b14530c))
+
 ## v1.11.3 (2023-06-28)
 
 ### Fix
