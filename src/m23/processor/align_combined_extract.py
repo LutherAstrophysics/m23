@@ -1,5 +1,5 @@
 import logging
-from datetime import date, timedelta
+from datetime import timedelta
 from pathlib import Path
 
 import numpy as np
@@ -231,18 +231,6 @@ def get_datetime_to_use(
             datetime_format
         )
     elif datetime_in_aligned_combined := aligned_combined.datetime():
-        # If this the datetime in the header is a bogus value, use created time.
-        # Here we mean anything less than 2000 as bogus this because we didn't take
-        # any date prior to 2000.
-        if not datetime_in_aligned_combined or datetime_in_aligned_combined.date() < date(
-            2000, 1, 1
-        ):
-            datetime_in_aligned_combined = aligned_combined.get_created_datetime()
-        # Fallback to modified time if nothing else is present, this should
-        # theoretically still be valid as our raw images should not have been
-        # modified after creation
-        if not datetime_in_aligned_combined:
-            datetime_in_aligned_combined = aligned_combined.get_modified_datetime()
         return datetime_in_aligned_combined.strftime(datetime_format)
     else:
         return ""

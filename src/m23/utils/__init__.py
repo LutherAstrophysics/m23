@@ -94,33 +94,8 @@ def time_taken_to_capture_and_save_a_raw_file(folder_path: Path) -> int:
     raw_images: Iterable[RawImageFile] = list(get_raw_images(folder_path))
     first_img = raw_images[0]
     last_image = raw_images[-1]
-    # Intended duration is the duration that open the shutter of the camera The
-    # duration that we're concerned here is the duration of capture,  and same
-    # the photograph. This will help us calculate the time of capture of the
-    # next image.
-    intended_duration = first_img.image_duration()
     no_of_images = len(raw_images)
     duration = (last_image.datetime() - first_img.datetime()).seconds
-
-    # Duration of less than intended would mean the dates are incorrect
-    if duration > intended_duration:
-        return duration / no_of_images
-
-    # If no header data is present try to use create datetime
-    last_image_date = last_image.get_created_datetime()
-    first_image_date = first_img.get_created_datetime()
-
-    if last_image_date and first_image_date:
-        duration = (last_image_date - first_image_date).seconds
-        if duration > intended_duration:
-            return duration / no_of_images
-
-    # Use modified time as fallback
-    last_image_date = last_image.get_modified_datetime()
-    first_image_date = first_img.get_modified_datetime()
-
-    duration = (last_image_date - first_image_date).seconds
-
     return duration / no_of_images
 
 
