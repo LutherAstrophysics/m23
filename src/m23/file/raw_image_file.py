@@ -54,6 +54,8 @@ class RawImageFile:
             # If time no time header is present, we assume that both date and
             # time are present in the date header in format given by
             # `self.date_observed_datetime_format`
+            # Remove the millisecond part if present
+            datestr = datestr.split(".")[0]
             return datetime.datetime.strptime(f"{datestr}", self.date_observed_datetime_format)
 
     def is_valid_file_name(self):
