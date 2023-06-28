@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.1 (2023-06-28)
+
+### Fix
+
+* Intranight normalization when no of references to normalize to is not 4 ([`7c9f9e0`](https://github.com/LutherAstrophysics/m23/commit/7c9f9e0c9f3031ab79270c6d0b5ecc2428ee2a25))
+
 ## v1.11.0 (2023-06-27)
 
 ### Feature
