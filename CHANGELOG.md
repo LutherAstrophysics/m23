@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.3 (2023-06-28)
+
+### Fix
+
+* Remove extra rows/cols from darks,flats during masterflat generation ([`ca88c88`](https://github.com/LutherAstrophysics/m23/commit/ca88c8838da4a3b9fce167b1c6f6289303db88cd))
+
 ## v1.11.2 (2023-06-28)
 
 ### Fix
