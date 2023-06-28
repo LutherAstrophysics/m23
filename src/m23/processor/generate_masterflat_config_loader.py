@@ -109,7 +109,9 @@ def sanity_check(config: MasterflatGeneratorConfig) -> MasterflatGeneratorConfig
     This method is warn about technically correct but abnormal configuration values
     """
     night_date = get_date_from_input_night_folder_name(config["input"])
-    sanity_check_image(config["image"], night_date)
+    # Since we dont crop out (meaning fill the vignetting ring with bogus values)
+    # in the case of masterdark and masterflat, its not necessary to check it
+    sanity_check_image(config["image"], night_date, check_crop=False)
     return config
 
 

@@ -136,7 +136,7 @@ def prompt_to_continue(msg: str):
         os._exit(1)
 
 
-def sanity_check_image(config: ConfigImage, night_date: date):  # noqa
+def sanity_check_image(config: ConfigImage, night_date: date, check_crop=True):  # noqa
     """
     Checks for abnormal values in configuration images
     """
@@ -155,41 +155,42 @@ def sanity_check_image(config: ConfigImage, night_date: date):  # noqa
             prompt_to_continue("Detected non 2048 image row value for new camera date")
         if cols != 2048:
             prompt_to_continue("Detected non 2048 image column value for new camera date")
-        if (
-            not crop_region
-            or crop_region
-            and type(crop_region) != list
-            or type(crop_region) == list
-            and len(crop_region) == 0
-        ):
-            prompt_to_continue(
-                "We typically use crop images from new camera, you don't seem to define it"
-            )
-        else:
-            try:
-                for crop_section_index, crop_section in enumerate(crop_region):
-                    for (
-                        section_coordinate_index,
-                        section_coordinate,
-                    ) in enumerate(crop_section):
-                        if (
-                            section_coordinate
-                            != TYPICAL_NEW_CAMERA_CROP_REGION[crop_section_index][
-                                section_coordinate_index
-                            ]
-                        ):
-                            prompt_to_continue(
-                                "Mismatch between default crop region"
-                                + " used in new camera and config file."
-                            )
-                            # Ignore further checking if already made the user
-                            # aware of inconsistency once
-                            return
-
-            except Exception as e:
+        if check_crop:
+            if (
+                not crop_region
+                or crop_region
+                and type(crop_region) != list
+                or type(crop_region) == list
+                and len(crop_region) == 0
+            ):
                 prompt_to_continue(
-                    f"Error while checking crop region with standard crop region value. {e}"
+                    "We typically use crop images from new camera, you don't seem to define it"
                 )
+            else:
+                try:
+                    for crop_section_index, crop_section in enumerate(crop_region):
+                        for (
+                            section_coordinate_index,
+                            section_coordinate,
+                        ) in enumerate(crop_section):
+                            if (
+                                section_coordinate
+                                != TYPICAL_NEW_CAMERA_CROP_REGION[crop_section_index][
+                                    section_coordinate_index
+                                ]
+                            ):
+                                prompt_to_continue(
+                                    "Mismatch between default crop region"
+                                    + " used in new camera and config file."
+                                )
+                                # Ignore further checking if already made the user
+                                # aware of inconsistency once
+                                return
+
+                except Exception as e:
+                    prompt_to_continue(
+                        f"Error while checking crop region with standard crop region value. {e}"
+                    )
 
 
 def sanity_check(config_dict: Config) -> Config:
