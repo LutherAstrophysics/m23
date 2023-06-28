@@ -146,7 +146,9 @@ def normalize_log_files(  # noqa
                 star_adu_in_reference_log_files.append(ref_log_file[star_index])
             star_adu = log_file[star_index]
             if all([value > 0 for value in star_adu_in_reference_log_files]) and star_adu > 0:
-                normfactor = sum(star_adu_in_reference_log_files) / (4 * star_adu)
+                normfactor = sum(star_adu_in_reference_log_files) / (
+                    len(indices_to_normalize_to) * star_adu
+                )
             else:
                 normfactor = 0
             norm_factor_for_stars.append(normfactor)
