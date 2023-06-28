@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.11.2 (2023-06-28)
+
+### Fix
+
+* Skip verifying crop region in masterflat generation ([`36de0c4`](https://github.com/LutherAstrophysics/m23/commit/36de0c40d281df6c1985936c08015df954f04960))
+
+### Documentation
+
+* Update rainbow.toml ([`78f1ffd`](https://github.com/LutherAstrophysics/m23/commit/78f1ffd58af2a6bd5327821618b6a6b3067c90d2))
+
 ## v1.11.1 (2023-06-28)
 
 ### Fix
