@@ -281,6 +281,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER))
     # Ensure that image dimensions are as specified by rows and cols
     # If there's extra noise cols or rows, we crop them
+    # Note this is different from the crop_region that's defined in image
+    # options for process. More than crop, it's a fill that fills out the
+    # vignetting ring with zero values
     darks = [crop(matrix, rows, cols) for matrix in darks]
     master_dark_data = makeMasterDark(
         saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_DARK_NAME,
