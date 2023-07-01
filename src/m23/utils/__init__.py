@@ -79,7 +79,7 @@ def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
     return sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
 
 
-def time_taken_to_capture_and_save_a_raw_file(folder_path: Path) -> int:
+def time_taken_to_capture_and_save_a_raw_file(folder_path: Path, night_config) -> int:
     """
     Returns the average time taken to capture the raw image.  Note that this
     may be different from the `image_duration` which is the time of camera
@@ -95,7 +95,10 @@ def time_taken_to_capture_and_save_a_raw_file(folder_path: Path) -> int:
     first_img = raw_images[0]
     last_image = raw_images[-1]
     no_of_images = len(raw_images)
-    duration = (last_image.datetime() - first_img.datetime()).seconds
+    if night_config.get("starttime") and night_config.get("endtime"):
+        duration = (night_config.get("endtime") - night_config.get("starttime")).seconds
+    else:
+        duration = (last_image.datetime() - first_img.datetime()).seconds
     return duration / no_of_images
 
 

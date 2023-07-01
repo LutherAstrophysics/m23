@@ -40,7 +40,8 @@ class ConfigProcessing(TypedDict):
 class ConfigInputNight(TypedDict):
     path: str | Path
     masterflat: NotRequired[str]
-    starttime: NotRequired[str]
+    starttime: NotRequired[datetime.datetime]
+    endtime: NotRequired[datetime.datetime]
 
 
 class ConfigInput(TypedDict):
@@ -306,17 +307,48 @@ def validate_night(night: ConfigInputNight) -> bool:  # noqa
         )
         raise e
 
+    night_date = get_date_from_input_night_folder_name(Path(night.get("path")).name)
     # Validate the start and end time of observation if provided
     # Check if datetime is declared
     if start := night.get("starttime"):
         try:
-            validate_datetime(start)
-        except InvalidDatetimeInConfig as e:
+            night["starttime"] = validate_datetime(start)
+        except InvalidDatetimeInConfig:
             sys.stderr.write(
                 f"OPTIONAL observation start time for {night} isn't"
-                " in the format  1979-05-27T07:32:00 where timezone is UT\n"
+                " in the format  YYYY-mm-ddTHH:MM:SS where timezone is UT\n"
             )
-            raise e
+            return False
+
+    if end := night.get("endtime"):
+        try:
+            night["endtime"] = validate_datetime(end)
+        except InvalidDatetimeInConfig:
+            sys.stderr.write(
+                f"OPTIONAL observation end time for {night} isn't"
+                " in the format  YYYY-mm-ddTHH:MM:SS where timezone is UT\n"
+            )
+            return False
+
+    start_time = night.get("starttime")
+    end_time = night.get("endtime")
+    if start_time and end_time:
+        # Start time must come before end_time
+        assert start_time < end_time
+        if (end_time - start_time).seconds < 60 * 60:
+            prompt_to_continue(f"Start time and end time are within an hour for {night_date}.")
+    if start_time:
+        if abs((start_time.date() - night_date).days) > 3:
+            sys.stderr.write(
+                f"Starttime for night {night_date} is off night_date by more than 3 days.\n"
+            )
+            return False
+    if end_time:
+        if abs((end_time.date() - night_date).days) > 3:
+            sys.stderr.write(
+                f"Endtime for night {end_time}  is off night_date by more than 3 days.\n"
+            )
+            return False
 
     return True  # Assuming we did the best we could to catch errors
 
@@ -369,8 +401,14 @@ def validate_reference_files(
 
 
 def validate_datetime(time_obj):
+    if isinstance(time_obj, str):
+        try:
+            time_obj = datetime.datetime.strptime(time_obj, "%Y-%m-%dT%H:%M:%S")
+        except ValueError:
+            raise InvalidDatetimeInConfig
     if not isinstance(time_obj, datetime.datetime):
         raise InvalidDatetimeInConfig
+    return time_obj
 
 
 def verify_optional_output_options(output_options: Dict[str, any]):
@@ -445,7 +483,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             # correctly declared
             on_success(sanity_check(create_processing_config(configuration)))
         case _:
-            sys.stderr.write("Invalid format.\n")
+            sys.stderr.write("Stopping.\n")
 
 
 def load_configuration_with_necessary_reference_files(configuration, pop=None):

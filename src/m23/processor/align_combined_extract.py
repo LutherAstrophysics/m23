@@ -218,7 +218,9 @@ def get_datetime_to_use(
     # If the datetime option was passed in the header we use that one
     # Otherwise we use the datetime in the header, if that's present
     if start := night_config.get("starttime"):
-        duration_of_raw_img = time_taken_to_capture_and_save_a_raw_file(raw_images_folder)
+        duration_of_raw_img = time_taken_to_capture_and_save_a_raw_file(
+            raw_images_folder, night_config
+        )
         img_no = aligned_combined.image_number()
         time_taken_to_capture_one_combined_image = (
             duration_of_raw_img * no_of_raw_images_in_one_combination
