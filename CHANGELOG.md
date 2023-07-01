@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.12.0 (2023-07-01)
+
+### Feature
+
+* Add ability to specify endtime to use for night ([`08fabdb`](https://github.com/LutherAstrophysics/m23/commit/08fabdb2cbdcaa7656d5758ca0d824ffc8efd4ae))
+
 ## v1.11.5 (2023-06-28)
 
 ### Fix
