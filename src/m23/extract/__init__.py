@@ -161,19 +161,6 @@ def flux_log_for_radius(
         total star flux, background flux and star flux after background
         subtraction respectively
         """
-        # Since we always want a star to fall to the same sky background box, we
-        # calculate which star box it falls into by taking the position from the
-        # reference file not its weighted X, weighted Y that might change.
-
-        # A better method would be to take the average of surrounding boxes
-        # instead because if the sky background noise gets improved because of
-        # equipment change, we'll see a step in new data because of how
-        # difference of much background we were subtracting previously vs now.
-
-        # Note that the reason y, x are reversed is because our x, y in image
-        # data matrix and in the reference file are flipped.
-        y_exact, x_exact = ref.get_star_xy(star_no)
-
         # IDL like round
         x, y = position
         x, y = half_round_up_to_int(x), half_round_up_to_int(y)
