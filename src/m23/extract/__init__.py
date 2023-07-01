@@ -291,3 +291,63 @@ def calculate_star_sky_adu(
     boxes = get_star_background_boxes(star_position_in_ref, box_width)
     sky_bg_in_boxes = list(map(sky_backgrounds.get, boxes))
     return np.mean(sky_bg_in_boxes)
+
+
+class SkyBgCalculator:
+    # class attribute used as a local cache
+    storage = {}
+
+    @classmethod
+    def get_box_number(cls, x: float, y: float) -> Tuple[int, int, int]:
+        # We find out which sky background box the given co-ordinate falls under
+        big_box_x, big_box_y = x // 64, y // 64
+        small_box = (y - (big_box_y * 64)) // 16
+        return *big_box_x, small_box
+
+    @classmethod
+    def get_image_data_at_box(image_data, box: Tuple[int, int, int]):
+        big_box_x, big_box_y, small_box_number = box
+        return image_data[big_box_x : big_box_x + 64, big_box_y : big_box_y + 64][
+            32 * small_box_number : 32 * (small_box_number + 1)
+        ]
+
+    @classmethod
+    def calculate_bg_at_position(cls, image_data, x: float, y: float) -> float:
+        """
+        Returns the sky background at the given pixel position
+        """
+        # We divide the 1024*1024 image_data into boxes of size 128, 128. We further
+        # strip the 128 sized square into four thin strips along the row then
+        # calculate the sky background in that 32 * 128 (longer columns) by plotting
+        # a 2nd degree polyfit to the values in that rectangular strip (only 10%
+        # values from 40th to 50th percentile) as a function of their column number
+
+        # This means that there will be a total of 8 big boxes across rows, 8 across
+        # columns. In each of these 8 boxes, there will be 4 smaller rectangular
+        # boxes.
+
+        bg_box = cls.get_box_number(x, y)
+        if cls.storage_dict.get(bg_box) is None:
+            list_of_x_position_and_adus = []
+            for row in range(32):
+                for col in range(128):
+                    adu = bg_box[row][col]
+                    if adu != 0:
+                        list_of_x_position_and_adus.append((col, adu))
+            # Sort list by ADU
+            list_of_x_position_and_adus.sort(key=lambda x: x[1])
+            # We now only keep 40%-55% percentile to do the fitting as anything
+            # higher than that would most probably be stars, and lowers might be
+            # black values
+            length = len(list_of_x_position_and_adus)
+            centered_array = list_of_x_position_and_adus[
+                int(0.4 * length) : int(0.55 * length) + 1
+            ]
+            x_to_plot, y_to_plot = zip(*centered_array)
+            cls.storage[bg_box] = np.poly1d(np.polyfit(x_to_plot, y_to_plot, 2))
+
+        x_position_within_big_box = x - bg_box[0] * 64
+        # The background at the given pixel given by the polynomial fit at the small
+        # box Since the items stored in the storage_dict are those fit functions at
+        # the respective boxes, we get the bg value by applying that function
+        return cls.storage_dict[bg_box](x_position_within_big_box)
