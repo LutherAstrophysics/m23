@@ -1,8 +1,8 @@
+import math
+from functools import cache
 from typing import Tuple
 
 import numpy as np
-
-from m23.extract import circleMatrix
 
 
 class SkyBgCalculator:
@@ -92,3 +92,14 @@ class SkyBgCalculator:
         for position in positions:
             adu_bg_sum += cls.calculate_bg_at_position(image_data, *position)
         return adu_bg_sum / len(positions)
+
+
+@cache
+def circleMatrix(radius):
+    lengthOfSquare = radius * 2 + 1
+    myMatrix = np.zeros(lengthOfSquare * lengthOfSquare).reshape(lengthOfSquare, lengthOfSquare)
+    for row in range(-radius, radius + 1):
+        for col in range(-radius, radius + 1):
+            if math.ceil(math.sqrt((row) ** 2 + (col) ** 2)) <= radius:
+                myMatrix[row + radius][col + radius] = 1
+    return myMatrix

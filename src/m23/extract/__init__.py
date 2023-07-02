@@ -1,11 +1,11 @@
 import math
-from functools import cache
 from typing import Dict, Iterable, Tuple
 
 import numpy as np
 import numpy.typing as npt
 
 from m23.constants import SKY_BG_BOX_REGION_SIZE
+from m23.extract.bg import SkyBgCalculator, circleMatrix
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.reference_log_file import ReferenceLogFile
@@ -150,7 +150,6 @@ def flux_log_for_radius(
     We need to optimize this code to work more efficiently with the caller
     function i.e extract_stars
     """
-    regionSize = 64
     pixelsPerStar = np.count_nonzero(circleMatrix(radius))
 
     def fluxSumForStar(position, radius, star_no) -> Tuple[int]:
@@ -168,8 +167,17 @@ def flux_log_for_radius(
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
         starBox = np.multiply(starBox, circleMatrix(radius))
 
-        backgroundAverageInStarRegion = calculate_star_sky_adu(
-            ref.get_star_xy(star_no), sky_backgrounds, box_width=regionSize
+        # Uncommenting following lines will calculate sky background by making 64 / 64
+        # box and then taking the average of the average sky adu values of the boxes the
+        # star falls under.
+        # regionSize = 64
+        # backgroundAverageInStarRegion = calculate_star_sky_adu(
+        #     ref.get_star_xy(star_no), sky_backgrounds, box_width=regionSize
+        # )
+        # The method below makes a function of how sky background changes across
+        # X, and calculates a unique bg value for each pixel
+        backgroundAverageInStarRegion = SkyBgCalculator.get_star_average_bg_per_pixel(
+            image_data, x, y, radius
         )
 
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
@@ -189,17 +197,6 @@ def flux_log_for_radius(
         for index, position in enumerate(stars_center_in_new_image)
     ]
     return stars_fluxes
-
-
-@cache
-def circleMatrix(radius):
-    lengthOfSquare = radius * 2 + 1
-    myMatrix = np.zeros(lengthOfSquare * lengthOfSquare).reshape(lengthOfSquare, lengthOfSquare)
-    for row in range(-radius, radius + 1):
-        for col in range(-radius, radius + 1):
-            if math.ceil(math.sqrt((row) ** 2 + (col) ** 2)) <= radius:
-                myMatrix[row + radius][col + radius] = 1
-    return myMatrix
 
 
 def fwhm(data, xweight, yweight, aduPerPixel):
