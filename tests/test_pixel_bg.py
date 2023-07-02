@@ -23,7 +23,7 @@ class TestPixelBg:
         assert image.shape == (1024, 1024)
         assert image[5][3] == 1024 * 5 + 3
         box_row_col_small_box = (2, 7, 3)  # row, col, row strip no.
-        box = SkyBgCalculator.get_image_data_at_box(image, box_row_col_small_box)
+        box = SkyBgCalculator(image).get_image_data_at_box(box_row_col_small_box)
         assert box.shape == (32, 128)
         expected_row = (128 * 2) + (32 * 3) + (10)
         expected_col = 128 * 7 + 5
@@ -32,12 +32,13 @@ class TestPixelBg:
     def test_px_bg(self):
         image = np.arange(1024 * 1024).reshape(1024, 1024)
         box_row_col_small_box = (2, 7, 3)  # row, col, row strip no.
-        box = SkyBgCalculator.get_image_data_at_box(image, box_row_col_small_box)
+        bg_calculator = SkyBgCalculator(image)
+        box = bg_calculator.get_image_data_at_box(box_row_col_small_box)
         box_row, box_col, small_box = box_row_col_small_box
         box_local_row, box_local_col = 5, 15
         pixel_row = box_row * 128 + small_box * 32 + box_local_row
         pixel_col = box_col * 128 + box_local_col
-        assert SkyBgCalculator.get_box_number(pixel_col, pixel_row) == box_row_col_small_box
+        assert bg_calculator.get_box_number(pixel_col, pixel_row) == box_row_col_small_box
         assert box.shape == (32, 128)
         box_values_col_and_adu = []
         for row in range(32):
@@ -52,15 +53,15 @@ class TestPixelBg:
         x_to_plot, y_to_plot = zip(*mid_values)
         fn = np.poly1d(np.polyfit(x=x_to_plot, y=y_to_plot, deg=2))
         pixel_local_col = pixel_col - 128 * box_col
-        expected_adu = SkyBgCalculator.calculate_bg_at_position(image, pixel_col, pixel_row)
+        expected_adu = bg_calculator.calculate_bg_at_position(pixel_col, pixel_row)
         result = fn(pixel_local_col)
         assert abs((result - expected_adu)) < 0.00001
         # Expect increase towards right (higher col number)
-        assert SkyBgCalculator.calculate_bg_at_position(image, pixel_col + 1, pixel_row) > result
-        assert SkyBgCalculator.calculate_bg_at_position(image, pixel_col + 10, pixel_row) > result
+        assert bg_calculator.calculate_bg_at_position(pixel_col + 1, pixel_row) > result
+        assert bg_calculator.calculate_bg_at_position(pixel_col + 10, pixel_row) > result
         # Expect same ADU on the cell below (as the function is wrt. col not row)
-        assert SkyBgCalculator.calculate_bg_at_position(image, pixel_col, pixel_row + 1) == result
-        assert SkyBgCalculator.calculate_bg_at_position(image, pixel_col, pixel_row + 5) == result
+        assert bg_calculator.calculate_bg_at_position(pixel_col, pixel_row + 1) == result
+        assert bg_calculator.calculate_bg_at_position(pixel_col, pixel_row + 5) == result
 
     def test_star_positions(self):
         x, y = 746.58, 459.64
@@ -83,11 +84,12 @@ class TestPixelBg:
     def test_average_star_bg(self):
         image = np.arange(1024 * 1024).reshape(1024, 1024)
         star_position = 746.58, 459.64
+        bg_calculator = SkyBgCalculator(image)
         radius = 4
-        star_positions = SkyBgCalculator.star_positions(*star_position, radius)
+        star_positions = bg_calculator.star_positions(*star_position, radius)
         adu_bg_sum = 0
         for p in star_positions:
-            adu_bg_sum += SkyBgCalculator.calculate_bg_at_position(image, *p)
-        assert adu_bg_sum / len(star_positions) == SkyBgCalculator.get_star_average_bg_per_pixel(
-            image, star_position[0], star_position[1], radius
+            adu_bg_sum += bg_calculator.calculate_bg_at_position(*p)
+        assert adu_bg_sum / len(star_positions) == bg_calculator.get_star_average_bg_per_pixel(
+            star_position[0], star_position[1], radius
         )

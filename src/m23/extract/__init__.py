@@ -151,6 +151,7 @@ def flux_log_for_radius(
     function i.e extract_stars
     """
     pixelsPerStar = np.count_nonzero(circleMatrix(radius))
+    bg_calculator = SkyBgCalculator(image_data)
 
     def fluxSumForStar(position, radius, star_no) -> Tuple[int]:
         """
@@ -176,8 +177,12 @@ def flux_log_for_radius(
         # )
         # The method below makes a function of how sky background changes across
         # X, and calculates a unique bg value for each pixel
-        backgroundAverageInStarRegion = SkyBgCalculator.get_star_average_bg_per_pixel(
-            image_data, x, y, radius
+
+        star_weighted_y, star_weighted_x = position
+        backgroundAverageInStarRegion = bg_calculator.get_star_average_bg_per_pixel(
+            star_weighted_x,
+            star_weighted_y,
+            radius,
         )
 
         subtractedStarFlux = np.sum(starBox) - backgroundAverageInStarRegion * pixelsPerStar
