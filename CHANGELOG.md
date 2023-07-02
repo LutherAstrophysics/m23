@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.14.0 (2023-07-02)
+
+### Feature
+
+* Use enhanced star bg calculator ([`6aea825`](https://github.com/LutherAstrophysics/m23/commit/6aea825027f18e1f7f7710c123ea90a279985416))
+
+### Documentation
+
+* Add docs ([`1b5ffef`](https://github.com/LutherAstrophysics/m23/commit/1b5ffefaf759f6d1664304656cb0eaacf28be808))
+
 ## v1.13.0 (2023-07-02)
 
 ### Feature
