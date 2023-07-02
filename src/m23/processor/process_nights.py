@@ -64,12 +64,21 @@ def normalization_helper(  # noqa
     color_ref_file_path: Path,
     output: Path,
     logfile_combined_reference_logfile: LogFileCombinedFile,
+    is_running_as_part_of_process=False,
 ):
     """
     This is a normalization helper function extracted so that it can be reused
     by the renormalization script
     """
-    FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
+
+    # If running as part of process, we save flux log combined in a special
+    # folder will all images from the night included which will be helpful for
+    # Eclipsing binary study.
+    if is_running_as_part_of_process:
+        FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME + "(All)"
+    else:
+        FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
+    FLUX_LOGS_COMBINED_OUTPUT_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     if len(log_files_to_use) < 4:
@@ -98,6 +107,13 @@ def normalization_helper(  # noqa
     draw_normfactors_chart(
         log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent, radii_of_extraction
     )
+
+    # Stop running further if running as part of process.  This is because, one
+    # would usually have to run renorm with a section of a night and it is then that
+    # the final color normalized files, sky background files are generated. Therefore
+    # it's not necessary to generate them twice.
+    if is_running_as_part_of_process:
+        return
 
     # Generate sky bg file
     sky_bg_filename = output / SKY_BG_FOLDER_NAME / SkyBgFile.generate_file_name(night_date)
@@ -371,6 +387,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             color_ref_file_path,
             output,
             logfile_combined_reference_logfile,
+            is_running_as_part_of_process=True,
         )
     except Exception as e:
         tb = traceback.format_exc()
