@@ -18,6 +18,7 @@ from m23.utils import get_image_number_in_log_file_combined_file
 
 class RenormalizeConfigProcessing(TypedDict):
     radii_of_extraction: List[int]
+    cpu_fraction: NotRequired[float]
 
 
 class RenormalizeConfigReference(TypedDict):
@@ -111,7 +112,7 @@ def validate_night(night):
     return True
 
 
-def is_valid(config: RenormalizeConfig) -> bool:
+def is_valid(config: RenormalizeConfig) -> bool:  # noqa
     """
     Returns whether any error can be found in renormalize config dict
     """
@@ -139,6 +140,11 @@ def is_valid(config: RenormalizeConfig) -> bool:
             sys.stderr.write(
                 f"Radius {i} ADU data not present in provided logfile combined file. \n"
             )
+            return False
+
+    if cpu_fraction := config["processing"].get("cpu_fraction"):
+        if not 0 <= cpu_fraction <= 1:
+            sys.stderr.write(f"CPU fraction has to be between 0 and 1. Received {cpu_fraction} \n")
             return False
 
     color_ref_file = Path(config["reference"]["color"])
@@ -192,6 +198,10 @@ def create_enhanced_config(config: RenormalizeConfig):
     radii = config["processing"]["radii_of_extraction"]
     config["processing"]["radii_of_extraction"] = list(set(radii))
 
+    if config["processing"].get("cpu_fraction", None) is None:
+        # Default CPU fraction is 0.6
+        config["processing"]["cpu_fraction"] = 0.6
+
     return config
 
 
@@ -215,7 +225,7 @@ def validate_renormalize_config_file(
         } as renormalize_config if is_valid(renormalize_config):
             on_success(sanity_check(create_enhanced_config(renormalize_config)))
         case _:
-            sys.stderr.write("Invalid format.\n")
+            sys.stderr.write("Stopping\n")
 
 
 if __name__ == "__main__":

@@ -35,6 +35,7 @@ class ConfigImage(TypedDict):
 class ConfigProcessing(TypedDict):
     no_of_images_to_combine: int
     radii_of_extraction: List[int]
+    cpu_fraction: NotRequired[float]
 
 
 class ConfigInputNight(TypedDict):
@@ -126,6 +127,11 @@ def create_processing_config(config_dict: Config) -> Config:  # noqa
     # Remove duplicates radii of extraction
     radii = list(set(config_dict["processing"]["radii_of_extraction"]))
     config_dict["processing"]["radii_of_extraction"] = radii
+
+    # Set default fraction of processors to use
+    if config_dict["processing"].get("cpu_fraction", None) is None:
+        print(config_dict["processing"]["cpu_fraction"])
+        config_dict["processing"]["cpu_fraction"] = 0.6
 
     return config_dict
 
@@ -224,6 +230,31 @@ def verify_optional_image_options(options: Dict) -> bool:
         sys.stderr.write(f"Error in crop_region {j}.\n")
         return False
     return True  # Valid
+
+
+def verify_optional_processing_options(options: Dict) -> bool:
+    """
+    Verifies that the optional processing options are valid
+    """
+    valid_options = ["cpu_fraction"]
+    for key in options.keys():
+        if key not in valid_options:
+            sys.stderr.write(
+                "Invalid option in processing setting",
+                key,
+                "valid options are",
+                valid_options,
+                "\n",
+            )
+            return False
+    # CPU fraction has to be a number between 0 and 1
+    if cpu_fraction := options.get("cpu_fraction"):
+        if not 0 <= cpu_fraction <= 1:
+            sys.stderr.write(
+                f"CPU fraction has to be a value between 0 and 1. Received: {cpu_fraction}\n"
+            )
+            return False
+    return True
 
 
 def is_night_name_valid(NIGHT_INPUT_PATH: Path):
@@ -456,6 +487,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             "processing": {
                 "no_of_images_to_combine": int(_),
                 "radii_of_extraction": list(radii_of_extraction),
+                **optional_processing_options,
             },
             "reference": {
                 "image": str(reference_image),
@@ -467,6 +499,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             "output": {"path": str(_), **optional_output_options},
         } if (
             verify_optional_image_options(optional_image_options)
+            and verify_optional_processing_options(optional_processing_options)
             and verify_optional_output_options(optional_output_options)
             and is_valid_radii_of_extraction(radii_of_extraction)
             and validate_input_nights(list_of_nights)

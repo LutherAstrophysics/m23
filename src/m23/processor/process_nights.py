@@ -399,8 +399,17 @@ def start_data_processing_auxiliary(config: Config):
         OUTPUT_NIGHT_FOLDER.mkdir(exist_ok=True)
         process_night(night, config, OUTPUT_NIGHT_FOLDER, night_date)
 
-    with mp.Pool(int(os.cpu_count() * 0.6)) as p:  # Use 75% CPU
-        p.map(process_nights_mapper, config["input"]["nights"])
+    cpu_fraction = config["processing"]["cpu_fraction"]
+    if cpu_fraction > 0:
+        cpu_count = int(os.cpu_count() * cpu_fraction)
+        print(f"Multiprocessing module used. CPU count: {cpu_count}")
+        with mp.Pool(cpu_count) as p:  # Use 75% CPU
+            p.map(process_nights_mapper, config["input"]["nights"])
+    else:
+        # Dont use multiprocessing
+        for night in config["input"]["nights"]:
+            print("Using single processor.")
+            process_nights_mapper(night)
 
 
 def start_data_processing(file_path: str):

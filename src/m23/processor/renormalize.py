@@ -79,8 +79,15 @@ def renormalize_auxiliary(renormalize_dict: RenormalizeConfig):
             logger.debug(tb)
             return
 
-    with mp.Pool(int(os.cpu_count() * 0.6)) as p:  # Use 75% CPU
-        p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
+    cpu_count = int(os.cpu_count() * renormalize_dict["processing"]["cpu_fraction"])
+    if cpu_count > 1:
+        print("Multiprocessing module use. CPU count", cpu_count)
+        with mp.Pool(int(os.cpu_count() * 0.6)) as p:  # Use 75% CPU
+            p.map(night_renorm_mapper, renormalize_dict["input"]["nights"])
+    else:
+        print("Single processor used")
+        for night in renormalize_dict["input"]["nights"]:
+            night_renorm_mapper(night)
 
 
 def renormalize(file_path: str):

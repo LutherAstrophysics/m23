@@ -53,6 +53,7 @@ crop_region = [] # We don't crop old camera images < June 16 2022
 [processing]
 no_of_images_to_combine = 10
 radii_of_extraction = [3, 4, 5]
+cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0 if you're
 
 
 ## Optional, default will be used if you don't define
