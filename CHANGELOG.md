@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.13.0 (2023-07-02)
+
+### Feature
+
+* Add ability to specify no of processors to use in config file ([`2d5a546`](https://github.com/LutherAstrophysics/m23/commit/2d5a546e05429a7b2f133810ecd6c0401a771918))
+
 ## v1.12.0 (2023-07-01)
 
 ### Feature
