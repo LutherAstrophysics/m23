@@ -36,7 +36,7 @@ def draw_normfactors_chart(
     Creates a charts folder in night_folder and saves the normfactors charts there
     """
     # Sort log files
-    night_folder = (flux_log_combined_folder.parent,)
+    night_folder = flux_log_combined_folder.parent
     log_files_used.sort(key=lambda logfile: logfile.img_number())
     night_date = get_date_from_input_night_folder_name(night_folder.name)
     chart_folder = night_folder / CHARTS_FOLDER_NAME
