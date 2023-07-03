@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.16.0 (2023-07-03)
+
+### Feature
+
+* Enhace logging ([`5da9571`](https://github.com/LutherAstrophysics/m23/commit/5da9571bbce7ccd194c9a18a6d08e6f12133b13b))
+
+### Fix
+
+* Make cpu_fraction defintion optional ([`0b7a691`](https://github.com/LutherAstrophysics/m23/commit/0b7a6914c2c3d5d9072cc4fe4b46c969563996e9))
+
 ## v1.15.0 (2023-07-03)
 
 ### Feature
