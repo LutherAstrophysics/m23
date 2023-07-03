@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.16.3 (2023-07-03)
+
+### Fix
+
+* Normfactors chart ([`b073891`](https://github.com/LutherAstrophysics/m23/commit/b07389168f0eb47b844561151b5a2694d72a0922))
+
 ## v1.16.2 (2023-07-03)
 
 ### Fix
