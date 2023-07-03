@@ -79,6 +79,7 @@ cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0
     # Note that the starttime is optional and you must ONLY specify this if you
     # want to use it instead of date/time from the headers of the fit files.
     # starttime = 2010-10-20T10:20:50
+    # endtime = 2010-5-10T5:34:00 # OPTIONAL and must be in UTC
 
     [[input.nights]]
     path = "F://Summer 2019/September 8, 2019"

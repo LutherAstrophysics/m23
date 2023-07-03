@@ -24,9 +24,11 @@ cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0
     path = "F://Summer 2022/September 4, 2022"
     masterflat = "C://Data Processing/2022/Python Processed/September 12 2022"
 
-    # Note that the starttime is optional and you must ONLY specify this if you
-    # want to use it instead of date/time from the headers of the fit files. 
+    # Note that the starttime/endtime are optional and you must ONLY specify
+    # this if you want to use it instead of date/time from the headers of the
+    # fit files. 
     # starttime = 2022-10-20T10:20:50
+    # endtime = 2022-10-21T10:20:50
 
     [[input.nights]]
     path = "F://Summer 2022/September 9, 2022"
