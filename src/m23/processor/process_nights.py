@@ -75,7 +75,7 @@ def normalization_helper(  # noqa
     # folder will all images from the night included which will be helpful for
     # Eclipsing binary study.
     if is_running_as_part_of_process:
-        FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME + "(All)"
+        FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / (FLUX_LOGS_COMBINED_FOLDER_NAME + "(All)")
     else:
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER.mkdir(exist_ok=True)  # Create folder if it doesn't exist
