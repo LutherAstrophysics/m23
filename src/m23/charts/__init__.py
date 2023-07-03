@@ -11,7 +11,7 @@ from typing import Callable, Dict, Iterable
 import numpy as np
 from matplotlib import pyplot as plt
 
-from m23.constants import CHARTS_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
+from m23.constants import CHARTS_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.normfactor_file import NormfactorFile
 from m23.utils import get_date_from_input_night_folder_name, get_radius_folder_name
@@ -19,7 +19,7 @@ from m23.utils import get_date_from_input_night_folder_name, get_radius_folder_n
 
 def draw_normfactors_chart(
     log_files_used: Iterable[LogFileCombinedFile],
-    night_folder: Path,
+    flux_log_combined_folder: Path,
     radii_of_extraction: Iterable[int],
 ) -> None:
     """
@@ -36,8 +36,8 @@ def draw_normfactors_chart(
     Creates a charts folder in night_folder and saves the normfactors charts there
     """
     # Sort log files
+    night_folder = (flux_log_combined_folder.parent,)
     log_files_used.sort(key=lambda logfile: logfile.img_number())
-    flux_log_combined_folder = night_folder / FLUX_LOGS_COMBINED_FOLDER_NAME
     night_date = get_date_from_input_night_folder_name(night_folder.name)
     chart_folder = night_folder / CHARTS_FOLDER_NAME
     chart_folder.mkdir(parents=True, exist_ok=True)  # Create folder if it doesn't exist

@@ -104,9 +104,7 @@ def normalization_helper(  # noqa
         )
         intranight_norm_results[radius] = intranight_norm_result
 
-    draw_normfactors_chart(
-        log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent, radii_of_extraction
-    )
+    draw_normfactors_chart(log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER, radii_of_extraction)
     logger.info("Completed drawing normfactors chart")
 
     # Stop running further if running as part of process.  This is because, one
