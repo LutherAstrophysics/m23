@@ -10,6 +10,7 @@ from typing_extensions import NotRequired
 
 from m23.constants import (
     CAMERA_CHANGE_2022_DATE,
+    DEFAULT_CPU_FRACTION_USAGE,
     INPUT_CALIBRATION_FOLDER_NAME,
     M23_RAW_IMAGES_FOLDER_NAME,
     TYPICAL_NEW_CAMERA_CROP_REGION,
@@ -130,8 +131,7 @@ def create_processing_config(config_dict: Config) -> Config:  # noqa
 
     # Set default fraction of processors to use
     if config_dict["processing"].get("cpu_fraction", None) is None:
-        print(config_dict["processing"]["cpu_fraction"])
-        config_dict["processing"]["cpu_fraction"] = 0.6
+        config_dict["processing"]["cpu_fraction"] = DEFAULT_CPU_FRACTION_USAGE
 
     return config_dict
 

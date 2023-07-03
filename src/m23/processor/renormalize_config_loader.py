@@ -6,7 +6,7 @@ from typing import Callable, List, TypedDict
 import toml
 from typing_extensions import NotRequired
 
-from m23.constants import LOG_FILES_COMBINED_FOLDER_NAME
+from m23.constants import DEFAULT_CPU_FRACTION_USAGE, LOG_FILES_COMBINED_FOLDER_NAME
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.processor.config_loader import (
     is_night_name_valid,
@@ -199,8 +199,7 @@ def create_enhanced_config(config: RenormalizeConfig):
     config["processing"]["radii_of_extraction"] = list(set(radii))
 
     if config["processing"].get("cpu_fraction", None) is None:
-        # Default CPU fraction is 0.6
-        config["processing"]["cpu_fraction"] = 0.6
+        config["processing"]["cpu_fraction"] = DEFAULT_CPU_FRACTION_USAGE
 
     return config
 
