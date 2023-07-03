@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.16.2 (2023-07-03)
+
+### Fix
+
+* Normfactors chart flux log combined folder name ([`4fd0524`](https://github.com/LutherAstrophysics/m23/commit/4fd0524ca8ceba4ead21c342d58c447b5c40f2d3))
+
 ## v1.16.1 (2023-07-03)
 
 ### Fix
