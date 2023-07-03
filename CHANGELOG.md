@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.15.0 (2023-07-03)
+
+### Feature
+
+* Save flux log combined from process in a separate folder for EB studies ([`890ccd3`](https://github.com/LutherAstrophysics/m23/commit/890ccd3654219b23423f7a2f33862346b9843034))
+
 ## v1.14.0 (2023-07-02)
 
 ### Feature
