@@ -107,6 +107,7 @@ def normalization_helper(  # noqa
     draw_normfactors_chart(
         log_files_to_use, FLUX_LOGS_COMBINED_OUTPUT_FOLDER.parent, radii_of_extraction
     )
+    logger.info("Completed drawing normfactors chart")
 
     # Stop running further if running as part of process.  This is because, one
     # would usually have to run renorm with a section of a night and it is then that
