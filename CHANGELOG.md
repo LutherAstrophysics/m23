@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.16.1 (2023-07-03)
+
+### Fix
+
+* Flux log combined folder name ([`dfc7f9a`](https://github.com/LutherAstrophysics/m23/commit/dfc7f9a5546559cc9e26252e658a4c37eefe8e8d))
+
 ## v1.16.0 (2023-07-03)
 
 ### Feature
