@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.16.4 (2023-07-12)
+
+### Fix
+
+* Moon distance calculation ([`eb43c98`](https://github.com/LutherAstrophysics/m23/commit/eb43c9865631cd61ea88992a27f9f618e3f7726e))
+
+### Documentation
+
+* Abilty to specify endtime ([`a72fecf`](https://github.com/LutherAstrophysics/m23/commit/a72fecf9ccd69b13c19b05b460a26a02e351ec6d))
+
 ## v1.16.3 (2023-07-03)
 
 ### Fix
