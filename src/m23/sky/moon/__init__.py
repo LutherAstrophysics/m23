@@ -64,8 +64,8 @@ def get_moon_DE_and_RA(
     # date parameter is given as a string 'year/month/day hh:mm:ss'
 
     observer = ephem.Observer()  # Decorah's latitude and longitude
-    observer.lat = "43.3017"
-    observer.lon = "91.79"
+    observer.lat = "43.3017"  # North is considered +ve
+    observer.lon = "-91.79"  # West is considered -ve
 
     observer.date = date
     moon = ephem.Moon()
