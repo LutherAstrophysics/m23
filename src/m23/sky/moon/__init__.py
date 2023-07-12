@@ -21,7 +21,7 @@ class MoonPositions:
     FullMoon = "Full_Moon"
     WaningGibbous = "Waning_Gibbous"
     LastQuarter = "Last_Quarter"
-    WaningCresce = "Waning_Crescent"
+    WaningCrescent = "Waning_Crescent"
 
 
 def position(now=None):
@@ -54,7 +54,7 @@ def phase(d: Union[datetime.date, datetime.datetime]):
         4: MoonPositions.FullMoon,
         5: MoonPositions.WaningGibbous,
         6: MoonPositions.LastQuarter,
-        7: MoonPositions.WaningCresce,
+        7: MoonPositions.WaningCrescent,
     }[int(index) & 7]
 
 
