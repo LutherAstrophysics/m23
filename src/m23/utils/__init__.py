@@ -46,28 +46,41 @@ def get_image_number_in_fit_file(file: Path) -> int:
         return int(results[0])
 
 
-def get_flats(folder: Path) -> Iterable[PosixPath]:
+def get_flats(folder: Path, image_duration=None) -> Iterable[PosixPath]:
     """
-    Return a list of flat files in `folder` provided
+    Return a list of flat files in `folder` provided.
+    Optionally looks for the name to contain `image_duration` only if
+    `image_duration` is provided
     """
-    return folder.glob("*flat*.fit")
+    result = folder.glob("*flat*.fit")
+    if image_duration:
+        result = list(filter(lambda x: f"{image_duration}" in x.name, result))
+    return result
 
 
-def get_darks(folder: Path) -> Iterable[PosixPath]:
+def get_darks(folder: Path, image_duration=None) -> Iterable[PosixPath]:
     """
     Return a list of dark files in `folder` provided
+    Optionally looks for the name to contain `image_duration` only if
+    `image_duration` is provided
     """
-    return folder.glob("*dark*.fit")
+    result = folder.glob("*dark*.fit")
+    if image_duration:
+        result = list(filter(lambda x: f"{image_duration}" in x.name, result))
+    return result
 
 
-def get_all_fit_files(folder: Path) -> Iterable[PosixPath]:
+def get_all_fit_files(folder: Path, image_duration=None) -> Iterable[PosixPath]:
     """
     Return a list of all fit files in `folder` provided
     """
-    return folder.glob("*.fit")
+    result = folder.glob("*.fit")
+    if image_duration:
+        result = list(filter(lambda x: f"{image_duration}" in x.name, result))
+    return result
 
 
-def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
+def get_raw_images(folder: Path, image_duration=None) -> Iterable[RawImageFile]:
     """
     Return a list `RawImageFile` files in `folder` provided sorted asc. by image number
     Note that only filenames matching the naming convention of RawImageFile are returned
@@ -76,7 +89,10 @@ def get_raw_images(folder: Path) -> Iterable[RawImageFile]:
     # Filter files whose filename don't match naming convention
     all_files = filter(lambda raw_image_file: raw_image_file.is_valid_file_name(), all_files)
     # Sort files by image number
-    return sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
+    result = sorted(all_files, key=lambda raw_image_file: raw_image_file.image_number())
+    if image_duration:
+        result = list(filter(lambda x: x.image_duration() == image_duration, result))
+    return result
 
 
 def time_taken_to_capture_and_save_a_raw_file(folder_path: Path, night_config) -> int:

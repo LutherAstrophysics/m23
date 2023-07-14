@@ -10,13 +10,14 @@ from m23.processor.config_loader import (
     is_night_name_valid,
     sanity_check_image,
 )
-from m23.utils import get_date_from_input_night_folder_name, get_flats
+from m23.utils import get_darks, get_date_from_input_night_folder_name, get_flats
 
 
 class MasterflatGeneratorConfig(TypedDict):
     input: Path | str
     output: Path | str
     image: ConfigImage
+    image_duration: float
 
 
 def is_valid(config: MasterflatGeneratorConfig) -> bool:
@@ -39,10 +40,24 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
         sys.stderr.write(f"Calibration folder {CALIBRATION_FOLDER_PATH} doesn't exist.\n")
         return False
 
-    # Verify that the night contains flats to use
-    if len(list(get_flats(CALIBRATION_FOLDER_PATH))) == 0:
+    # Verify that the image duration is a float
+    if not type(config["image_duration"]) == float:
+        sys.stderr.write(f"Image duration has to be a float. Got {config['image_duration']}\n")
+        return False
+
+    image_duration = config["image_duration"]
+
+    # Verify that the night contains darks to use
+    if len(list(get_darks(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
         sys.stderr.write(
-            f"Night {NIGHT_INPUT_PATH} doesn't contain flats in {CALIBRATION_FOLDER_PATH}. Provide masterflat path.\n"  # noqa ES501
+            f"Night {NIGHT_INPUT_PATH} doesn't contain darks for image duration of {image_duration} in {CALIBRATION_FOLDER_PATH}.\n"  # noqa ES501
+        )
+        return False
+
+    # Verify that the night contains flats to use
+    if len(list(get_flats(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
+        sys.stderr.write(
+            f"Night {NIGHT_INPUT_PATH} doesn't contain flats for image duration of {image_duration} in {CALIBRATION_FOLDER_PATH}.\n"  # noqa ES501
         )
         return False
 
