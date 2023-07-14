@@ -4,7 +4,7 @@ from pathlib import Path
 
 class MasterflatFile:
     @classmethod
-    def generate_file_name(cls, night_date: date) -> str:
+    def generate_file_name(cls, night_date: date, image_duration=None) -> str:
         """
         Generates a masterflat filename based on the night date
 
@@ -12,7 +12,10 @@ class MasterflatFile:
         Returns: Filename string
         """
         date_string = night_date.strftime("%Y-%m-%d")  # YYYY-MM-DD format
-        return f"{date_string}_masterflat.fit"
+        if image_duration:
+            return f"{date_string}_masterflat_{image_duration}.fit"
+        else:
+            return f"{date_string}_masterflat.fit"
 
     def __init__(self, file_path: Path) -> None:
         self.__path = file_path

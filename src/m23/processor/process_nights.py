@@ -328,7 +328,8 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         flats = [crop(matrix, rows, cols) for matrix in flats]
 
         master_flat_data = makeMasterFlat(
-            saveAs=CALIBRATION_OUTPUT_FOLDER / MasterflatFile.generate_file_name(night_date),
+            saveAs=CALIBRATION_OUTPUT_FOLDER
+            / MasterflatFile.generate_file_name(night_date, image_duration),
             masterDarkData=master_dark_data,
             headerToCopyFromName=next(
                 get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)

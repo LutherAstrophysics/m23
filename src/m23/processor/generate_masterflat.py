@@ -49,7 +49,7 @@ def generate_masterflat_auxiliary(config: MasterflatGeneratorConfig) -> None:
     )
 
     # Make master flat
-    filename = MasterflatFile.generate_file_name(night_date)
+    filename = MasterflatFile.generate_file_name(night_date, image_duration)
     save_file_path = config["output"] / filename
 
     makeMasterFlat(
