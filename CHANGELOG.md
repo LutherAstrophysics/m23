@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.18.4 (2023-07-14)
+
+### Fix
+
+* Name masterflat with image_duration to avoid confict with masterflat from same night ([`0883a7a`](https://github.com/LutherAstrophysics/m23/commit/0883a7a7f7ebd70e92f3de8c51bbef9f34889772))
+
 ## v1.18.3 (2023-07-14)
 
 ### Fix
