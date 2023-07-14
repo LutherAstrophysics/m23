@@ -54,7 +54,7 @@ def get_flats(folder: Path, image_duration=None) -> Iterable[PosixPath]:
     """
     result = folder.glob("*flat*.fit")
     if image_duration:
-        result = list(filter(lambda x: f"{image_duration}" in x.name, result))
+        result = filter(lambda x: f"{image_duration}" in x.name, result)
     return result
 
 
@@ -66,7 +66,7 @@ def get_darks(folder: Path, image_duration=None) -> Iterable[PosixPath]:
     """
     result = folder.glob("*dark*.fit")
     if image_duration:
-        result = list(filter(lambda x: f"{image_duration}" in x.name, result))
+        result = filter(lambda x: f"{image_duration}" in x.name, result)
     return result
 
 
