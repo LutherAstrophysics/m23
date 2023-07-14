@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.18.2 (2023-07-14)
+
+### Fix
+
+* Typeerror ([`a6d35f9`](https://github.com/LutherAstrophysics/m23/commit/a6d35f985b7ef7337f749a1390947874420b01f8))
+
 ## v1.18.1 (2023-07-14)
 
 ### Fix
