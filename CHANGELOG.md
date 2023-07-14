@@ -2,6 +2,13 @@
 
 <!--next-version-placeholder-->
 
+## v1.17.0 (2023-07-14)
+
+### Feature
+
+* BREAKING change. require image duration in process configuration ([`7e38441`](https://github.com/LutherAstrophysics/m23/commit/7e384415245d9412ed6dbe41195c076110490583))
+* BREAKING change. require image duration in masterflat configuration ([`6cbb47b`](https://github.com/LutherAstrophysics/m23/commit/6cbb47b7633f04510388767f6379bf290b93c48a))
+
 ## v1.16.4 (2023-07-12)
 
 ### Fix
