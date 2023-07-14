@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.18.3 (2023-07-14)
+
+### Fix
+
+* Allow for image duration to be float or int ([`90eabc8`](https://github.com/LutherAstrophysics/m23/commit/90eabc88ad123a5eff36dde98182fe15ebd501bb))
+
+### Documentation
+
+* Add `image_duration` to example config files ([`ada9080`](https://github.com/LutherAstrophysics/m23/commit/ada90809b647542fe851452aab37036e2394f318))
+
 ## v1.18.2 (2023-07-14)
 
 ### Fix
