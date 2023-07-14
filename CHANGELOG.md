@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.18.1 (2023-07-14)
+
+### Fix
+
+* F-string ([`53010b6`](https://github.com/LutherAstrophysics/m23/commit/53010b6270da52584e146f14e41347981d02a8d4))
+
 ## v1.18.0 (2023-07-14)
 
 ### Feature
