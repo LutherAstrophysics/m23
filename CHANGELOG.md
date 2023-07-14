@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.18.0 (2023-07-14)
+
+### Feature
+
+* Sanity check no. of images to combine ([`ea1fd11`](https://github.com/LutherAstrophysics/m23/commit/ea1fd111fc838f143e82e0d954f6b3f149be1f22))
+
 ## v1.17.0 (2023-07-14)
 
 ### Feature
