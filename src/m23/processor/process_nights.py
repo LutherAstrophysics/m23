@@ -242,6 +242,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # Number of expected rows and columns in all raw images
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     radii_of_extraction = config["processing"]["radii_of_extraction"]
+    image_duration = config["processing"]["image_duration"]
 
     log_file_path = output / get_log_file_name(night_date)
     # Clear file contents if exists, so that reprocessing a night wipes out
@@ -293,7 +294,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         folder.mkdir(exist_ok=True)
 
     # Darks
-    darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER))
+    darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration))
     # Ensure that image dimensions are as specified by rows and cols
     # If there's extra noise cols or rows, we crop them
     # Note this is different from the crop_region that's defined in image
@@ -302,7 +303,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     darks = [crop(matrix, rows, cols) for matrix in darks]
     master_dark_data = makeMasterDark(
         saveAs=CALIBRATION_OUTPUT_FOLDER / MASTER_DARK_NAME,
-        headerToCopyFromName=next(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER)).absolute(),
+        headerToCopyFromName=next(
+            get_darks(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration)
+        ).absolute(),
         listOfDarkData=darks,
     )
     logger.info("Created master dark")
@@ -318,7 +321,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     else:
         # Note the order is important when generating masterflat
         flats = fit_data_from_fit_images(
-            sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER))
+            sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration))
         )  # noqa
         # Ensure that image dimensions are as specified by rows and cols
         # If there's extra noise cols or rows, we crop them
@@ -335,8 +338,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         logger.info("Created masterflat")
         del flats  # Deleting to free memory as we don't use flats anymore
 
-    raw_images: List[RawImageFile] = list(get_raw_images(NIGHT_INPUT_IMAGES_FOLDER))
-    image_duration = raw_images[0].image_duration()
+    raw_images: List[RawImageFile] = list(
+        get_raw_images(NIGHT_INPUT_IMAGES_FOLDER, image_duration)
+    )
     logger.info("Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
     logger.info(f"Using no of images to combine: {no_of_images_to_combine}")

@@ -39,7 +39,10 @@ def makeMasterBias(saveAs, headerToCopyFromName=None, listOfBiasNames=None, list
 # we generate the masterDark by "taking median of the dark frames"
 #   --Richard Berry, James Burnell
 def makeMasterDark(
-    saveAs=None, headerToCopyFromName=None, listOfDarkNames=None, listOfDarkData=None
+    saveAs=None,
+    headerToCopyFromName=None,
+    listOfDarkNames=None,
+    listOfDarkData=None,
 ):
     if listOfDarkNames:
         listOfDarkData = fitDataFromFitImages(listOfDarkNames)

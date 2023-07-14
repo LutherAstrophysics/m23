@@ -36,6 +36,7 @@ class ConfigImage(TypedDict):
 class ConfigProcessing(TypedDict):
     no_of_images_to_combine: int
     radii_of_extraction: List[int]
+    image_duration: float
     cpu_fraction: NotRequired[float]
 
 
@@ -273,7 +274,7 @@ def is_night_name_valid(NIGHT_INPUT_PATH: Path):
         return False
 
 
-def validate_night(night: ConfigInputNight) -> bool:  # noqa
+def validate_night(night: ConfigInputNight, image_duration: float) -> bool:  # noqa
     """
     Checks whether the input configuration provided for night is valid.
     We check whether the input folders follow the required conventions,
@@ -312,25 +313,28 @@ def validate_night(night: ConfigInputNight) -> bool:  # noqa
             sys.stderr.write(f"Provided masterflat path for {night} doesn't exist.\n")
             return False
     # If masterflat isn't provided, the night should have flats to use
-    elif len(list(get_flats(CALIBRATION_FOLDER_PATH))) == 0:
+    elif len(list(get_flats(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
         sys.stderr.write(
-            f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}."
-            + " Provide masterflat path.\n"
+            f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}"
+            f" for image duration {image_duration}." + " Provide masterflat path.\n"
         )
         return False
 
     # Check for darks
-    if len(list(get_darks(CALIBRATION_FOLDER_PATH))) == 0:
+    if len(list(get_darks(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
         sys.stderr.write(
-            f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}."
-            + " Cannot continue without darks.\n"
+            f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}"
+            f" for image duration {image_duration}." + " Cannot continue without darks.\n"
         )
         return False
 
     # Check for raw images
     try:
-        if len(list(get_raw_images(M23_FOLDER_PATH))) == 0:
-            sys.stderr.write(f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}.\n")
+        if len(list(get_raw_images(M23_FOLDER_PATH, image_duration))) == 0:
+            sys.stderr.write(
+                f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}."
+                f" for image duration {image_duration}\n"
+            )
             return False
     except ValueError as e:
         sys.stderr.write(
@@ -384,11 +388,11 @@ def validate_night(night: ConfigInputNight) -> bool:  # noqa
     return True  # Assuming we did the best we could to catch errors
 
 
-def validate_input_nights(list_of_nights: List[ConfigInputNight]) -> bool:
+def validate_input_nights(list_of_nights: List[ConfigInputNight], image_duration: float) -> bool:
     """
     Returns True if input for all nights is valid, False otherwise.
     """
-    return all([validate_night(night) for night in list_of_nights])
+    return all([validate_night(night, image_duration) for night in list_of_nights])
 
 
 def validate_reference_files(
@@ -487,6 +491,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             "processing": {
                 "no_of_images_to_combine": int(_),
                 "radii_of_extraction": list(radii_of_extraction),
+                "image_duration": float(image_duration),
                 **optional_processing_options,
             },
             "reference": {
@@ -502,7 +507,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             and verify_optional_processing_options(optional_processing_options)
             and verify_optional_output_options(optional_output_options)
             and is_valid_radii_of_extraction(radii_of_extraction)
-            and validate_input_nights(list_of_nights)
+            and validate_input_nights(list_of_nights, image_duration)
             and validate_reference_files(
                 reference_image,
                 reference_file,
