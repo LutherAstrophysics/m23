@@ -471,6 +471,15 @@ def verify_optional_output_options(output_options: Dict[str, any]):
     return True
 
 
+def sanity_check_no_of_images_to_combine(no_of_images_to_combine: int, image_duration: float):
+    if int(70 / image_duration) != no_of_images_to_combine:
+        prompt_to_continue(
+            f"You have said to combine {no_of_images_to_combine}"
+            " but image duration is {image_duration}."
+        )
+    return True
+
+
 def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None:
     """
     This method reads data processing configuration from the file path
@@ -489,7 +498,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 **optional_image_options,
             },
             "processing": {
-                "no_of_images_to_combine": int(_),
+                "no_of_images_to_combine": int(no_of_images_to_combine),
                 "radii_of_extraction": list(radii_of_extraction),
                 "image_duration": float(image_duration),
                 **optional_processing_options,
@@ -503,7 +512,8 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             "input": {"nights": list(list_of_nights)},
             "output": {"path": str(_), **optional_output_options},
         } if (
-            verify_optional_image_options(optional_image_options)
+            sanity_check_no_of_images_to_combine(no_of_images_to_combine, image_duration)
+            and verify_optional_image_options(optional_image_options)
             and verify_optional_processing_options(optional_processing_options)
             and verify_optional_output_options(optional_output_options)
             and is_valid_radii_of_extraction(radii_of_extraction)
