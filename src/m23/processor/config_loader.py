@@ -475,7 +475,7 @@ def sanity_check_no_of_images_to_combine(no_of_images_to_combine: int, image_dur
     if int(70 / image_duration) != no_of_images_to_combine:
         prompt_to_continue(
             f"You have said to combine {no_of_images_to_combine}"
-            " but image duration is {image_duration}."
+            f" but image duration is {image_duration}."
         )
     return True
 
