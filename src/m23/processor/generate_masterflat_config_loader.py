@@ -41,7 +41,7 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
         return False
 
     # Verify that the image duration is a float
-    if not type(config["image_duration"]) == float:
+    if not type(config["image_duration"]) not in [float, int]:
         sys.stderr.write(f"Image duration has to be a float. Got {config['image_duration']}\n")
         return False
 
