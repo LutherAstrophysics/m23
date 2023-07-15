@@ -26,12 +26,18 @@ def generate_masterflat_auxiliary(config: MasterflatGeneratorConfig) -> None:
     """
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     image_duration = config["image_duration"]
+    dark_prefix = config["dark_prefix"]
+    flat_prefix = config["flat_prefix"]
     NIGHT_INPUT_CALIBRATION_FOLDER = config["input"] / INPUT_CALIBRATION_FOLDER_NAME
     # Note the order is important when generating masterflat
     flats = fit_data_from_fit_images(
-        sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration))
+        sorted_by_number(
+            get_flats(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration, prefix=flat_prefix)
+        )
     )
-    darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration))
+    darks = fit_data_from_fit_images(
+        get_darks(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration, prefix=dark_prefix)
+    )
     night_date = get_date_from_input_night_folder_name(config["input"])
 
     # Crop extra region from the darks and flats. Note this is different from

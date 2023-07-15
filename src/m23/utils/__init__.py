@@ -46,25 +46,25 @@ def get_image_number_in_fit_file(file: Path) -> int:
         return int(results[0])
 
 
-def get_flats(folder: Path, image_duration=None) -> Iterable[PosixPath]:
+def get_flats(folder: Path, image_duration=None, prefix="flat") -> Iterable[PosixPath]:
     """
     Return a list of flat files in `folder` provided.
     Optionally looks for the name to contain `image_duration` only if
     `image_duration` is provided
     """
-    result = folder.glob("*flat*.fit")
+    result = folder.glob("*{prefix}*.fit")
     if image_duration:
         result = filter(lambda x: f"{image_duration}" in x.name, result)
     return result
 
 
-def get_darks(folder: Path, image_duration=None) -> Iterable[PosixPath]:
+def get_darks(folder: Path, image_duration=None, prefix="dark") -> Iterable[PosixPath]:
     """
     Return a list of dark files in `folder` provided
     Optionally looks for the name to contain `image_duration` only if
     `image_duration` is provided
     """
-    result = folder.glob("*dark*.fit")
+    result = folder.glob("*{prefix}*.fit")
     if image_duration:
         result = filter(lambda x: f"{image_duration}" in x.name, result)
     return result

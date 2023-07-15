@@ -1,6 +1,6 @@
 import sys
 from pathlib import Path
-from typing import Callable, TypedDict
+from typing import Callable, NotRequired, TypedDict
 
 import toml
 
@@ -8,19 +8,22 @@ from m23.constants import INPUT_CALIBRATION_FOLDER_NAME
 from m23.processor.config_loader import (
     ConfigImage,
     is_night_name_valid,
+    prompt_to_continue,
     sanity_check_image,
 )
 from m23.utils import get_darks, get_date_from_input_night_folder_name, get_flats
 
 
 class MasterflatGeneratorConfig(TypedDict):
+    dark_prefix: NotRequired[str]
+    flat_prefix: NotRequired[str]
     input: Path | str
     output: Path | str
     image: ConfigImage
     image_duration: float
 
 
-def is_valid(config: MasterflatGeneratorConfig) -> bool:
+def is_valid(config: MasterflatGeneratorConfig) -> bool:  # noqa
     """
     Returns whether the configuration file is valid
     """
@@ -47,17 +50,28 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:
 
     image_duration = config["image_duration"]
 
+    dark_prefix = config.get("dark_prefix", "dark")
+    flat_prefix = config.get("flat_prefix", "flat")
+    config["dark_prefix"] = dark_prefix
+    config["flat_prefix"] = flat_prefix
+
+    if "flat" in dark_prefix.lower():
+        prompt_to_continue("You have defined 'flat' as dark prefix")
+
+    if "dark" in flat_prefix.lower():
+        prompt_to_continue("You have defined 'dark' as flat prefix")
+
     # Verify that the night contains darks to use
-    if len(list(get_darks(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
+    if len(list(get_darks(CALIBRATION_FOLDER_PATH, image_duration, prefix=dark_prefix))) == 0:
         sys.stderr.write(
-            f"Night {NIGHT_INPUT_PATH} doesn't contain darks for image duration of {image_duration} in {CALIBRATION_FOLDER_PATH}.\n"  # noqa ES501
+            f"Night {NIGHT_INPUT_PATH} doesn't contain {dark_prefix} for image duration of {image_duration} in {CALIBRATION_FOLDER_PATH}.\n"  # noqa ES501
         )
         return False
 
     # Verify that the night contains flats to use
-    if len(list(get_flats(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
+    if len(list(get_flats(CALIBRATION_FOLDER_PATH, image_duration, prefix=flat_prefix))) == 0:
         sys.stderr.write(
-            f"Night {NIGHT_INPUT_PATH} doesn't contain flats for image duration of {image_duration} in {CALIBRATION_FOLDER_PATH}.\n"  # noqa ES501
+            f"Night {NIGHT_INPUT_PATH} doesn't contain {flat_prefix} for image duration of {image_duration} in {CALIBRATION_FOLDER_PATH}.\n"  # noqa ES501
         )
         return False
 

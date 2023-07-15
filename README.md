@@ -163,6 +163,13 @@ provided as input. Additionally note that the provided folder name should match 
 input = "F://Summer 2019/September 4, 2019"
 output = "C://Data Processing/Masterflat"
 
+image_duration = 7.0
+
+# You can optionally define prefixes for darks and flats
+# This is useful (especially in the case of darks) where there are two different
+# kinds of darks, one for raw images and another to use when making flats
+dark_prefix = "darkf"
+flat_prefix = "flat"
 
 [image]
 rows = 2048
