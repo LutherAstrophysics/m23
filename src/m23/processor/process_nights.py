@@ -12,7 +12,7 @@ import toml
 from astropy.io.fits import getdata
 
 from m23 import __version__
-from m23.calibrate.master_calibrate import makeMasterDark, makeMasterFlat
+from m23.calibrate.master_calibrate import makeMasterDark
 from m23.charts import draw_normfactors_chart
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
@@ -33,7 +33,6 @@ from m23.extract import sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
 from m23.file.alignment_stats_file import AlignmentStatsFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
-from m23.file.masterflat_file import MasterflatFile
 from m23.file.raw_image_file import RawImageFile
 from m23.file.reference_log_file import ReferenceLogFile
 from m23.file.sky_bg_file import SkyBgFile
@@ -46,12 +45,10 @@ from m23.utils import (
     fit_data_from_fit_images,
     get_darks,
     get_date_from_input_night_folder_name,
-    get_flats,
     get_log_file_name,
     get_output_folder_name_from_night_date,
     get_radius_folder_name,
     get_raw_images,
-    sorted_by_number,
 )
 
 
@@ -243,6 +240,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     rows, cols = config["image"]["rows"], config["image"]["columns"]
     radii_of_extraction = config["processing"]["radii_of_extraction"]
     image_duration = config["processing"]["image_duration"]
+    dark_prefix = config["processing"]["dark_prefix"]
 
     log_file_path = output / get_log_file_name(night_date)
     # Clear file contents if exists, so that reprocessing a night wipes out
@@ -294,7 +292,9 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         folder.mkdir(exist_ok=True)
 
     # Darks
-    darks = fit_data_from_fit_images(get_darks(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration))
+    darks = fit_data_from_fit_images(
+        get_darks(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration, dark_prefix)
+    )
     # Ensure that image dimensions are as specified by rows and cols
     # If there's extra noise cols or rows, we crop them
     # Note this is different from the crop_region that's defined in image
@@ -311,33 +311,11 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     logger.info("Created master dark")
     del darks  # Deleting to free memory as we don't use darks anymore
 
-    # Flats
-    if night.get("masterflat"):
-        master_flat_data = getdata(night["masterflat"])
-        # Copy the masterflat provided to the calibration frames
-        masterflat_path = Path(night["masterflat"])
-        shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
-        logger.info("Using pre-provided masterflat")
-    else:
-        # Note the order is important when generating masterflat
-        flats = fit_data_from_fit_images(
-            sorted_by_number(get_flats(NIGHT_INPUT_CALIBRATION_FOLDER, image_duration))
-        )  # noqa
-        # Ensure that image dimensions are as specified by rows and cols
-        # If there's extra noise cols or rows, we crop them
-        flats = [crop(matrix, rows, cols) for matrix in flats]
-
-        master_flat_data = makeMasterFlat(
-            saveAs=CALIBRATION_OUTPUT_FOLDER
-            / MasterflatFile.generate_file_name(night_date, image_duration),
-            masterDarkData=master_dark_data,
-            headerToCopyFromName=next(
-                get_flats(NIGHT_INPUT_CALIBRATION_FOLDER)
-            ).absolute(),  # Gets absolute path of first flat file
-            listOfFlatData=flats,
-        )
-        logger.info("Created masterflat")
-        del flats  # Deleting to free memory as we don't use flats anymore
+    master_flat_data = getdata(night["masterflat"])
+    # Copy the masterflat provided to the calibration frames
+    masterflat_path = Path(night["masterflat"])
+    shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
+    logger.info("Using pre-provided masterflat")
 
     raw_images: List[RawImageFile] = list(
         get_raw_images(NIGHT_INPUT_IMAGES_FOLDER, image_duration)

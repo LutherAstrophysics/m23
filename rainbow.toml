@@ -33,11 +33,11 @@ cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0
 
     [[input.nights]]
     path = "F://Summer 2022/September 9, 2022"
-    # Because we haven't provided masterflat, this night must have flats to use 
+    masterflat = "C://Data Processing/2022/Python Processed/September 12 2022"
 
     [[input.nights]]
     path = "F://Summer 2022/September 8, 2022"
-    # Because we haven't provided masterflat, this night must have flats to use 
+    masterflat = "C://Data Processing/2022/Python Processed/September 12 2022"
 
 
 [output]

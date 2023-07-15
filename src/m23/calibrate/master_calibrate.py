@@ -96,7 +96,7 @@ def makeMasterFlat(
     if not headerToCopyFromName and listOfFlatNames:
         headerToCopyFromName = listOfFlatNames[0]
     elif not headerToCopyFromName and not listOfFlatNames:
-        raise Exception("Filename to copy header from not provied")
+        raise Exception("Filename to copy header from not provided")
 
     firstFlatMedian = customMedian(listOfFlatData[0])
     # We scale all flats w.r.t. first flat image

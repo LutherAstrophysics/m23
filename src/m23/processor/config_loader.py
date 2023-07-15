@@ -18,12 +18,7 @@ from m23.constants import (
 from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.reference import get_reference_files_dict
-from m23.utils import (
-    get_darks,
-    get_date_from_input_night_folder_name,
-    get_flats,
-    get_raw_images,
-)
+from m23.utils import get_darks, get_date_from_input_night_folder_name, get_raw_images
 
 
 # TYPE related to Config object described by the configuration file
@@ -37,12 +32,13 @@ class ConfigProcessing(TypedDict):
     no_of_images_to_combine: int
     radii_of_extraction: List[int]
     image_duration: float
+    dark_prefix: NotRequired[str]
     cpu_fraction: NotRequired[float]
 
 
 class ConfigInputNight(TypedDict):
     path: str | Path
-    masterflat: NotRequired[str]
+    masterflat: str
     starttime: NotRequired[datetime.datetime]
     endtime: NotRequired[datetime.datetime]
 
@@ -133,6 +129,10 @@ def create_processing_config(config_dict: Config) -> Config:  # noqa
     # Set default fraction of processors to use
     if config_dict["processing"].get("cpu_fraction", None) is None:
         config_dict["processing"]["cpu_fraction"] = DEFAULT_CPU_FRACTION_USAGE
+
+    # Set default darks and flats
+    if config_dict["processing"].get("dark_prefix", None) is None:
+        config_dict["processing"]["dark_prefix"] = "dark_"
 
     return config_dict
 
@@ -237,7 +237,7 @@ def verify_optional_processing_options(options: Dict) -> bool:
     """
     Verifies that the optional processing options are valid
     """
-    valid_options = ["cpu_fraction"]
+    valid_options = ["cpu_fraction", "dark_prefix", "flat_prefix"]
     for key in options.keys():
         if key not in valid_options:
             sys.stderr.write(
@@ -255,6 +255,17 @@ def verify_optional_processing_options(options: Dict) -> bool:
                 f"CPU fraction has to be a value between 0 and 1. Received: {cpu_fraction}\n"
             )
             return False
+
+    dark_prefix = options.get("dark_prefix", "dark_")
+
+    if "flat" in dark_prefix.lower():
+        prompt_to_continue("You have defined 'flat' as dark prefix")
+
+    if "dark" == dark_prefix.lower():
+        prompt_to_continue(
+            "Use dark_prefix like 'dark_' to avoid ambiguity when there are both 'dark' and 'darkf' frames"  # noqa
+        )
+
     return True
 
 
@@ -307,23 +318,19 @@ def validate_night(night: ConfigInputNight, image_duration: float) -> bool:  # n
         return False
 
     # Check for flats
-    # Either the masterflat should be provided or the night should contain its own flats.
-    if night.get("masterflat"):
-        if not Path(night["masterflat"]).exists():
-            sys.stderr.write(f"Provided masterflat path for {night} doesn't exist.\n")
-            return False
-    # If masterflat isn't provided, the night should have flats to use
-    elif len(list(get_flats(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
-        sys.stderr.write(
-            f"Night {night} doesn't contain flats in {CALIBRATION_FOLDER_PATH}"
-            f" for image duration {image_duration}." + " Provide masterflat path.\n"
-        )
+    # The masterflat should be provided or the night
+    if not night.get("masterflat"):
+        sys.stderr.write(f"Masterflat not provided for {NIGHT_INPUT_PATH}")
+        return False
+
+    if not Path(night["masterflat"]).exists():
+        sys.stderr.write(f"Provided masterflat path for {NIGHT_INPUT_PATH} doesn't exist.\n")
         return False
 
     # Check for darks
     if len(list(get_darks(CALIBRATION_FOLDER_PATH, image_duration))) == 0:
         sys.stderr.write(
-            f"Night {night} doesn't contain darks in {CALIBRATION_FOLDER_PATH}"
+            f"Night {NIGHT_INPUT_PATH} doesn't contain darks in {CALIBRATION_FOLDER_PATH}"
             f" for image duration {image_duration}." + " Cannot continue without darks.\n"
         )
         return False
@@ -332,13 +339,13 @@ def validate_night(night: ConfigInputNight, image_duration: float) -> bool:  # n
     try:
         if len(list(get_raw_images(M23_FOLDER_PATH, image_duration))) == 0:
             sys.stderr.write(
-                f"Night {night} doesn't have raw images in {M23_FOLDER_PATH}."
+                f"Night {NIGHT_INPUT_PATH} doesn't have raw images in {M23_FOLDER_PATH}."
                 f" for image duration {image_duration}\n"
             )
             return False
     except ValueError as e:
         sys.stderr.write(
-            "Raw image in night {night} doesn't confirm to 'something-00x.fit' convention.\n"
+            "Raw image in night {NIGHT_INPUT_PATH} doesn't confirm to 'something-00x.fit' convention.\n"  # noqa
         )
         raise e
 
@@ -350,7 +357,7 @@ def validate_night(night: ConfigInputNight, image_duration: float) -> bool:  # n
             night["starttime"] = validate_datetime(start)
         except InvalidDatetimeInConfig:
             sys.stderr.write(
-                f"OPTIONAL observation start time for {night} isn't"
+                f"OPTIONAL observation start time for {NIGHT_INPUT_PATH} isn't"
                 " in the format  YYYY-mm-ddTHH:MM:SS where timezone is UT\n"
             )
             return False
@@ -360,7 +367,7 @@ def validate_night(night: ConfigInputNight, image_duration: float) -> bool:  # n
             night["endtime"] = validate_datetime(end)
         except InvalidDatetimeInConfig:
             sys.stderr.write(
-                f"OPTIONAL observation end time for {night} isn't"
+                f"OPTIONAL observation end time for {NIGHT_INPUT_PATH} isn't"
                 " in the format  YYYY-mm-ddTHH:MM:SS where timezone is UT\n"
             )
             return False
