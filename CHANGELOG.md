@@ -2,6 +2,14 @@
 
 <!--next-version-placeholder-->
 
+## v1.19.0 (2023-07-15)
+
+### Feature
+
+* Allow raw images seperators to be either underscore or substraction ([`2212e73`](https://github.com/LutherAstrophysics/m23/commit/2212e73bec65da94bc1aa0ced710b9c608ba8f18))
+* Allow addition of `dark_prefix` to data processing ([`4ede627`](https://github.com/LutherAstrophysics/m23/commit/4ede62774b90967e3b2e643de8740deaf2129651))
+* Allow to speficy prefixes of darks and flats to use for masterflat generation ([`694e03f`](https://github.com/LutherAstrophysics/m23/commit/694e03fdf50fe27caa85d18cef2a416cf2a1b4ad))
+
 ## v1.18.4 (2023-07-14)
 
 ### Fix
