@@ -2,6 +2,18 @@
 
 <!--next-version-placeholder-->
 
+## v1.20.0 (2023-07-18)
+
+### Feature
+
+* Wash out edges in image combination ([`78dc417`](https://github.com/LutherAstrophysics/m23/commit/78dc417332cc17962a60d3d9811b626142c99b37))
+
+### Fix
+
+* Error in validating process toml. no darks. no flats. ([`a3070c1`](https://github.com/LutherAstrophysics/m23/commit/a3070c14d45d3ae5c740c67a3c0b6bedfdfbc636))
+* Invalid error msg during process config validation ([`6151965`](https://github.com/LutherAstrophysics/m23/commit/6151965821239f6b6e168ea599b1c5171908474e))
+* Imports ([`6a25f0c`](https://github.com/LutherAstrophysics/m23/commit/6a25f0cdd6bb078a9e8abcb85456d59f036438f7))
+
 ## v1.19.0 (2023-07-15)
 
 ### Feature
