@@ -52,7 +52,7 @@ def get_flats(folder: Path, image_duration=None, prefix="flat") -> Iterable[Posi
     Optionally looks for the name to contain `image_duration` only if
     `image_duration` is provided
     """
-    result = folder.glob("*{prefix}*.fit")
+    result = folder.glob(f"*{prefix}*.fit")
     if image_duration:
         result = filter(lambda x: f"{image_duration}" in x.name, result)
     return result
@@ -64,7 +64,7 @@ def get_darks(folder: Path, image_duration=None, prefix="dark") -> Iterable[Posi
     Optionally looks for the name to contain `image_duration` only if
     `image_duration` is provided
     """
-    result = folder.glob("*{prefix}*.fit")
+    result = folder.glob(f"*{prefix}*.fit")
     if image_duration:
         result = filter(lambda x: f"{image_duration}" in x.name, result)
     return result
