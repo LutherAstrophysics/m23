@@ -97,6 +97,19 @@ def align_combined_extract(
     # Alignment
     # We want to discard this set of images if any one image in this set cannot be aligned
     aligned_images_data = []
+
+    # We want to wash out the edges part of which is covered by some images in
+    # the set of images to combine, some now, this makes the ADU values at those
+    # edges faint merely because not as many images were combined as intended
+    # In order to do that we follow the following algorithm:
+    # 1. Generate a 1024*1024 matrix of ones call it m
+    # 2. For each image in combination (if the alignment is successful)
+    #    a. Create a copy of aligned_data, call it `aligned_areas`
+    #    b. Replace all non zeros in `aligned_areas` with 1
+    #    c. m = m * `aligned_areas`
+    # 3. Multiply the combined_image_data with m to wash out edges.
+    m = np.ones((1024, 1024))
+
     for index, image_data in enumerate(images_data):
         raw_image_to_align = raw_images[from_index + index]
         raw_image_to_align_name = raw_image_to_align.path().name
@@ -135,6 +148,10 @@ def align_combined_extract(
             logger.error(f"{e}")
             break
 
+        aligned_areas = aligned_data.copy()
+        aligned_areas[aligned_areas > 0] = 1
+        m *= aligned_areas
+
     # We proceed to next set of images if the alignment wasn't successful for any one
     # image in the combination set. We now this by checking no of aligned images.
     if len(aligned_images_data) < no_of_images_to_combine:
@@ -146,6 +163,8 @@ def align_combined_extract(
 
     # Combination
     combined_images_data = np.sum(aligned_images_data, axis=0)
+    combined_images_data *= m  # Wash out the edges
+    logger.info("Washing out the edges in this set of combined image")
     logger.info("Combined")
 
     # We take the middle image from the combination as the sample This is
