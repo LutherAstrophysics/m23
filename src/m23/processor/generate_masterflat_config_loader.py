@@ -161,7 +161,8 @@ def validate_generate_masterflat_config_file(
             "input": _,
             "output": _,
             "image": {"rows": int(_), "columns": int(_)},
-        } as masterflat_generator_config if is_valid(masterflat_generator_config):
-            on_success(sanity_check(create_enhanced_config(masterflat_generator_config)))
+        } as masterflat_generator_config:
+            if is_valid(masterflat_generator_config):
+                on_success(sanity_check(create_enhanced_config(masterflat_generator_config)))
         case _:
             sys.stderr.write("Invalid format.\n")

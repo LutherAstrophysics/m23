@@ -518,27 +518,31 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             },
             "input": {"nights": list(list_of_nights)},
             "output": {"path": str(_), **optional_output_options},
-        } if (
-            sanity_check_no_of_images_to_combine(no_of_images_to_combine, image_duration)
-            and verify_optional_image_options(optional_image_options)
-            and verify_optional_processing_options(optional_processing_options)
-            and verify_optional_output_options(optional_output_options)
-            and is_valid_radii_of_extraction(radii_of_extraction)
-            and validate_input_nights(list_of_nights, image_duration)
-            and validate_reference_files(
-                reference_image,
-                reference_file,
-                color_ref_file,
-                logfile,
-                radii_of_extraction,
-            )
-        ):
-            # Check for the optional configurations
-            # Optional configs should either not be declared or be
-            # correctly declared
-            on_success(sanity_check(create_processing_config(configuration)))
+        }:
+            if (
+                sanity_check_no_of_images_to_combine(no_of_images_to_combine, image_duration)
+                and verify_optional_image_options(optional_image_options)
+                and verify_optional_processing_options(optional_processing_options)
+                and verify_optional_output_options(optional_output_options)
+                and is_valid_radii_of_extraction(radii_of_extraction)
+                and validate_input_nights(list_of_nights, image_duration)
+                and validate_reference_files(
+                    reference_image,
+                    reference_file,
+                    color_ref_file,
+                    logfile,
+                    radii_of_extraction,
+                )
+            ):
+                # Check for the optional configurations
+                # Optional configs should either not be declared or be
+                # correctly declared
+                on_success(sanity_check(create_processing_config(configuration)))
         case _:
-            sys.stderr.write("Stopping. You're missing some required options in your toml.\n")
+            sys.stderr.write(
+                "Stopping. You're missing some required options in your toml"
+                " or the format isn't valid.\n"
+            )
 
 
 def load_configuration_with_necessary_reference_files(configuration, pop=None):
