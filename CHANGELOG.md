@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.20.1 (2023-07-18)
+
+### Fix
+
+* Use fixed version of semantic release ([`7ded224`](https://github.com/LutherAstrophysics/m23/commit/7ded22400839e67f7e16398dfe28070e2ee5bc73))
+
 ## v1.20.0 (2023-07-18)
 
 ### Feature
