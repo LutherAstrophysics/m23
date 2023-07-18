@@ -538,7 +538,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
             # correctly declared
             on_success(sanity_check(create_processing_config(configuration)))
         case _:
-            sys.stderr.write("Stopping.\n")
+            sys.stderr.write("Stopping. You're missing some required options in your toml.\n")
 
 
 def load_configuration_with_necessary_reference_files(configuration, pop=None):

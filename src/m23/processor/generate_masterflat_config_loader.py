@@ -1,8 +1,9 @@
 import sys
 from pathlib import Path
-from typing import Callable, NotRequired, TypedDict
+from typing import Callable, TypedDict
 
 import toml
+from typing_extensions import NotRequired
 
 from m23.constants import INPUT_CALIBRATION_FOLDER_NAME
 from m23.processor.config_loader import (
