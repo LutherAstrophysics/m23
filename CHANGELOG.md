@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.22.1 (2023-07-19)
+
+### Fix
+
+* Raw images prefix ([`92ac0aa`](https://github.com/LutherAstrophysics/m23/commit/92ac0aa5632e13bf992f6465abbf67981fe316a4))
+
 ## v1.22.0 (2023-07-19)
 
 ### Feature
