@@ -318,7 +318,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
     logger.info("Using pre-provided masterflat")
 
-    if raw_img_prefix := night["image_prefix"]:
+    if raw_img_prefix := night.get("image_prefix"):
         raw_images: List[RawImageFile] = list(
             get_all_fit_files(NIGHT_INPUT_IMAGES_FOLDER, image_duration, prefix=raw_img_prefix)
         )
