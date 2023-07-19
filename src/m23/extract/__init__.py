@@ -166,6 +166,16 @@ def flux_log_for_radius(
         x, y = half_round_up_to_int(x), half_round_up_to_int(y)
 
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
+
+        # If any of the pixels in starBox is 0, then we assume that we've run
+        # into edge of the image, hence we wash out the ADU value for the star
+        # Note that it's important to check if we've run into edge before we
+        # multiply the starBox with circleMatrix
+        # Might we ever misidentify star not at the edge as one at the edge using
+        # this method?
+        if len(starBox[starBox == 0]) > 0:
+            return (0, 0, 0)
+
         starBox = np.multiply(starBox, circleMatrix(radius))
 
         # Uncommenting following lines will calculate sky background by making 64 / 64
