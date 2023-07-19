@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.21.1 (2023-07-19)
+
+### Fix
+
+* Optional image prefix ([`f186d70`](https://github.com/LutherAstrophysics/m23/commit/f186d70b10c0b340b84a6d5443a299661860680a))
+
 ## v1.21.0 (2023-07-19)
 
 ### Feature
