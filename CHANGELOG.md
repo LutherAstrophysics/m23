@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.20.2 (2023-07-19)
+
+### Fix
+
+* Masterflat config image duration validation ([`cbd709f`](https://github.com/LutherAstrophysics/m23/commit/cbd709f19dc520ad07a77696f972794d4f17adac))
+
 ## v1.20.1 (2023-07-18)
 
 ### Fix
