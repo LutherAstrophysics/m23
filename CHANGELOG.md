@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.22.0 (2023-07-19)
+
+### Feature
+
+* Wash out stars at the edges during extraction ([`dd8e887`](https://github.com/LutherAstrophysics/m23/commit/dd8e887f16e275932fa0fce5805777c82d265796))
+
 ## v1.21.1 (2023-07-19)
 
 ### Fix
