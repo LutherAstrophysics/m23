@@ -43,6 +43,7 @@ from m23.processor.align_combined_extract import align_combined_extract
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
 from m23.utils import (
     fit_data_from_fit_images,
+    get_all_fit_files,
     get_darks,
     get_date_from_input_night_folder_name,
     get_log_file_name,
@@ -317,9 +318,15 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     shutil.copy(masterflat_path, CALIBRATION_OUTPUT_FOLDER)
     logger.info("Using pre-provided masterflat")
 
-    raw_images: List[RawImageFile] = list(
-        get_raw_images(NIGHT_INPUT_IMAGES_FOLDER, image_duration)
-    )
+    if raw_img_prefix := night["image_prefix"]:
+        raw_images: List[RawImageFile] = list(
+            get_all_fit_files(NIGHT_INPUT_IMAGES_FOLDER, image_duration, prefix=raw_img_prefix)
+        )
+    else:
+        raw_images: List[RawImageFile] = list(
+            get_raw_images(NIGHT_INPUT_IMAGES_FOLDER, image_duration)
+        )
+
     logger.info("Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
     logger.info(f"Using no of images to combine: {no_of_images_to_combine}")

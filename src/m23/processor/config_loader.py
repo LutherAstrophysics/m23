@@ -18,7 +18,12 @@ from m23.constants import (
 from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.reference import get_reference_files_dict
-from m23.utils import get_darks, get_date_from_input_night_folder_name, get_raw_images
+from m23.utils import (
+    get_all_fit_files,
+    get_darks,
+    get_date_from_input_night_folder_name,
+    get_raw_images,
+)
 
 
 # TYPE related to Config object described by the configuration file
@@ -41,6 +46,7 @@ class ConfigInputNight(TypedDict):
     masterflat: str
     starttime: NotRequired[datetime.datetime]
     endtime: NotRequired[datetime.datetime]
+    image_prefix: NotRequired[str]
 
 
 class ConfigInput(TypedDict):
@@ -337,12 +343,26 @@ def validate_night(night: ConfigInputNight, image_duration: float) -> bool:  # n
 
     # Check for raw images
     try:
-        if len(list(get_raw_images(M23_FOLDER_PATH, image_duration))) == 0:
-            sys.stderr.write(
-                f"Night {NIGHT_INPUT_PATH} doesn't have raw images in {M23_FOLDER_PATH}."
-                f" for image duration {image_duration}\n"
-            )
-            return False
+        # Check if the user has defined raw image prefix
+        if raw_img_prefix := night.get("image_prefix"):
+            if (
+                len(
+                    list(get_all_fit_files(M23_FOLDER_PATH, image_duration, prefix=raw_img_prefix))
+                )
+                == 0
+            ):
+                sys.stderr.write(
+                    f"Night {NIGHT_INPUT_PATH} doesn't have raw images in {M23_FOLDER_PATH}."
+                    f" for image duration {image_duration}\n"
+                )
+                return False
+        else:
+            if len(list(get_raw_images(M23_FOLDER_PATH, image_duration))) == 0:
+                sys.stderr.write(
+                    f"Night {NIGHT_INPUT_PATH} doesn't have raw images in {M23_FOLDER_PATH}."
+                    f" for image duration {image_duration}\n"
+                )
+                return False
     except ValueError as e:
         sys.stderr.write(
             "Raw image in night {NIGHT_INPUT_PATH} doesn't confirm to 'something-00x.fit' convention.\n"  # noqa

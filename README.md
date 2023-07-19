@@ -72,6 +72,9 @@ cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0
     [[input.nights]]
     path = "F://Summer 2019/September 4, 2019"
     masterflat = "C://Data Processing/2019/Python Processed/September 12 2019/masterflat.fit"
+    # Optionally, you can give image_prefix to select all fit files matching the provided prefix
+    # By default, only fit files matching standard naming convention (m23_xx_xx.fit) are selected.
+    image_prefix = "m23b_"
 
     [[input.nights]]
     path = "F://Summer 2019/September 9, 2019"
