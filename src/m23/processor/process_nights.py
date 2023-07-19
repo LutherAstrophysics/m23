@@ -323,9 +323,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             get_all_fit_files(NIGHT_INPUT_IMAGES_FOLDER, image_duration, prefix=raw_img_prefix)
         )
     else:
-        raw_images: List[RawImageFile] = list(
-            get_raw_images(NIGHT_INPUT_IMAGES_FOLDER, image_duration)
-        )
+        raw_images: List[RawImageFile] = [
+            RawImageFile(file.absolute())
+            for file in get_raw_images(NIGHT_INPUT_IMAGES_FOLDER, image_duration)
+        ]
 
     logger.info("Processing images")
     no_of_images_to_combine = config["processing"]["no_of_images_to_combine"]
