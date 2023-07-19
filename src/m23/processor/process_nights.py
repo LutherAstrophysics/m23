@@ -319,9 +319,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     logger.info("Using pre-provided masterflat")
 
     if raw_img_prefix := night.get("image_prefix"):
-        raw_images: List[RawImageFile] = list(
-            get_all_fit_files(NIGHT_INPUT_IMAGES_FOLDER, image_duration, prefix=raw_img_prefix)
-        )
+        raw_images: List[RawImageFile] = [
+            RawImageFile(file.absolute())
+            for file in get_all_fit_files(
+                NIGHT_INPUT_IMAGES_FOLDER, image_duration, prefix=raw_img_prefix
+            )
+        ]
     else:
         raw_images: List[RawImageFile] = [
             RawImageFile(file.absolute())
