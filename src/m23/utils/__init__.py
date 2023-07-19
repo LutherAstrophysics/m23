@@ -74,7 +74,7 @@ def get_all_fit_files(folder: Path, image_duration=None, prefix="") -> Iterable[
     """
     Return a list of all fit files in `folder` provided
     """
-    result = folder.glob(f"*{prefix}.fit")
+    result = folder.glob(f"{prefix}*.fit")
     if image_duration:
         result = list(filter(lambda x: f"{image_duration}" in x.name, result))
     return result
