@@ -55,6 +55,7 @@ no_of_images_to_combine = 10
 image_duration = 7.0
 radii_of_extraction = [3, 4, 5]
 cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0 (meaning use single processor) if you're debugging
+# Defining dark prefix is also optional and perhaps something you'll almost never have to use.
 
 
 ## Optional, default will be used if you don't define
