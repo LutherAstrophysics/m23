@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.1 (2023-07-20)
+
+### Fix
+
+* Prompt for confirmation when using darks for masterflats when darkfs are present ([`53d0278`](https://github.com/LutherAstrophysics/m23/commit/53d0278a7f5a56808749942d18d570b4f60cb735))
+
 ## v1.23.0 (2023-07-20)
 
 ### Feature
