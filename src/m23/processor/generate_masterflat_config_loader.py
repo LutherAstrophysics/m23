@@ -76,6 +76,14 @@ def is_valid(config: MasterflatGeneratorConfig) -> bool:  # noqa
         )
         return False
 
+    if (
+        dark_prefix == "dark"
+        and len(list(get_darks(CALIBRATION_FOLDER_PATH, image_duration, prefix="darkf"))) > 0
+    ):
+        prompt_to_continue(
+            "It looks like there are darkf(s) for the night and you are using dark(s). Define `dark_prefix=darkf` to use them instead of using dark(s) which are usually used for making masterdark for raw images calibration"  # noqa
+        )
+
     try:
         output_path = Path(config["output"])
         output_path.mkdir(parents=True, exist_ok=True)  # Create directory if not exists
