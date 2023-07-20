@@ -2,6 +2,16 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.0 (2023-07-20)
+
+### Feature
+
+* Add reference files with new stars data ([`05def12`](https://github.com/LutherAstrophysics/m23/commit/05def128b5d2b54a8b9b4a171c8010e415835f36))
+
+### Fix
+
+* Raw images when raw_prefix not is defined ([`5f14938`](https://github.com/LutherAstrophysics/m23/commit/5f14938215ffbe7c738f5de50cde6059209f03ac))
+
 ## v1.22.4 (2023-07-19)
 
 ### Fix
