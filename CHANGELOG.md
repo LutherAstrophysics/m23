@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.22.4 (2023-07-19)
+
+### Fix
+
+* Raw images when raw_prefix is defined ([`99e248a`](https://github.com/LutherAstrophysics/m23/commit/99e248ad1b1db19eed9a35129792c104f36b18a8))
+
 ## v1.22.3 (2023-07-19)
 
 ### Fix
