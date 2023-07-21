@@ -25,7 +25,7 @@ from m23.processor.config_loader import Config, ConfigInputNight
 from m23.utils import time_taken_to_capture_and_save_a_raw_file
 
 
-def align_combined_extract(
+def align_combined_extract(  # noqa
     config: Config,
     night: ConfigInputNight,
     output: Path,
@@ -214,6 +214,11 @@ def align_combined_extract(
 
     logger.info(f"Extraction from combination {from_index}-{to_index} completed")
     log_files_to_normalize.append(log_file_combined_file)
+
+    # Performance
+    # Free data from raw images for improving memory usage
+    for raw_img in raw_images[from_index:to_index]:
+        raw_img.clear()
 
 
 def get_datetime_to_use(

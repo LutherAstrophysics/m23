@@ -98,6 +98,16 @@ class RawImageFile:
         """
         fits.writeto(self.path(), data, header=copy_header_from.header())
 
+    def clear(self):
+        """
+        Clears the data attribute of the object.
+        Call this after you're done processing the raw image so save memory usage
+        Call the data method as usual if you need data after call this clear method
+        """
+        self.__data = None
+        self.__header = None
+        self.__is_read = False
+
     def __repr__(self):
         return self.__str__()
 
