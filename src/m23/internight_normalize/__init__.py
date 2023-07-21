@@ -141,7 +141,7 @@ def internight_normalize_auxiliary(  # noqa
         )
         is_star_attendance_over_half[star_number] = log_file.is_attendance_over_half()
 
-    last_star_no = 2510
+    last_star_no = 3745
 
     # We calculate the ratio of signal in reference file data and the special
     # median signal for a star for the night. We do this for each stars with
@@ -151,9 +151,17 @@ def internight_normalize_auxiliary(  # noqa
     for star_no in range(1, last_star_no + 1):
         star_data = data_dict[star_no]
         # Only calculate the ratio for stars with >= 50% attendance for the night
-        if is_star_attendance_over_half[star_no] and not np.isnan(star_data.median_flux):
+        if (
+            is_star_attendance_over_half[star_no]
+            and not np.isnan(star_data.median_flux)
+            and not np.isnan(star_data.reference_log_adu)
+        ):
             # if star_data.attendance >= 0.5:
             # Only include this star if it has a non-zero median flux
+            # in this image as well as in reference file
+            # We note that it's probably not even worth including stars that have nan (or 0)
+            # in reference logfile. But we must include them for backwards
+            # compatibility of stars numbers
             ratio = star_data.reference_log_adu / star_data.median_flux
             stars_signal_ratio[star_no] = ratio
 

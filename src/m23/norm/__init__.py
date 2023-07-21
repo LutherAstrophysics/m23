@@ -64,7 +64,7 @@ def normalize_log_files(  # noqa
     )
     log_file_names = list(map(lambda x: x.path().name, log_files_to_normalize))
     log_files_to_normalize_to_str = np.array(log_file_names).take(indices_to_normalize_to)
-    logger.info(f"Logfiles to normalize wit respect to {log_files_to_normalize_to_str}")
+    logger.info(f"Logfiles to normalize with respect to {log_files_to_normalize_to_str}")
 
     array_of_logfiles_of_array_of_adus = []  # This is an array of arrays
 
