@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.2 (2023-07-21)
+
+### Performance
+
+* Improve memory usage by an order of magnitude ([`9bd73f2`](https://github.com/LutherAstrophysics/m23/commit/9bd73f273fe3706fceef050aa6926bc1e68ca17e))
+
 ## v1.23.1 (2023-07-20)
 
 ### Fix
