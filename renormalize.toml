@@ -3,12 +3,6 @@ radii_of_extraction = [3, 4, 5,]
 cpu_fraction = 0.6 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0 (meaning use single processor) if you're debugging
 
 
-[reference]
-file = "C://Data Processing/Reference/refile.txt"
-logfile = "C://Data Processing/Reference/logfile.txt"
-color = "C://Data Processing/Reference/color_mean_RI.txt"
-
-
 [input]
     
     [[input.nights]]
