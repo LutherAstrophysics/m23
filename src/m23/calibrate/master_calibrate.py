@@ -109,6 +109,10 @@ def makeMasterFlat(
     combinedFlats = getMedianOfMatrices(listOfFlatData)
     masterFlatData = combinedFlats - masterDarkData
 
+    # The following line is added because of the issue mentioned here:
+    # https://github.com/LutherAstrophysics/m23/issues/33
+    masterFlatData[masterFlatData < 0] = 0
+
     # convert flat data to matrix of ints
     masterFlatData = np.array(masterFlatData, dtype="int")
     # listOfFlats[0] is the file whose header we're copying to
