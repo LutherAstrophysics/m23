@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.3 (2023-07-21)
+
+### Fix
+
+* Make internight normalization work with new stars ([`ec4ec78`](https://github.com/LutherAstrophysics/m23/commit/ec4ec78d2f7a0a1db0e9d4e0016e89dd60c94051))
+
 ## v1.23.2 (2023-07-21)
 
 ### Performance

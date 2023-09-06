@@ -122,26 +122,21 @@ inter-night normalization.
 ```
 [processing]
 radii_of_extraction = [3, 4, 5,]
-
-
-# Optional, defaults will be used if you don't define
-# [reference]
-# file = "C://Data Processing/Reference/refile.txt"
-# logfile = "C://Data Processing/Reference/logfile.txt"
-# color = "C://Data Processing/Reference/color_mean_RI.txt"
+cpu_fraction = 0.6 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0 (meaning use single processor) if you're debugging
 
 
 [input]
-
+    
     [[input.nights]]
     path = "F://Summer 2022/September 04, 2022"
     first_logfile_number = 10
     last_logfile_number = 45
-
+    
     [[input.nights]]
     path = "F://Summer 2022/September 12, 2022"
     first_logfile_number = 30
     last_logfile_number = 66
+
 ```
 
 As you can see in the renormalization configuration, the `norm` subcommand lets you re-normalize multiple nights in a go. You can run the renormalization command as follows:
