@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.4 (2023-09-06)
+
+### Fix
+
+* Masterflat negative values #33 ([`0c27ab0`](https://github.com/LutherAstrophysics/m23/commit/0c27ab076f3b1e07bea03147ee89be2d20a3b878))
+
 ## v1.23.3 (2023-07-21)
 
 ### Fix
