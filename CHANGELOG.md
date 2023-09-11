@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.8 (2023-09-11)
+
+### Fix
+
+* Enhance numpy division to avoid division by zero warning in calibration ([`357198a`](https://github.com/LutherAstrophysics/m23/commit/357198a57d5c92123ae1ca76fbec1c89fe3139e0))
+
 ## v1.23.7 (2023-09-11)
 
 ### Fix
