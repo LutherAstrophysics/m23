@@ -71,9 +71,11 @@ def applyCalibration(
     # after subtraction so that we avoid problems like mentioned in
     # https://github.com/LutherAstrophysics/m23/issues/33
     subtractedRaw[subtractedRaw < 0] = 0
-
-
-    flatRatio = np.array(averageFlatData / masterFlatData)
+    
+    # Avoid division by zero, and consider the flat ratio as 0 in all places where masterflat is 0
+    # This ensures that in the calibrated image, those positions' ADU values become 0 as well
+    
+    flatRatio = np.where(masterFlatData != 0, averageFlatData / masterFlatData, 0)
     # dtype is set to float32 for our image viewing software Astromagic, since
     # it does not support float64 We think we are not losing any significant
     # precision with this down casting
