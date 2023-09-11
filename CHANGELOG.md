@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.5 (2023-09-11)
+
+### Fix
+
+* Handle negative values in calibration application ([`8697d2d`](https://github.com/LutherAstrophysics/m23/commit/8697d2d7f50a8093a36a4410a89229e2498bdba7))
+
 ## v1.23.4 (2023-09-06)
 
 ### Fix
