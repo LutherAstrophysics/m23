@@ -1,5 +1,4 @@
 import numpy as np
-
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
 from m23.matrix import cropIntoRectangle
 from m23.utils import customMedian
@@ -67,6 +66,13 @@ def applyCalibration(
     # masterDarkData = masterDarkData - masterBiasData
 
     subtractedRaw = imageData - masterDarkData
+
+    # We would have to perhaps zero those values that might potentially become negative
+    # after subtraction so that we avoid problems like mentioned in
+    # https://github.com/LutherAstrophysics/m23/issues/33
+    subtractedRaw[subtractedRaw < 0] = 0
+
+
     flatRatio = np.array(averageFlatData / masterFlatData)
     # dtype is set to float32 for our image viewing software Astromagic, since
     # it does not support float64 We think we are not losing any significant
