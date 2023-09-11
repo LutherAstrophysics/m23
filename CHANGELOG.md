@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.6 (2023-09-11)
+
+### Fix
+
+* Handle save_calibrated in process toml correctly ([`6daae10`](https://github.com/LutherAstrophysics/m23/commit/6daae109ec78128c9da00eb615aecc312bfffa1b))
+
 ## v1.23.5 (2023-09-11)
 
 ### Fix
