@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.7 (2023-09-11)
+
+### Fix
+
+* Ensure to ignore positions where masterflat values are 0. Related to #33 ([`998d78a`](https://github.com/LutherAstrophysics/m23/commit/998d78a7bea168076fc0623d9a5d2c60917dac8d))
+
 ## v1.23.6 (2023-09-11)
 
 ### Fix
