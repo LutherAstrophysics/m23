@@ -75,7 +75,8 @@ def applyCalibration(
     # Avoid division by zero, and consider the flat ratio as 0 in all places where masterflat is 0
     # This ensures that in the calibrated image, those positions' ADU values become 0 as well
     
-    flatRatio = np.where(masterFlatData != 0, averageFlatData / masterFlatData, 0)
+    flatRatio = np.divide(averageFlatData, masterFlatData, out=np.zeros_like(masterFlatData, dtype="float64"), where=masterFlatData!=0)
+    
     # dtype is set to float32 for our image viewing software Astromagic, since
     # it does not support float64 We think we are not losing any significant
     # precision with this down casting
