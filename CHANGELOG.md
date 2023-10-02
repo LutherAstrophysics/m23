@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.9 (2023-10-02)
+
+### Fix
+
+* Skip combination when images are non sequential ([`6cf9f2d`](https://github.com/LutherAstrophysics/m23/commit/6cf9f2d874e080cc7c4112f544c0131fdf477f88))
+
 ## v1.23.8 (2023-09-11)
 
 ### Fix
