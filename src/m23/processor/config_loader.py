@@ -6,24 +6,16 @@ from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
 
 import toml
-from typing_extensions import NotRequired
-
-from m23.constants import (
-    CAMERA_CHANGE_2022_DATE,
-    DEFAULT_CPU_FRACTION_USAGE,
-    INPUT_CALIBRATION_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    TYPICAL_NEW_CAMERA_CROP_REGION,
-)
+from m23.constants import (CAMERA_CHANGE_2022_DATE, DEFAULT_CPU_FRACTION_USAGE,
+                           INPUT_CALIBRATION_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME,
+                           TYPICAL_NEW_CAMERA_CROP_REGION)
 from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.reference import get_reference_files_dict
-from m23.utils import (
-    get_all_fit_files,
-    get_darks,
-    get_date_from_input_night_folder_name,
-    get_raw_images,
-)
+from m23.utils import (get_all_fit_files, get_darks,
+                       get_date_from_input_night_folder_name, get_raw_images)
+from typing_extensions import NotRequired
 
 
 # TYPE related to Config object described by the configuration file
@@ -489,7 +481,7 @@ def verify_optional_output_options(output_options: Dict[str, any]):
             )
             return False
     if save_calibrated := output_options.get("save_calibrated"):
-        if not isinstance(save_aligned, bool):
+        if not isinstance(save_calibrated, bool):
             sys.stderr.write(
                 "Expected (true/false) instance for save_calibrated"
                 f" option found {save_calibrated}\n"

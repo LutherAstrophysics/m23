@@ -2,6 +2,30 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.8 (2023-09-11)
+
+### Fix
+
+* Enhance numpy division to avoid division by zero warning in calibration ([`357198a`](https://github.com/LutherAstrophysics/m23/commit/357198a57d5c92123ae1ca76fbec1c89fe3139e0))
+
+## v1.23.7 (2023-09-11)
+
+### Fix
+
+* Ensure to ignore positions where masterflat values are 0. Related to #33 ([`998d78a`](https://github.com/LutherAstrophysics/m23/commit/998d78a7bea168076fc0623d9a5d2c60917dac8d))
+
+## v1.23.6 (2023-09-11)
+
+### Fix
+
+* Handle save_calibrated in process toml correctly ([`6daae10`](https://github.com/LutherAstrophysics/m23/commit/6daae109ec78128c9da00eb615aecc312bfffa1b))
+
+## v1.23.5 (2023-09-11)
+
+### Fix
+
+* Handle negative values in calibration application ([`8697d2d`](https://github.com/LutherAstrophysics/m23/commit/8697d2d7f50a8093a36a4410a89229e2498bdba7))
+
 ## v1.23.4 (2023-09-06)
 
 ### Fix

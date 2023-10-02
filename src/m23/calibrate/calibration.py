@@ -1,5 +1,4 @@
 import numpy as np
-
 from m23.constants import ASSUMED_MAX_BRIGHTNESS
 from m23.matrix import cropIntoRectangle
 from m23.utils import customMedian
@@ -67,7 +66,17 @@ def applyCalibration(
     # masterDarkData = masterDarkData - masterBiasData
 
     subtractedRaw = imageData - masterDarkData
-    flatRatio = np.array(averageFlatData / masterFlatData)
+
+    # We would have to perhaps zero those values that might potentially become negative
+    # after subtraction so that we avoid problems like mentioned in
+    # https://github.com/LutherAstrophysics/m23/issues/33
+    subtractedRaw[subtractedRaw < 0] = 0
+    
+    # Avoid division by zero, and consider the flat ratio as 0 in all places where masterflat is 0
+    # This ensures that in the calibrated image, those positions' ADU values become 0 as well
+    
+    flatRatio = np.divide(averageFlatData, masterFlatData, out=np.zeros_like(masterFlatData, dtype="float64"), where=masterFlatData!=0)
+    
     # dtype is set to float32 for our image viewing software Astromagic, since
     # it does not support float64 We think we are not losing any significant
     # precision with this down casting
