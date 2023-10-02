@@ -23,6 +23,7 @@ from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.processor.config_loader import Config, ConfigInputNight
 from m23.utils import time_taken_to_capture_and_save_a_raw_file
+from typing import List
 
 
 def align_combined_extract(  # noqa
@@ -31,7 +32,7 @@ def align_combined_extract(  # noqa
     output: Path,
     night_date,
     nth_combined_image,
-    raw_images,
+    raw_images :List[RawImageFile],
     master_dark_data,
     master_flat_data,
     alignment_stats_file,
@@ -159,6 +160,16 @@ def align_combined_extract(  # noqa
             f"Length of aligned images {len(aligned_images_data)}. No of images to combined: {no_of_images_to_combine}"  # noqa
         )
         logger.warning("Skipping align-combine-extract")
+        return
+
+    # If the images to combine are non sequential. For example, images 101, 102, 115, 116, ...
+    # then we don't want to combine them as they're from different sections of the night
+    # and the combination quality won't be good. This can happen if we removed some cloudy
+    # images from within a night or something like that
+    last_raw_image = raw_images[to_index]
+    first_raw_image = raw_images[from_index]
+    if last_raw_image.image_number() - first_raw_image.image_number() >= no_of_images_to_combine:
+        logger.warning(f"skipping combination because missing raw images. start: {first_raw_image} end: {last_raw_image} where no. of images to combine is {no_of_images_to_combine}")
         return
 
     # Combination
