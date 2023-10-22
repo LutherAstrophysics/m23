@@ -166,7 +166,7 @@ def align_combined_extract(  # noqa
     # then we don't want to combine them as they're from different sections of the night
     # and the combination quality won't be good. This can happen if we removed some cloudy
     # images from within a night or something like that
-    last_raw_image = raw_images[to_index]
+    last_raw_image = raw_images[to_index-1]
     first_raw_image = raw_images[from_index]
     if last_raw_image.image_number() - first_raw_image.image_number() >= no_of_images_to_combine:
         logger.warning(f"skipping combination because missing raw images. start: {first_raw_image} end: {last_raw_image} where no. of images to combine is {no_of_images_to_combine}")
