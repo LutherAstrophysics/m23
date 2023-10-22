@@ -368,6 +368,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             logger.error(tb)
             return
 
+    # TODO
+    # Coma correction
+
+
     # Intranight + Internight Normalization
     try:
         normalization_helper(
