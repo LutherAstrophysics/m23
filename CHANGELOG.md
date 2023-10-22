@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.23.10 (2023-10-22)
+
+### Fix
+
+* Incorrectly getting last raw image in alignment step ([`e4efd70`](https://github.com/LutherAstrophysics/m23/commit/e4efd7007a652b7a97e876a5bd705579335894b7))
+
 ## v1.23.9 (2023-10-02)
 
 ### Fix
