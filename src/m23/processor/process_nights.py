@@ -373,6 +373,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # First we generate coma correction models
     correction_function = coma_correction(output, log_files_to_normalize)
 
+    # Now we redo align combine extract
     # It is important we clean the old files like Calibrated, Aligned,
     # AlignedCombined, etc. But need to make sure that deleting AlignedCombined
     # files doesn't do something unintended as we still hold indirect reference

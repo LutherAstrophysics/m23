@@ -41,7 +41,7 @@ def coma_correction(
         a = AlignedCombinedFile(f)
         if not a.is_valid_file_name():
             continue
-        coma_group_name = coma_group_name_for_aligned_combined_file(a)
+        coma_group_name = coma_group_name_for_image(a)
         if v := group_of_aligned_combined.get(coma_group_name):
             v.append(a)
         else:
