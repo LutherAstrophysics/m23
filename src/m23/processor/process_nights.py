@@ -5,7 +5,7 @@ import sys
 import traceback
 from datetime import date
 from pathlib import Path
-from typing import Iterable, List
+from typing import Iterable, List 
 
 import multiprocess as mp
 import toml
@@ -14,6 +14,7 @@ from astropy.io.fits import getdata
 from m23 import __version__
 from m23.calibrate.master_calibrate import makeMasterDark
 from m23.charts import draw_normfactors_chart
+from m23.coma import coma_correction
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
     ALIGNED_FOLDER_NAME,
@@ -368,8 +369,14 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
             logger.error(tb)
             return
 
-    # TODO
     # Coma correction
+    # First we generate coma correction models
+    correction_function = coma_correction(output, log_files_to_normalize)
+
+    # It is important we clean the old files like Calibrated, Aligned,
+    # AlignedCombined, etc. But need to make sure that deleting AlignedCombined
+    # files doesn't do something unintended as we still hold indirect reference
+    # to it via group_of_aligned_combined.
 
 
     # Intranight + Internight Normalization

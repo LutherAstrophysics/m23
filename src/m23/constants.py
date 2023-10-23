@@ -1,5 +1,12 @@
 from datetime import date
 
+# Coma correction settings
+# https://punch-mission.github.io/regularizepsf/quickstart.html
+COMA_PSF_SIZE = 16 # size of the PSF model to use in pixels
+COMA_PATCH_SIZE = 128  # square side dimension PSF will be applied over
+COMA_ALPHA = 3  # see paper
+COMA_EPSILON = 0.3  # see paper
+
 ASSUMED_MAX_BRIGHTNESS = 65_000
 
 # Input folder/file name conventions
