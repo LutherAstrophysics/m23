@@ -81,9 +81,11 @@ def coma_correction(
         if ac is None:
             return data
         logger.info(f"For raw image {raw_img} using correction model {group_name}")
-        corrected_image = ac.correct_image(data, alpha=COMA_ALPHA, epsilon=COMA_EPSILON).copy(
-            order="C"
-        )
+        # Note that we're explicitly converting data to float type because array corrector's
+        # correct_image method requires that format
+        corrected_image = ac.correct_image(
+            data.astype(float), alpha=COMA_ALPHA, epsilon=COMA_EPSILON
+        ).copy(order="C")
         return corrected_image
 
     return get_corrected_data_for

@@ -5,7 +5,6 @@ from pathlib import Path
 import numpy.typing as npt
 from astropy.io import fits
 from astropy.io.fits.header import Header
-
 from m23.constants import OBSERVATION_DATETIME_FORMAT
 
 
