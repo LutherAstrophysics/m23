@@ -347,37 +347,41 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     logger.info("Created alignment stats file")
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
-    for nth_combined_image in range(no_of_combined_images):
-        try:
-            align_combined_extract(
-                config,
-                night,
-                output,
-                night_date,
-                nth_combined_image,
-                raw_images,
-                master_dark_data,
-                master_flat_data,
-                alignment_stats_file,
-                image_duration,
-                log_files_to_normalize,
-            )
-        except Exception as e:
-            tb = traceback.format_exc()
-            logger.error("Exception during alignment combination extraction")
-            logger.error(e)
-            logger.error(tb)
-            return
 
-    # Coma correction
-    # First we generate coma correction models
+    def perform_align_combine_extract(coma_correction_fn=None):
+        for nth_combined_image in range(no_of_combined_images):
+            try:
+                align_combined_extract(
+                    config,
+                    night,
+                    output,
+                    night_date,
+                    nth_combined_image,
+                    raw_images,
+                    master_dark_data,
+                    master_flat_data,
+                    alignment_stats_file,
+                    image_duration,
+                    log_files_to_normalize,
+                    coma_correction_fn
+                )
+            except Exception as e:
+                tb = traceback.format_exc()
+                logger.error("Exception during alignment combination extraction")
+                logger.error(e)
+                logger.error(tb)
+                return
+
+
+    # First we perform align combine extract without coma correction
+    # Then we generate coma correction models and use those models
+    # to perform coma correction
+    perform_align_combine_extract()
+    # Generate coma correction models
     correction_function = coma_correction(output, log_files_to_normalize)
-
     # Now we redo align combine extract
-    # It is important we clean the old files like Calibrated, Aligned,
-    # AlignedCombined, etc. But need to make sure that deleting AlignedCombined
-    # files doesn't do something unintended as we still hold indirect reference
-    # to it via group_of_aligned_combined.
+    log_files_to_normalize = []
+    perform_align_combine_extract(correction_function)
 
 
     # Intranight + Internight Normalization

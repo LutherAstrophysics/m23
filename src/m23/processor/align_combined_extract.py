@@ -6,6 +6,7 @@ import numpy as np
 
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
+from m23.coma import precoma_folder_name
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
     ALIGNED_FOLDER_NAME,
@@ -38,7 +39,11 @@ def align_combined_extract(  # noqa
     alignment_stats_file,
     image_duration,
     log_files_to_normalize,
+    coma_correction_fn=None
 ):
+    pre_coma_correction = coma_correction_fn is None
+    pre_coma_correction_name = "PRE_COMA"
+
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     # Define relevant input folders for the night being processed
@@ -46,10 +51,16 @@ def align_combined_extract(  # noqa
     NIGHT_INPUT_IMAGES_FOLDER = NIGHT_INPUT_FOLDER / M23_RAW_IMAGES_FOLDER_NAME
 
     # Define and create relevant output folders for the night being processed
-    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / ALIGNED_FOLDER_NAME
-    ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
-    LOG_FILES_COMBINED_OUTPUT_FOLDER = output / LOG_FILES_COMBINED_FOLDER_NAME
-    RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
+    if coma_correction_fn is None:
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_FOLDER_NAME)
+        ALIGNED_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
+        LOG_FILES_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(LOG_FILES_COMBINED_FOLDER_NAME)
+        RAW_CALIBRATED_OUTPUT_FOLDER = output / precoma_folder_name(RAW_CALIBRATED_FOLDER_NAME)
+    else:
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / ALIGNED_FOLDER_NAME
+        ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
+        LOG_FILES_COMBINED_OUTPUT_FOLDER = output / LOG_FILES_COMBINED_FOLDER_NAME
+        RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]

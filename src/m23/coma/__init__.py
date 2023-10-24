@@ -31,7 +31,7 @@ def coma_correction(
     # Calculate target fwhm for the night
     xfwhm_target, yfwhm_target = best_fwhm_from_the_night(logfiles)
 
-    ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
+    ALIGNED_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
 
     # Group aligned combined files based on the hour they're processed
     # This is because for each hour, we generate a new correction model
@@ -174,3 +174,6 @@ def get_best_fwhm_in_logfile(logfile: LogFileCombinedFile):
     # Return the one set of X,Y FWHM where the sum is the smallest
     fwhm.sort(key=lambda x: x[0] + x[0])
     return fwhm[0]
+
+def precoma_folder_name(name: str) -> str:
+    return f"{name}-PreComaCorrection"
