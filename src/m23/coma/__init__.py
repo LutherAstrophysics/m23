@@ -16,7 +16,10 @@ from m23.file.raw_image_file import RawImageFile
 
 
 def coma_correction(
-    output: Path, logfiles: List[LogFileCombinedFile], logger, save_models_to_folder: Path
+    aligned_combined_files: List[AlignedCombinedFile],
+    logfiles: List[LogFileCombinedFile],
+    logger,
+    save_models_to_folder: Path,
 ):
     """
     Returns a function that takes raw image of type RawImageFile and returns
@@ -34,16 +37,11 @@ def coma_correction(
         f"Comma correction values: alpha={COMA_ALPHA}, epsilon={COMA_EPSILON} target_XFWHM={xfwhm_target} target_YFWHM={yfwhm_target}"
     )
 
-    ALIGNED_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
-
     # Group aligned combined files based on the hour they're processed
     # This is because for each hour, we generate a new correction model
     group_of_aligned_combined: Dict[str, List[AlignedCombinedFile]] = {}
 
-    for f in ALIGNED_COMBINED_OUTPUT_FOLDER.glob("*"):
-        a = AlignedCombinedFile(f)
-        if not a.is_valid_file_name():
-            continue
+    for a in aligned_combined_files:
         coma_group_name = coma_group_name_for_image(a)
         if v := group_of_aligned_combined.get(coma_group_name):
             v.append(a)

@@ -7,10 +7,13 @@ import numpy as np
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
 from m23.coma import precoma_folder_name
-from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
-                           LOG_FILES_COMBINED_FOLDER_NAME,
-                           M23_RAW_IMAGES_FOLDER_NAME,
-                           RAW_CALIBRATED_FOLDER_NAME)
+from m23.constants import (
+    ALIGNED_COMBINED_FOLDER_NAME,
+    ALIGNED_FOLDER_NAME,
+    LOG_FILES_COMBINED_FOLDER_NAME,
+    M23_RAW_IMAGES_FOLDER_NAME,
+    RAW_CALIBRATED_FOLDER_NAME,
+)
 from m23.exceptions import CouldNotAlignException
 from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -29,17 +32,15 @@ def align_combined_extract(  # noqa
     output: Path,
     night_date,
     nth_combined_image,
-    raw_images :List[RawImageFile],
+    raw_images: List[RawImageFile],
     master_dark_data,
     master_flat_data,
     alignment_stats_file,
     image_duration,
     log_files_to_normalize,
-    coma_correction_fn=None
+    aligned_combined_files,
+    coma_correction_fn=None,
 ):
-    pre_coma_correction = coma_correction_fn is None
-    pre_coma_correction_name = "PRE_COMA"
-
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
     # Define relevant input folders for the night being processed
@@ -50,7 +51,9 @@ def align_combined_extract(  # noqa
     if coma_correction_fn is None:
         JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_FOLDER_NAME)
         ALIGNED_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
-        LOG_FILES_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(LOG_FILES_COMBINED_FOLDER_NAME)
+        LOG_FILES_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(
+            LOG_FILES_COMBINED_FOLDER_NAME
+        )
         RAW_CALIBRATED_OUTPUT_FOLDER = output / precoma_folder_name(RAW_CALIBRATED_FOLDER_NAME)
     else:
         JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / ALIGNED_FOLDER_NAME
@@ -78,7 +81,12 @@ def align_combined_extract(  # noqa
     # and the no_of_images_to_combine. The later is the number of raw images
     # that are combined together to form on aligned combined image
 
-    images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
+    # Get coma corrected data when the correction function is defined
+    if coma_correction_fn is None:
+        images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
+    else:
+        images_data = list(map(coma_correction_fn, raw_images[from_index:to_index]))
+
     # Ensure that image dimensions are as specified by rows and cols
     # If there's extra noise cols or rows, we crop them
     images_data = [crop(matrix, rows, cols) for matrix in images_data]
@@ -173,10 +181,12 @@ def align_combined_extract(  # noqa
     # then we don't want to combine them as they're from different sections of the night
     # and the combination quality won't be good. This can happen if we removed some cloudy
     # images from within a night or something like that
-    last_raw_image = raw_images[to_index-1]
+    last_raw_image = raw_images[to_index - 1]
     first_raw_image = raw_images[from_index]
     if last_raw_image.image_number() - first_raw_image.image_number() >= no_of_images_to_combine:
-        logger.warning(f"skipping combination because missing raw images. start: {first_raw_image} end: {last_raw_image} where no. of images to combine is {no_of_images_to_combine}")
+        logger.warning(
+            f"skipping combination because missing raw images. start: {first_raw_image} end: {last_raw_image} where no. of images to combine is {no_of_images_to_combine}"
+        )
         return
 
     # Combination
@@ -202,7 +212,7 @@ def align_combined_extract(  # noqa
     )
     # Set the raw images used to create this Aligned Combined image
     aligned_combined_file.set_raw_images(raw_images[from_index:to_index])
-
+    aligned_combined_files.append(aligned_combined_file)
 
     # Image viewing softwares like Astromagic and Fits Liberator don't work
     # if the image data type is float, for some reason that we don't know.

@@ -291,7 +291,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         LOG_FILES_COMBINED_FOLDER_NAME
     )
     RAW_CALIBRATED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(RAW_CALIBRATED_FOLDER_NAME)
-    COMA_CORRECTION_MODELS_OUTPUT = output / COMA_CORRECTION_MODELS_OUTPUT
+    COMA_CORRECTION_MODELS_OUTPUT = output / COMA_CORRECTION_MODELS
 
     for folder in [
         JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER,
@@ -364,6 +364,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     logger.info("Created alignment stats file")
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
+    aligned_combined_files: List[AlignedCombinedFile] = []
 
     def perform_align_combine_extract(coma_correction_fn=None):
         for nth_combined_image in range(no_of_combined_images):
@@ -380,6 +381,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                     alignment_stats_file,
                     image_duration,
                     log_files_to_normalize,
+                    aligned_combined_files,
                     coma_correction_fn,
                 )
             except Exception as e:
@@ -395,10 +397,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     perform_align_combine_extract()
     # Generate coma correction models
     correction_function = coma_correction(
-        output, log_files_to_normalize, logger, COMA_CORRECTION_MODELS_OUTPUT
+        aligned_combined_files, log_files_to_normalize, logger, COMA_CORRECTION_MODELS_OUTPUT
     )
     # Now we redo align combine extract
-    log_files_to_normalize = []
+    log_files_to_normalize, aligned_combined_files = [], []
     perform_align_combine_extract(correction_function)
 
     # Intranight + Internight Normalization
