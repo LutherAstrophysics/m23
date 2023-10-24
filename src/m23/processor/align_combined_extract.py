@@ -201,7 +201,7 @@ def align_combined_extract(  # noqa
         ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
     )
     # Set the raw images used to create this Aligned Combined image
-    aligned_combined_file.raw_images = raw_images[from_index:to_index]
+    aligned_combined_file.set_raw_images(raw_images[from_index:to_index])
 
 
     # Image viewing softwares like Astromagic and Fits Liberator don't work
