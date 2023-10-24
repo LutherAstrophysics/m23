@@ -1,23 +1,19 @@
-from typing import Dict, List, Tuple
 from pathlib import Path
+from typing import Dict, List, Tuple
 
-from m23.constants import (
-    ALIGNED_COMBINED_FOLDER_NAME,
-    COMA_PATCH_SIZE,
-    COMA_PSF_SIZE,
-    COMA_EPSILON,
-    COMA_ALPHA
-)
-from m23.file.raw_image_file import RawImageFile
-from m23.file.aligned_combined_file import AlignedCombinedFile
-from m23.file.log_file_combined_file import LogFileCombinedFile
 import numpy as np
 import regularizepsf as rpsf
+from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, COMA_ALPHA,
+                           COMA_EPSILON, COMA_PATCH_SIZE, COMA_PSF_SIZE)
+from m23.file.aligned_combined_file import AlignedCombinedFile
+from m23.file.log_file_combined_file import LogFileCombinedFile
+from m23.file.raw_image_file import RawImageFile
 
 
 def coma_correction(
     output: Path,
-    logfiles: List[LogFileCombinedFile]
+    logfiles: List[LogFileCombinedFile],
+    logger
     ):
     """
     Returns a function that takes raw image of type RawImageFile and returns
@@ -30,6 +26,8 @@ def coma_correction(
 
     # Calculate target fwhm for the night
     xfwhm_target, yfwhm_target = best_fwhm_from_the_night(logfiles)
+
+    logger.info(f"Comma correction values: alpha={COMA_ALPHA}, epsilon={COMA_EPSILON} target_XFWHM={xfwhm_target} target_YFWHM={yfwhm_target}")
 
     ALIGNED_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
 
@@ -60,10 +58,14 @@ def coma_correction(
         mid_aligned_image = aligned_images[len(aligned_images) // 2]
         # Find the raw images associated with that image.
         raw_images_paths = [x.path() for x in mid_aligned_image.raw_images]
+        logger.info(f"Generating coma correction model for day-Hour {name} using images: ")
+        for img in raw_images_paths:
+            logger.info(f"{img}")
         # Create correction model based on the given raw images 
         coma_correction_models[name] = make_coma_correction_model(
             raw_images_paths, xfwhm_target, yfwhm_target
         )
+        logger.info(f"Made coma correction model, saved by name {name}")
 
     def get_corrected_data_for(raw_img : RawImageFile):
         data = raw_img.data()
@@ -74,6 +76,7 @@ def coma_correction(
         # the result returned and data are the same object.
         if ac is None:
             return data
+        logger.info(f"For raw image {raw_img} using correction model {group_name}")
         corrected_image = ac.correct_image(data, alpha=COMA_ALPHA, epsilon=COMA_EPSILON).copy(order='C')
         return corrected_image
 

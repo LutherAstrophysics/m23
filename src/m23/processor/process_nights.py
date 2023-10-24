@@ -5,30 +5,23 @@ import sys
 import traceback
 from datetime import date
 from pathlib import Path
-from typing import Iterable, List 
+from typing import Iterable, List
 
 import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
-
 from m23 import __version__
 from m23.calibrate.master_calibrate import makeMasterDark
 from m23.charts import draw_normfactors_chart
-from m23.coma import coma_correction
-from m23.constants import (
-    ALIGNED_COMBINED_FOLDER_NAME,
-    ALIGNED_FOLDER_NAME,
-    CONFIG_FILE_NAME,
-    FLUX_LOGS_COMBINED_FOLDER_NAME,
-    INPUT_CALIBRATION_FOLDER_NAME,
-    LOG_FILES_COMBINED_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    MASTER_DARK_NAME,
-    OUTPUT_CALIBRATION_FOLDER_NAME,
-    RAW_CALIBRATED_FOLDER_NAME,
-    SKY_BG_BOX_REGION_SIZE,
-    SKY_BG_FOLDER_NAME,
-)
+from m23.coma import coma_correction, precoma_folder_name
+from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
+                           CONFIG_FILE_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME,
+                           INPUT_CALIBRATION_FOLDER_NAME,
+                           LOG_FILES_COMBINED_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME, MASTER_DARK_NAME,
+                           OUTPUT_CALIBRATION_FOLDER_NAME,
+                           RAW_CALIBRATED_FOLDER_NAME, SKY_BG_BOX_REGION_SIZE,
+                           SKY_BG_FOLDER_NAME)
 from m23.exceptions import InternightException
 from m23.extract import sky_bg_average_for_all_regions
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -42,16 +35,11 @@ from m23.matrix import crop
 from m23.norm import normalize_log_files
 from m23.processor.align_combined_extract import align_combined_extract
 from m23.processor.config_loader import Config, ConfigInputNight, validate_file
-from m23.utils import (
-    fit_data_from_fit_images,
-    get_all_fit_files,
-    get_darks,
-    get_date_from_input_night_folder_name,
-    get_log_file_name,
-    get_output_folder_name_from_night_date,
-    get_radius_folder_name,
-    get_raw_images,
-)
+from m23.utils import (fit_data_from_fit_images, get_all_fit_files, get_darks,
+                       get_date_from_input_night_folder_name,
+                       get_log_file_name,
+                       get_output_folder_name_from_night_date,
+                       get_radius_folder_name, get_raw_images)
 
 
 def normalization_helper(  # noqa
@@ -281,6 +269,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
 
+    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(ALIGNED_FOLDER_NAME)
+    ALIGNED_COMBINED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
+    LOG_FILES_COMBINED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(LOG_FILES_COMBINED_FOLDER_NAME)
+    RAW_CALIBRATED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(RAW_CALIBRATED_FOLDER_NAME)
+
+
     for folder in [
         JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER,
         CALIBRATION_OUTPUT_FOLDER,
@@ -288,6 +282,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         ALIGNED_COMBINED_OUTPUT_FOLDER,
         LOG_FILES_COMBINED_OUTPUT_FOLDER,
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
+        RAW_CALIBRATED_OUTPUT_FOLDER_PRECOMA,
+        LOG_FILES_COMBINED_OUTPUT_FOLDER_PRECOMA,
+        ALIGNED_COMBINED_OUTPUT_FOLDER_PRECOMA,
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER_PRECOMA
     ]:
         if folder.exists():
             [file.unlink() for file in folder.glob("*") if file.is_file()]  # Remove existing files
@@ -378,7 +376,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     # to perform coma correction
     perform_align_combine_extract()
     # Generate coma correction models
-    correction_function = coma_correction(output, log_files_to_normalize)
+    correction_function = coma_correction(output, log_files_to_normalize, logger)
     # Now we redo align combine extract
     log_files_to_normalize = []
     perform_align_combine_extract(correction_function)
