@@ -1,19 +1,16 @@
 import logging
 from datetime import timedelta
 from pathlib import Path
+from typing import List
 
 import numpy as np
-
 from m23.align import image_alignment
 from m23.calibrate.calibration import calibrateImages
 from m23.coma import precoma_folder_name
-from m23.constants import (
-    ALIGNED_COMBINED_FOLDER_NAME,
-    ALIGNED_FOLDER_NAME,
-    LOG_FILES_COMBINED_FOLDER_NAME,
-    M23_RAW_IMAGES_FOLDER_NAME,
-    RAW_CALIBRATED_FOLDER_NAME,
-)
+from m23.constants import (ALIGNED_COMBINED_FOLDER_NAME, ALIGNED_FOLDER_NAME,
+                           LOG_FILES_COMBINED_FOLDER_NAME,
+                           M23_RAW_IMAGES_FOLDER_NAME,
+                           RAW_CALIBRATED_FOLDER_NAME)
 from m23.exceptions import CouldNotAlignException
 from m23.extract import extract_stars
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -24,7 +21,6 @@ from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.processor.config_loader import Config, ConfigInputNight
 from m23.utils import time_taken_to_capture_and_save_a_raw_file
-from typing import List
 
 
 def align_combined_extract(  # noqa
@@ -204,6 +200,10 @@ def align_combined_extract(  # noqa
     aligned_combined_file = AlignedCombinedFile(
         ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
     )
+    # Set the raw images used to create this Aligned Combined image
+    aligned_combined_file.raw_images = raw_images[from_index:to_index]
+
+
     # Image viewing softwares like Astromagic and Fits Liberator don't work
     # if the image data type is float, for some reason that we don't know.
     # So we're setting the datatype to int32 which has enough precision for
