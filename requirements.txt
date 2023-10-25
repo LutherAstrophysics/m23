@@ -65,6 +65,6 @@ tomlkit==0.11.8
 tqdm==4.65.0
 twine==3.8.0
 typing_extensions==4.4.0
-urllib3==2.0.3
+urllib3==2.0.7
 webencodings==0.5.1
 zipp==3.15.0
