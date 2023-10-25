@@ -86,6 +86,9 @@ def coma_correction(
         corrected_image = ac.correct_image(
             data.astype(float), alpha=COMA_ALPHA, epsilon=COMA_EPSILON
         ).copy(order="C")
+        # Replace nan with zeros. See https://github.com/punch-mission/regularizepsf/issues/93
+        # for why we might get nans in certain regions after applying correction
+        # We also need to make sense of values less than zero. I am not sure how we interpret these.
         return corrected_image
 
     return get_corrected_data_for
