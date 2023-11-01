@@ -31,7 +31,9 @@ def coma_correction(
     """
 
     # Calculate target fwhm for the night
-    xfwhm_target, yfwhm_target = best_fwhm_from_the_night(logfiles)
+    # xfwhm_target, yfwhm_target = best_fwhm_from_the_night(logfiles)
+    # Use a fixed value as Target FWHM
+    xfwhm_target, yfwhm_target = 4.3, 4.3
 
     logger.info(
         f"Comma correction values: alpha={COMA_ALPHA}, epsilon={COMA_EPSILON} target_XFWHM={xfwhm_target} target_YFWHM={yfwhm_target}"
