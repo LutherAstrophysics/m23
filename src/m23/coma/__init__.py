@@ -92,7 +92,7 @@ def coma_correction(
         # for why we might get nans in certain regions after applying correction
         # We also need to make sense of values less than zero. It may or may not be the best idea to
         # replace those as zeros.
-        corrected_image = corrected_image[corrected_image < 0] = 0
+        corrected_image[corrected_image < 0] = 0
         corrected_image = np.nan_to_num(corrected_image, nan=0)
         return corrected_image
 
