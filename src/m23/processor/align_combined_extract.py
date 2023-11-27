@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import List
 
 import numpy as np
-from m23.align import image_alignment
+from m23.align import image_alignment, image_alignment_with_given_transformation
 from m23.calibrate.calibration import calibrateImages
 from m23.coma import precoma_folder_name
 from m23.constants import (
@@ -39,7 +39,8 @@ def align_combined_extract(  # noqa
     image_duration,
     log_files_to_normalize,
     aligned_combined_files,
-    coma_correction_fn=None,
+    coma_correction_fn,
+    alignment_matrices_for_raw_images,
 ):
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
@@ -130,7 +131,20 @@ def align_combined_extract(  # noqa
         raw_image_to_align = raw_images[from_index + index]
         raw_image_to_align_name = raw_image_to_align.path().name
         try:
-            aligned_data, statistics = image_alignment(image_data, ref_image_path)
+            # If run as part of coma correction, we want to use existing image alignment
+            # else run normally, and save the alignment statistics
+            if coma_correction_fn is None:
+                aligned_data, statistics = image_alignment(image_data, ref_image_path)
+                alignment_matrices_for_raw_images[str(raw_image_to_align)] = statistics
+            else:
+                stats = alignment_matrices_for_raw_images[str(raw_image_to_align)]
+                logger.info(
+                    f"Using preexisting alignemnt stats {stats} to align {raw_image_to_align}"
+                )
+                aligned_data, statistics = image_alignment_with_given_transformation(
+                    image_data, stats
+                )
+
             aligned_images_data.append(aligned_data)
             # We add the transformation statistics to the alignment stats
             # file Information of the file that can't be aligned isn't

@@ -5,7 +5,7 @@ import sys
 import traceback
 from datetime import date
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 import multiprocess as mp
 import toml
@@ -28,6 +28,7 @@ from m23.constants import (
     RAW_CALIBRATED_FOLDER_NAME,
     SKY_BG_BOX_REGION_SIZE,
     SKY_BG_FOLDER_NAME,
+    AlignmentTransformationType,
 )
 from m23.exceptions import InternightException
 from m23.extract import sky_bg_average_for_all_regions
@@ -365,6 +366,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
     aligned_combined_files: List[AlignedCombinedFile] = []
+    alignment_matrices_for_raw_images: Dict[str, AlignmentTransformationType] = {}
 
     def perform_align_combine_extract(coma_correction_fn=None):
         for nth_combined_image in range(no_of_combined_images):
@@ -383,6 +385,7 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
                     log_files_to_normalize,
                     aligned_combined_files,
                     coma_correction_fn,
+                    alignment_matrices_for_raw_images,
                 )
             except Exception as e:
                 tb = traceback.format_exc()

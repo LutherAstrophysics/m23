@@ -5,14 +5,9 @@ import astroalign as ast
 import numpy as np
 import numpy.typing as npt
 from astropy.io.fits import getdata as getfitsdata
-
+from m23.constants import AlignmentTransformationType
 from m23.exceptions import CouldNotAlignException
-
-ScaleType = float
-RotationType = float
-TranslationXType = float
-TranslationYType = float
-AlignmentTransformationType = Tuple[RotationType, TranslationXType, TranslationYType, ScaleType]
+from skimage.transform import SimilarityTransform
 
 
 def image_alignment(
@@ -67,3 +62,21 @@ def image_alignment(
         t.scale,
     )
     return aligned_image_data, transformation_metrics
+
+
+def image_alignment_with_given_transformation(
+    image_data, transformation: AlignmentTransformationType
+):
+    """
+    Perform image alignment to given image data using the transformation details provided
+    Returns aligned image data and the transformation details provided
+    """
+    target_size = (1024, 1024)
+    source_fixed = np.array(image_data, dtype="float")
+    rotation, translate_x, translate_y, scale = transformation
+    t = SimilarityTransform(rotation=rotation, translation=(translate_x, translate_y), scale=scale)
+    dummy_target = np.zeros(target_size).astype(
+        "float"
+    )  # Note that target is just used for determining size of the output image
+    aligned_image_data, _ = ast.apply_transform(t, source_fixed, dummy_target, fill_value=0)
+    return aligned_image_data, transformation
