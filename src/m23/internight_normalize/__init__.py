@@ -4,8 +4,6 @@ from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
 
 import numpy as np
-from scipy.optimize import curve_fit
-
 from m23.charts import draw_internight_brightness_chart, draw_internight_color_chart
 from m23.constants import COLOR_NORMALIZED_FOLDER_NAME, FLUX_LOGS_COMBINED_FOLDER_NAME
 from m23.exceptions import InternightException
@@ -13,12 +11,9 @@ from m23.file.color_normalized_file import ColorNormalizedFile
 from m23.file.flux_log_combined_file import FluxLogCombinedFile
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.file.ri_color_file import RIColorFile
-from m23.utils import (
-    customMedian,
-    get_date_from_input_night_folder_name,
-    get_radius_folder_name,
-)
+from m23.utils import customMedian, get_date_from_input_night_folder_name, get_radius_folder_name
 from m23.utils.flux_to_magnitude import flux_to_magnitude
+from scipy.optimize import curve_fit
 
 # Note that this code is implemented based on the internight normalization in IDL
 # https://github.com/LutherAstrophysics/idl-files/blob/39dfa1c0c6d03d64020c42583bbcaa94655d69cc/inter_night_normalization_345.pro
@@ -141,7 +136,7 @@ def internight_normalize_auxiliary(  # noqa
         )
         is_star_attendance_over_half[star_number] = log_file.is_attendance_over_half()
 
-    last_star_no = 3745
+    last_star_no = 2510
 
     # We calculate the ratio of signal in reference file data and the special
     # median signal for a star for the night. We do this for each stars with
