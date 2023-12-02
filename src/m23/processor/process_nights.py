@@ -244,6 +244,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     radii_of_extraction = config["processing"]["radii_of_extraction"]
     image_duration = config["processing"]["image_duration"]
     dark_prefix = config["processing"]["dark_prefix"]
+    xfwhm_target, yfwhm_target = (
+        config["processing"]["xfwhm_target"],
+        config["processing"]["yfwhm_target"],
+    )
 
     log_file_path = output / get_log_file_name(night_date)
     # Clear file contents if exists, so that reprocessing a night wipes out
@@ -400,7 +404,12 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     perform_align_combine_extract()
     # Generate coma correction models
     correction_function = coma_correction(
-        aligned_combined_files, log_files_to_normalize, logger, COMA_CORRECTION_MODELS_OUTPUT
+        aligned_combined_files,
+        log_files_to_normalize,
+        logger,
+        COMA_CORRECTION_MODELS_OUTPUT,
+        xfwhm_target,
+        yfwhm_target,
     )
     # Now we redo align combine extract
     log_files_to_normalize, aligned_combined_files = [], []

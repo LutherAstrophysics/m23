@@ -20,6 +20,8 @@ def coma_correction(
     logfiles: List[LogFileCombinedFile],
     logger,
     save_models_to_folder: Path,
+    xfwhm_target: float,
+    yfwhm_target: float,
 ):
     """
     Returns a function that takes raw image of type RawImageFile and returns
@@ -30,10 +32,9 @@ def coma_correction(
         without performing coma correction.
     """
 
-    # Calculate target fwhm for the night
+    # To calculate target fwhm for the night, and use the best fwhm from the night,
+    # uncomment the following line
     # xfwhm_target, yfwhm_target = best_fwhm_from_the_night(logfiles)
-    # Use a fixed value as Target FWHM
-    xfwhm_target, yfwhm_target = 4.3, 4.3
 
     logger.info(
         f"Comma correction values: alpha={COMA_ALPHA}, epsilon={COMA_EPSILON} target_XFWHM={xfwhm_target} target_YFWHM={yfwhm_target}"
