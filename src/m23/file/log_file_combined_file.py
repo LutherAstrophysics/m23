@@ -2,8 +2,9 @@ import re
 from collections import namedtuple
 from datetime import date, datetime
 from pathlib import Path
-from typing import Dict, Iterable, Tuple
+from typing import Dict, List, Tuple
 
+import pandas as pd
 import numpy as np
 import numpy.typing as npt
 
@@ -23,6 +24,8 @@ class LogFileCombinedFile:
     sky_adu_column = 5
     x_column = 0
     y_column = 1
+    xFWHM_column = 2
+    yFWHM_column = 3
     file_name_re = re.compile(r"(\d{2}-\d{2}-\d{2})_m23_(\d+\.\d*)-(\d{3})\.txt")
     star_adu_radius_re = re.compile(r"Star ADU (\d+)")
 
@@ -67,6 +70,12 @@ class LogFileCombinedFile:
             lines = [line.split() for line in lines]
             # Convert to 2d numpy array
             self.__data = np.array(lines, dtype="float")
+
+            self._df = pd.read_csv(
+                 self.__path, skiprows=8, delimiter=r"\s{2,}", engine="python"
+             )
+            self._df.index = [i+1 for i in self._df.index]
+            self._df.index.name = "Star_no"
         self.__is_read = True
 
     def _title_row(self):
@@ -103,7 +112,7 @@ class LogFileCombinedFile:
         """
         return bool(self.file_name_re.match(self.path().name))
 
-    def header(self) -> Iterable[str]:
+    def header(self) -> List[str]:
         """
         Returns an iterable to string representing the header information in the
         file
@@ -209,6 +218,12 @@ class LogFileCombinedFile:
         # doesn't get affected by another misbehaving caller.
         return np.copy(self.__data)
 
+    @property
+    def df(self):
+        if not self.__is_read:
+            self._read()
+        return self._df.copy()
+
     def create_file(
         self,
         data: LogFileCombinedDataType,
@@ -272,3 +287,6 @@ class LogFileCombinedFile:
 
     def __str__(self) -> str:
         return f"Log file combined: {self.__path}"
+
+
+

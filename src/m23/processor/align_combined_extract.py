@@ -1,11 +1,12 @@
 import logging
 from datetime import timedelta
 from pathlib import Path
+from typing import List
 
 import numpy as np
-
-from m23.align import image_alignment
+from m23.align import image_alignment, image_alignment_with_given_transformation
 from m23.calibrate.calibration import calibrateImages
+from m23.coma import precoma_folder_name
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
     ALIGNED_FOLDER_NAME,
@@ -23,7 +24,6 @@ from m23.matrix import crop
 from m23.matrix.fill import fillMatrix
 from m23.processor.config_loader import Config, ConfigInputNight
 from m23.utils import time_taken_to_capture_and_save_a_raw_file
-from typing import List
 
 
 def align_combined_extract(  # noqa
@@ -32,12 +32,15 @@ def align_combined_extract(  # noqa
     output: Path,
     night_date,
     nth_combined_image,
-    raw_images :List[RawImageFile],
+    raw_images: List[RawImageFile],
     master_dark_data,
     master_flat_data,
     alignment_stats_file,
     image_duration,
     log_files_to_normalize,
+    aligned_combined_files,
+    coma_correction_fn,
+    alignment_matrices_for_raw_images,
 ):
     logger = logging.getLogger("LOGGER_" + str(night_date))
 
@@ -46,10 +49,18 @@ def align_combined_extract(  # noqa
     NIGHT_INPUT_IMAGES_FOLDER = NIGHT_INPUT_FOLDER / M23_RAW_IMAGES_FOLDER_NAME
 
     # Define and create relevant output folders for the night being processed
-    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / ALIGNED_FOLDER_NAME
-    ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
-    LOG_FILES_COMBINED_OUTPUT_FOLDER = output / LOG_FILES_COMBINED_FOLDER_NAME
-    RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
+    if coma_correction_fn is None:
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_FOLDER_NAME)
+        ALIGNED_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(ALIGNED_COMBINED_FOLDER_NAME)
+        LOG_FILES_COMBINED_OUTPUT_FOLDER = output / precoma_folder_name(
+            LOG_FILES_COMBINED_FOLDER_NAME
+        )
+        RAW_CALIBRATED_OUTPUT_FOLDER = output / precoma_folder_name(RAW_CALIBRATED_FOLDER_NAME)
+    else:
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER = output / ALIGNED_FOLDER_NAME
+        ALIGNED_COMBINED_OUTPUT_FOLDER = output / ALIGNED_COMBINED_FOLDER_NAME
+        LOG_FILES_COMBINED_OUTPUT_FOLDER = output / LOG_FILES_COMBINED_FOLDER_NAME
+        RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
 
     ref_image_path = config["reference"]["image"]
     ref_file_path = config["reference"]["file"]
@@ -71,7 +82,12 @@ def align_combined_extract(  # noqa
     # and the no_of_images_to_combine. The later is the number of raw images
     # that are combined together to form on aligned combined image
 
-    images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
+    # Get coma corrected data when the correction function is defined
+    if coma_correction_fn is None:
+        images_data = [raw_image_file.data() for raw_image_file in raw_images[from_index:to_index]]
+    else:
+        images_data = list(map(coma_correction_fn, raw_images[from_index:to_index]))
+
     # Ensure that image dimensions are as specified by rows and cols
     # If there's extra noise cols or rows, we crop them
     images_data = [crop(matrix, rows, cols) for matrix in images_data]
@@ -115,7 +131,20 @@ def align_combined_extract(  # noqa
         raw_image_to_align = raw_images[from_index + index]
         raw_image_to_align_name = raw_image_to_align.path().name
         try:
-            aligned_data, statistics = image_alignment(image_data, ref_image_path)
+            # If run as part of coma correction, we want to use existing image alignment
+            # else run normally, and save the alignment statistics
+            if coma_correction_fn is None:
+                aligned_data, statistics = image_alignment(image_data, ref_image_path)
+                alignment_matrices_for_raw_images[str(raw_image_to_align)] = statistics
+            else:
+                stats = alignment_matrices_for_raw_images[str(raw_image_to_align)]
+                logger.info(
+                    f"Using preexisting alignemnt stats {stats} to align {raw_image_to_align}"
+                )
+                aligned_data, statistics = image_alignment_with_given_transformation(
+                    image_data, stats
+                )
+
             aligned_images_data.append(aligned_data)
             # We add the transformation statistics to the alignment stats
             # file Information of the file that can't be aligned isn't
@@ -166,10 +195,12 @@ def align_combined_extract(  # noqa
     # then we don't want to combine them as they're from different sections of the night
     # and the combination quality won't be good. This can happen if we removed some cloudy
     # images from within a night or something like that
-    last_raw_image = raw_images[to_index-1]
+    last_raw_image = raw_images[to_index - 1]
     first_raw_image = raw_images[from_index]
     if last_raw_image.image_number() - first_raw_image.image_number() >= no_of_images_to_combine:
-        logger.warning(f"skipping combination because missing raw images. start: {first_raw_image} end: {last_raw_image} where no. of images to combine is {no_of_images_to_combine}")
+        logger.warning(
+            f"skipping combination because missing raw images. start: {first_raw_image} end: {last_raw_image} where no. of images to combine is {no_of_images_to_combine}"
+        )
         return
 
     # Combination
@@ -193,6 +224,10 @@ def align_combined_extract(  # noqa
     aligned_combined_file = AlignedCombinedFile(
         ALIGNED_COMBINED_OUTPUT_FOLDER / aligned_combined_file_name
     )
+    # Set the raw images used to create this Aligned Combined image
+    aligned_combined_file.set_raw_images(raw_images[from_index:to_index])
+    aligned_combined_files.append(aligned_combined_file)
+
     # Image viewing softwares like Astromagic and Fits Liberator don't work
     # if the image data type is float, for some reason that we don't know.
     # So we're setting the datatype to int32 which has enough precision for

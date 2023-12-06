@@ -6,15 +6,22 @@ from pathlib import Path
 from typing import Callable, Dict, List, TypedDict
 
 import toml
-from m23.constants import (CAMERA_CHANGE_2022_DATE, DEFAULT_CPU_FRACTION_USAGE,
-                           INPUT_CALIBRATION_FOLDER_NAME,
-                           M23_RAW_IMAGES_FOLDER_NAME,
-                           TYPICAL_NEW_CAMERA_CROP_REGION)
+from m23.constants import (
+    CAMERA_CHANGE_2022_DATE,
+    DEFAULT_CPU_FRACTION_USAGE,
+    INPUT_CALIBRATION_FOLDER_NAME,
+    M23_RAW_IMAGES_FOLDER_NAME,
+    TYPICAL_NEW_CAMERA_CROP_REGION,
+)
 from m23.exceptions import InvalidDatetimeInConfig
 from m23.file.log_file_combined_file import LogFileCombinedFile
 from m23.reference import get_reference_files_dict
-from m23.utils import (get_all_fit_files, get_darks,
-                       get_date_from_input_night_folder_name, get_raw_images)
+from m23.utils import (
+    get_all_fit_files,
+    get_darks,
+    get_date_from_input_night_folder_name,
+    get_raw_images,
+)
 from typing_extensions import NotRequired
 
 
@@ -29,6 +36,8 @@ class ConfigProcessing(TypedDict):
     no_of_images_to_combine: int
     radii_of_extraction: List[int]
     image_duration: float
+    xfwhm_target: float
+    yfwhm_target: float
     dark_prefix: NotRequired[str]
     cpu_fraction: NotRequired[float]
 
@@ -490,6 +499,16 @@ def verify_optional_output_options(output_options: Dict[str, any]):
     return True
 
 
+def is_valid_fwhm_target(xfwhm_target, yfwhm_target):
+    if not 2 <= xfwhm_target <= 5:
+        sys.stderr.write("xfwhm target has to be between 2 and 5")
+        return False
+    if not 2 <= yfwhm_target <= 5:
+        sys.stderr.write("xfwhm target has to be between 2 and 5")
+        return False
+    return True
+
+
 def sanity_check_no_of_images_to_combine(no_of_images_to_combine: int, image_duration: float):
     if int(70 / image_duration) != no_of_images_to_combine:
         prompt_to_continue(
@@ -520,6 +539,8 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 "no_of_images_to_combine": int(no_of_images_to_combine),
                 "radii_of_extraction": list(radii_of_extraction),
                 "image_duration": float(image_duration),
+                "xfwhm_target": float(xfwhm_target),
+                "yfwhm_target": float(yfwhm_target),
                 **optional_processing_options,
             },
             "reference": {
@@ -537,6 +558,7 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 and verify_optional_processing_options(optional_processing_options)
                 and verify_optional_output_options(optional_output_options)
                 and is_valid_radii_of_extraction(radii_of_extraction)
+                and is_valid_fwhm_target(xfwhm_target, yfwhm_target)
                 and validate_input_nights(list_of_nights, image_duration)
                 and validate_reference_files(
                     reference_image,
@@ -549,7 +571,8 @@ def validate_file(file_path: Path, on_success: Callable[[Config], None]) -> None
                 # Check for the optional configurations
                 # Optional configs should either not be declared or be
                 # correctly declared
-                on_success(sanity_check(create_processing_config(configuration)))
+                conf = create_processing_config(configuration)
+                on_success(sanity_check(conf))
         case _:
             sys.stderr.write(
                 "Stopping. You're missing some required options in your toml"

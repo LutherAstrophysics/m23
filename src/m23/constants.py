@@ -1,4 +1,12 @@
 from datetime import date
+from typing import Tuple
+
+# Coma correction settings
+# https://punch-mission.github.io/regularizepsf/quickstart.html
+COMA_PSF_SIZE = 16  # size of the PSF model to use in pixels
+COMA_PATCH_SIZE = 128  # square side dimension PSF will be applied over
+COMA_ALPHA = 3  # see paper
+COMA_EPSILON = 0.3  # see paper
 
 ASSUMED_MAX_BRIGHTNESS = 65_000
 
@@ -25,6 +33,7 @@ LOG_FILES_COMBINED_FOLDER_NAME = "Log Files Combined"
 FLUX_LOGS_COMBINED_FOLDER_NAME = "Flux Logs Combined"
 COLOR_NORMALIZED_FOLDER_NAME = "Color Normalized"
 RAW_CALIBRATED_FOLDER_NAME = "Raw Calibrated Images"
+COMA_CORRECTION_MODELS = "Coma Correction Models"
 SKY_BG_FOLDER_NAME = "Sky background"
 CHARTS_FOLDER_NAME = "Charts"
 MASTER_DARK_NAME = "masterdark.fit"
@@ -49,3 +58,10 @@ TYPICAL_NEW_CAMERA_CROP_REGION = [
 ]
 
 DEFAULT_CPU_FRACTION_USAGE = 0.6
+
+# TYPES
+ScaleType = float
+RotationType = float
+TranslationXType = float
+TranslationYType = float
+AlignmentTransformationType = Tuple[RotationType, TranslationXType, TranslationYType, ScaleType]

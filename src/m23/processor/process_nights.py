@@ -5,18 +5,19 @@ import sys
 import traceback
 from datetime import date
 from pathlib import Path
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 import multiprocess as mp
 import toml
 from astropy.io.fits import getdata
-
 from m23 import __version__
 from m23.calibrate.master_calibrate import makeMasterDark
 from m23.charts import draw_normfactors_chart
+from m23.coma import coma_correction, precoma_folder_name
 from m23.constants import (
     ALIGNED_COMBINED_FOLDER_NAME,
     ALIGNED_FOLDER_NAME,
+    COMA_CORRECTION_MODELS,
     CONFIG_FILE_NAME,
     FLUX_LOGS_COMBINED_FOLDER_NAME,
     INPUT_CALIBRATION_FOLDER_NAME,
@@ -27,6 +28,7 @@ from m23.constants import (
     RAW_CALIBRATED_FOLDER_NAME,
     SKY_BG_BOX_REGION_SIZE,
     SKY_BG_FOLDER_NAME,
+    AlignmentTransformationType,
 )
 from m23.exceptions import InternightException
 from m23.extract import sky_bg_average_for_all_regions
@@ -242,6 +244,10 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     radii_of_extraction = config["processing"]["radii_of_extraction"]
     image_duration = config["processing"]["image_duration"]
     dark_prefix = config["processing"]["dark_prefix"]
+    xfwhm_target, yfwhm_target = (
+        config["processing"]["xfwhm_target"],
+        config["processing"]["yfwhm_target"],
+    )
 
     log_file_path = output / get_log_file_name(night_date)
     # Clear file contents if exists, so that reprocessing a night wipes out
@@ -280,6 +286,18 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     FLUX_LOGS_COMBINED_OUTPUT_FOLDER = output / FLUX_LOGS_COMBINED_FOLDER_NAME
     RAW_CALIBRATED_OUTPUT_FOLDER = output / RAW_CALIBRATED_FOLDER_NAME
 
+    JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(
+        ALIGNED_FOLDER_NAME
+    )
+    ALIGNED_COMBINED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(
+        ALIGNED_COMBINED_FOLDER_NAME
+    )
+    LOG_FILES_COMBINED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(
+        LOG_FILES_COMBINED_FOLDER_NAME
+    )
+    RAW_CALIBRATED_OUTPUT_FOLDER_PRECOMA = output / precoma_folder_name(RAW_CALIBRATED_FOLDER_NAME)
+    COMA_CORRECTION_MODELS_OUTPUT = output / COMA_CORRECTION_MODELS
+
     for folder in [
         JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER,
         CALIBRATION_OUTPUT_FOLDER,
@@ -287,6 +305,11 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
         ALIGNED_COMBINED_OUTPUT_FOLDER,
         LOG_FILES_COMBINED_OUTPUT_FOLDER,
         FLUX_LOGS_COMBINED_OUTPUT_FOLDER,
+        RAW_CALIBRATED_OUTPUT_FOLDER_PRECOMA,
+        LOG_FILES_COMBINED_OUTPUT_FOLDER_PRECOMA,
+        ALIGNED_COMBINED_OUTPUT_FOLDER_PRECOMA,
+        JUST_ALIGNED_NOT_COMBINED_OUTPUT_FOLDER_PRECOMA,
+        COMA_CORRECTION_MODELS_OUTPUT,
     ]:
         if folder.exists():
             [file.unlink() for file in folder.glob("*") if file.is_file()]  # Remove existing files
@@ -346,27 +369,51 @@ def process_night(night: ConfigInputNight, config: Config, output: Path, night_d
     logger.info("Created alignment stats file")
 
     log_files_to_normalize: List[LogFileCombinedFile] = []
-    for nth_combined_image in range(no_of_combined_images):
-        try:
-            align_combined_extract(
-                config,
-                night,
-                output,
-                night_date,
-                nth_combined_image,
-                raw_images,
-                master_dark_data,
-                master_flat_data,
-                alignment_stats_file,
-                image_duration,
-                log_files_to_normalize,
-            )
-        except Exception as e:
-            tb = traceback.format_exc()
-            logger.error("Exception during alignment combination extraction")
-            logger.error(e)
-            logger.error(tb)
-            return
+    aligned_combined_files: List[AlignedCombinedFile] = []
+    alignment_matrices_for_raw_images: Dict[str, AlignmentTransformationType] = {}
+
+    def perform_align_combine_extract(coma_correction_fn=None):
+        for nth_combined_image in range(no_of_combined_images):
+            try:
+                align_combined_extract(
+                    config,
+                    night,
+                    output,
+                    night_date,
+                    nth_combined_image,
+                    raw_images,
+                    master_dark_data,
+                    master_flat_data,
+                    alignment_stats_file,
+                    image_duration,
+                    log_files_to_normalize,
+                    aligned_combined_files,
+                    coma_correction_fn,
+                    alignment_matrices_for_raw_images,
+                )
+            except Exception as e:
+                tb = traceback.format_exc()
+                logger.error("Exception during alignment combination extraction")
+                logger.error(e)
+                logger.error(tb)
+                return
+
+    # First we perform align combine extract without coma correction
+    # Then we generate coma correction models and use those models
+    # to perform coma correction
+    perform_align_combine_extract()
+    # Generate coma correction models
+    correction_function = coma_correction(
+        aligned_combined_files,
+        log_files_to_normalize,
+        logger,
+        COMA_CORRECTION_MODELS_OUTPUT,
+        xfwhm_target,
+        yfwhm_target,
+    )
+    # Now we redo align combine extract
+    log_files_to_normalize, aligned_combined_files = [], []
+    perform_align_combine_extract(correction_function)
 
     # Intranight + Internight Normalization
     try:

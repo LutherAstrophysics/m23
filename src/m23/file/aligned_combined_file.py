@@ -1,6 +1,7 @@
 import datetime
 import re
 from pathlib import Path
+from typing import List
 
 import numpy.typing as npt
 from astropy.io import fits
@@ -29,6 +30,14 @@ class AlignedCombinedFile:
         self.__is_read = False
         self.__data = None
         self.__header = None
+        self.__raw_images : List[RawImageFile] = []
+
+    def set_raw_images(self, images: List[RawImageFile]) -> None:
+        self.__raw_images = images
+
+    @property
+    def raw_images(self):
+        return self.__raw_images
 
     def _read(self):
         if not self.exists():
