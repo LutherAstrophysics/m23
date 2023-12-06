@@ -2,6 +2,12 @@
 
 <!--next-version-placeholder-->
 
+## v1.24.0 (2023-12-06)
+
+### Feature
+
+* Coma correction. PR #39 from LutherAstrophysics/coma ([`29687b2`](https://github.com/LutherAstrophysics/m23/commit/29687b2444f604b8359ea9609e129e7a309efb5c))
+
 ## v1.23.10 (2023-10-22)
 
 ### Fix
