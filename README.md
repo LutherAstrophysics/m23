@@ -56,7 +56,9 @@ image_duration = 7.0
 radii_of_extraction = [3, 4, 5]
 cpu_fraction = 0 # (Optional), use a value between 0 to 1. Default is 0.6. Use 0 (meaning use single processor) if you're debugging
 # Defining dark prefix is also optional and perhaps a feature you'll almost never have to use.
-
+# Define target FWHM to use for coma correction
+xfwhm_target = 3.5
+yfwhm_target = 3.5
 
 ## Optional, default will be used if you don't define
 # [reference]
@@ -126,12 +128,12 @@ cpu_fraction = 0.6 # (Optional), use a value between 0 to 1. Default is 0.6. Use
 
 
 [input]
-    
+
     [[input.nights]]
     path = "F://Summer 2022/September 04, 2022"
     first_logfile_number = 10
     last_logfile_number = 45
-    
+
     [[input.nights]]
     path = "F://Summer 2022/September 12, 2022"
     first_logfile_number = 30
