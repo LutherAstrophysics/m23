@@ -3,7 +3,6 @@ from typing import Dict, Iterable, Tuple
 
 import numpy as np
 import numpy.typing as npt
-
 from m23.constants import SKY_BG_BOX_REGION_SIZE
 from m23.extract.bg import SkyBgCalculator, circleMatrix
 from m23.file.aligned_combined_file import AlignedCombinedFile
@@ -166,6 +165,7 @@ def flux_log_for_radius(
         x, y = half_round_up_to_int(x), half_round_up_to_int(y)
 
         starBox = image_data[x - radius : x + radius + 1, y - radius : y + radius + 1]
+        no_of_pixels = starBox.shape[0] * starBox.shape[1]
 
         # If any of the pixels in starBox is 0, then we assume that we've run
         # into edge of the image, hence we wash out the ADU value for the star
@@ -173,7 +173,11 @@ def flux_log_for_radius(
         # multiply the starBox with circleMatrix
         # Might we ever misidentify star not at the edge as one at the edge using
         # this method?
-        if len(starBox[starBox == 0]) > 0:
+        # This method becomes problematic if we are using coma correction when
+        # some of the pixels might just become zero for unknown region, hence
+        # Lets throw the star only if at least 25% of the pixels are zero (instead
+        # of any one pixel aforementioned)
+        if len(starBox[starBox == 0]) > 0.25 * no_of_pixels:
             return (0, 0, 0)
 
         starBox = np.multiply(starBox, circleMatrix(radius))
